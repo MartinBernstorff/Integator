@@ -1,41 +1,44 @@
+import subprocess
+from abc import ABC
 from typing import Optional
 
 
-def interactive_cmd(command: str) -> None:
-    import subprocess
+class Shell(ABC):
+    def interactive_cmd(self, command: str) -> None: ...
 
-    try:
-        subprocess.run(command, shell=True, stderr=subprocess.STDOUT, check=True)
-    except subprocess.CalledProcessError as e:
-        if not e.stdout:
-            return
+    def run(self, command: str) -> Optional[str]: ...
 
-        error_message = f"""{command} failed.
+    @staticmethod
+    def impl() -> "Shell":
+        return ShellImpl()
+
+
+class ShellImpl(Shell):
+    def interactive_cmd(self, command: str) -> None:
+        try:
+            subprocess.run(command, shell=True, stderr=subprocess.STDOUT, check=True)
+        except subprocess.CalledProcessError as e:
+            if not e.stdout:
+                return
+
+            error_message = f"""{command} failed.
 \tExit code: {e.returncode}"""
 
-        if e.stdout:
-            error_message += f"\n\tOutput: {e.stdout.decode('utf-8').strip()}"
+            if e.stdout:
+                error_message += f"\n\tOutput: {e.stdout.decode('utf-8').strip()}"
 
         raise RuntimeError(error_message) from e
 
-
-def shell_output(command: str) -> Optional[str]:
-    import subprocess
-
-    try:
-        result = (
-            subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
-            .decode("utf-8")
-            .strip()
-        )
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(
-            f"""{command} failed.
+    def run(self, command: str) -> Optional[str]:
+        try:
+            return (
+                subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+                .decode("utf-8")
+                .strip()
+            )
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(
+                f"""{command} failed.
     Exit code: {e.returncode}
     Output: {e.stdout.decode('utf-8').strip()}"""
-        ) from e
-
-    if not result:
-        return None
-
-    return result
+            ) from e

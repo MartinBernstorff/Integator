@@ -1,6 +1,6 @@
 from abc import ABC
 
-from shell import interactive_cmd
+from shell import Shell
 
 
 class Git(ABC):
@@ -13,6 +13,8 @@ class Git(ABC):
 
 class GitImpl(Git):
     def log(self):
-        interactive_cmd(
+        values = Shell.impl().run(
             "git log -n 10 --pretty=format:'%C(auto)%h %C(green)%ar %C(auto)%aN %N%-C() ' --date=format:'%H:%M'"
         )
+
+        pass
