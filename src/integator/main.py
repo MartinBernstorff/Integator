@@ -6,7 +6,7 @@ import time
 import typer
 from watchdog.events import FileSystemEventHandler
 
-from src.integator.monitor_impl import monitor_impl
+from integator.monitor_impl import monitor_impl
 
 from .config import FILE_NAME, RootSettings, settings_file_exists
 from .git import Git
@@ -47,7 +47,9 @@ def log():
     # observer.start()
 
     while True:
-        Git.impl().log()
+        git = Git.impl()
+        log_items = git.log()
+        git.print_log(log_items)
         time.sleep(1)
 
     # except KeyboardInterrupt:

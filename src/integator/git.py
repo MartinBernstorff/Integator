@@ -16,10 +16,17 @@ from .shell import Shell
 class LogEntry:
     time_since: datetime.timedelta
     hash: str
-    rest: str
+    notes: str
 
     def __repr__(self) -> str:
-        return f"{self.hash} {humanize.naturaldelta(self.time_since)} {self.rest}"
+        line = f"{self.hash}"
+
+        if statuses := self.statuses():
+            line = f"[{''.join(statuses)}] {line}"
+
+        line += f" {humanize.naturaldelta(self.time_since)}"
+        return line
+
 
     @staticmethod
     def parse_from_line(line: str) -> "LogEntry":
@@ -43,21 +50,34 @@ class LogEntry:
         return LogEntry(
             hash=hash,
             time_since=datetime.timedelta(seconds=time_since),
-            rest=rest,
+            notes=rest,
         )
 
-    def is_ok(self) -> bool:
-        return Emojis.OK.value in self.rest
+    def statuses(self) -> list[str]:
+        regex = r"\[.+\]"
+        match = re.search(regex, self.notes)
+        if not match:
+            return []
+        emojis = match.group(0).strip("[]")
+        return list(emojis)
 
     def is_pushed(self) -> bool:
-        return Emojis.PUSHED.value in self.rest
+        return Emojis.PUSHED.value in self.notes
 
-    def is_failed(self) -> bool:
-        return Emojis.FAIL.value in self.rest
+    def is_ok(self, position: int) -> bool:
+        if len(statuses := self.statuses()) <= position:
+            return False
+        return statuses[position] == Emojis.OK.value
+
+    def is_failed(self, position: int) -> bool:
+        if len(statuses := self.statuses()) <= position:
+            return False
+        return statuses[position] == Emojis.FAIL.value
 
 
 class Git(ABC):
-    def log(self): ...
+    def log(self) -> list[LogEntry]: ...
+    def print_log(self, entries: list[LogEntry]): ...
 
     @staticmethod
     def impl() -> "Git":
@@ -66,7 +86,7 @@ class Git(ABC):
 
 class GitImpl(Git):
     def _print_status_line(self, entries: list[LogEntry]):
-        ok_entries = [entry for entry in entries if entry.is_ok()]
+        ok_entries = [entry for entry in entries if entry.is_ok(0)]
         if ok_entries:
             ok_entry = ok_entries[-1]
             print(f"Last commit passing tests:\n\t{ok_entry}")
@@ -81,16 +101,15 @@ class GitImpl(Git):
         if not values:
             raise RuntimeError("No values returned from git log")
 
-        log_entries = [LogEntry.parse_from_line(value) for value in values]
+        return [LogEntry.parse_from_line(value) for value in values]
 
-        Shell.impl().clear()
-        self._print_status_line(log_entries)
-        self._print_log(log_entries)
-
-        # Print current time
-        print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')}")
-
-    def _print_log(self, log_entries):
+    def print_log(self, log_entries: list[LogEntry]):
         print("Log:")
         for entry in log_entries:
             print(f"\t{entry}")
+
+        Shell.impl().clear()
+        self._print_status_line(log_entries)
+
+        # Print current time
+        print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')}")

@@ -28,19 +28,19 @@ class Settings(pydantic_settings.BaseSettings):
 
 class Command(pydantic.BaseModel):
     name: str
-    command: str
+    cmd: str
     max_staleness_seconds: int
 
 def default_command() -> list[Command]:
     return [
         Command(
             name="Command 1",
-            command="echo 'test 1'",
+            cmd="echo 'test 1'",
             max_staleness_seconds=10,
         ),
         Command(
             name="Command 2",
-            command="echo 'test 2'",
+            cmd="echo 'test 2'",
             max_staleness_seconds=10,
         )
     ]
