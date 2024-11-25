@@ -1,3 +1,4 @@
+import pathlib
 import subprocess
 import sys
 import time
@@ -5,7 +6,10 @@ import time
 import typer
 from watchdog.events import FileSystemEventHandler
 
-from git import Git
+from src.integator.monitor_impl import monitor_impl
+
+from .config import FILE_NAME, RootSettings, settings_file_exists
+from .git import Git
 
 
 class CodeChangeHandler(FileSystemEventHandler):
@@ -21,23 +25,34 @@ app = typer.Typer()
 
 # TODO: Add monitoring command which runs a verify script
 
+@app.command()
+def init():
+    settings = RootSettings()
+
+    if not settings_file_exists():
+        settings.write_toml(pathlib.Path.cwd() / FILE_NAME)
+
+    print("Settings file created")
+
 
 @app.command()
-def main():
+def monitor():
+    monitor_impl()
+
+@app.command()
+def log():
     # Set up watchdog observer
     # observer = Observer()
     # observer.schedule(CodeChangeHandler(), path=".", recursive=False)
     # observer.start()
 
-    # try:
     while True:
         Git.impl().log()
         time.sleep(1)
 
-
-# except KeyboardInterrupt:
-#     observer.stop()
-# observer.join()
+    # except KeyboardInterrupt:
+    #     observer.stop()
+    # observer.join()
 
 
 if __name__ == "__main__":

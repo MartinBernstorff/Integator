@@ -1,0 +1,13 @@
+[integator]
+test = 2
+
+[[integator.commands]]
+name = "Command 1"
+command = "echo 'test 1'"
+max_staleness_seconds = 10
+
+[[integator.commands]]
+name = "Command 2"
+command = "echo 'test 2'"
+max_staleness_seconds = 10
+

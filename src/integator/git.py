@@ -6,8 +6,8 @@ from dataclasses import dataclass
 import humanize
 from pytimeparse import parse
 
-from cons import Emojis
-from shell import Shell
+from .cons import Emojis
+from .shell import Shell
 
 # TODO: Add worktree creation and cd'ing
 

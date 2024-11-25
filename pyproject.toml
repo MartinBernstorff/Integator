@@ -6,8 +6,14 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "humanize>=4.11.0",
+    "pydantic-settings>=2.6.1",
     "pytest>=8.3.3",
     "pytimeparse>=1.1.8",
+    "toml>=0.10.2",
     "typer>=0.13.1",
     "watchdog>=6.0.0",
 ]
+
+
+[project.scripts]
+integator = "integator.main:app"
