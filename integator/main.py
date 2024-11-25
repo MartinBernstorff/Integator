@@ -5,11 +5,12 @@ import time
 
 import typer
 from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
 
+from integator.config import FILE_NAME, RootSettings, settings_file_exists
+from integator.git import Git
 from integator.monitor_impl import monitor_impl
-
-from .config import FILE_NAME, RootSettings, settings_file_exists
-from .git import Git
+from integator.shell import Shell
 
 
 class CodeChangeHandler(FileSystemEventHandler):
@@ -25,6 +26,7 @@ app = typer.Typer()
 
 # TODO: Add monitoring command which runs a verify script
 
+
 @app.command()
 def init():
     settings = RootSettings()
@@ -37,25 +39,31 @@ def init():
 
 @app.command()
 def monitor():
-    monitor_impl()
+    settings = RootSettings()
+    commands = list(enumerate(settings.integator.commands))
+    monitor_impl(commands, Shell.impl(), n_statuses=len(settings.integator.commands))
+
 
 @app.command()
 def log():
     # Set up watchdog observer
-    # observer = Observer()
-    # observer.schedule(CodeChangeHandler(), path=".", recursive=False)
-    # observer.start()
+    observer = Observer()
+    observer.schedule(CodeChangeHandler(), path=".", recursive=True)
+    observer.start()
 
-    while True:
-        git = Git.impl()
-        log_items = git.log()
-        git.print_log(log_items)
-        time.sleep(1)
-
-    # except KeyboardInterrupt:
-    #     observer.stop()
-    # observer.join()
+    try:
+        while True:
+            git = Git()
+            settings = RootSettings()
+            log_items = git.get_log(n_statuses=len(settings.integator.commands))
+            git.print_log(log_items)
+            time.sleep(1)
+    except KeyboardInterrupt:
+        observer.stop()
+    observer.join()
 
 
 if __name__ == "__main__":
-    app()
+    monitor()
+    # log()
+    # app()

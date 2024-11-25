@@ -1,7 +1,8 @@
 {
     "python.testing.pytestArgs": [
-        "src"
+        "integator"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "editor.formatOnSave": true
 }

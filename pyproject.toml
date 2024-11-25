@@ -14,6 +14,8 @@ dependencies = [
     "watchdog>=6.0.0",
 ]
 
+[tool.uv]
+package = true
 
 [project.scripts]
 integator = "integator.main:app"

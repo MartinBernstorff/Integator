@@ -32,7 +32,7 @@ class ShellImpl(Shell):
             if e.stdout:
                 error_message += f"\n\tOutput: {e.stdout.decode('utf-8').strip()}"
 
-        raise RuntimeError(error_message) from e
+            raise RuntimeError(error_message) from e
 
     def run(self, command: str) -> Optional[list[str]]:
         try:

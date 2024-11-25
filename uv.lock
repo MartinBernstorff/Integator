@@ -52,7 +52,7 @@ wheels = [
 [[package]]
 name = "integator"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "humanize" },
     { name = "pydantic-settings" },
