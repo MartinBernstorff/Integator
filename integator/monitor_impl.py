@@ -1,8 +1,8 @@
 import datetime
 
-from integator.settings import RootSettings
 from integator.git import Git
 from integator.log_entry import LogEntry
+from integator.settings import RootSettings
 from integator.shell import Shell
 
 
@@ -16,6 +16,9 @@ def monitor_impl(shell: Shell, git: Git):
     entries = git.get_log(n_statuses=n_statuses)
 
     latest_entry = entries[0]
+
+    # Update with the unknown state
+    git.update_notes(latest_entry.note())
     if latest_entry.has_failed():
         print(f"Latest commit {latest_entry.hash} failed: {latest_entry.statuses}")
         return
@@ -25,18 +28,15 @@ def monitor_impl(shell: Shell, git: Git):
         if _is_stale(entries, cmd.max_staleness_seconds, position):
             print(f"Running {cmd.name}")
             try:
-                shell.run(cmd.cmd)
+                shell.run_quietly(cmd.cmd)
                 latest_entry.set_ok(position)
             except Exception as e:
                 latest_entry.set_failed(position)
                 print(f"Command {cmd.name} failed: {e}")
             git.update_notes(latest_entry.note())
 
-    print(f"({latest_entry.hash}) [{latest_entry.statuses}]")
-
-    # Print status
-    print(datetime.datetime.now().strftime("%H:%M:%S"))
-    # Print time
+    current_time = datetime.datetime.now().strftime("%H:%M:%S")
+    print(f"{current_time} ({latest_entry.hash}) [{latest_entry.statuses}]")
     shell.clear()
 
 

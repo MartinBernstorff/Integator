@@ -39,9 +39,7 @@ class LogEntry:
     statuses: Statuses
 
     def __repr__(self) -> str:
-        return (
-            f"({self.hash}) [{self.statuses}] {humanize.naturaldelta(self.time_since)}"
-        )
+        return f"({self.hash}) [{self.statuses}] {humanize.naturaldelta(self.time_since)} ago"
 
     def __str__(self) -> str:
         line = f"C|{self.hash}| T|{humanize.naturaldelta(self.time_since)} ago| A|{self.author}| N|{self.note()}|"

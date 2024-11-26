@@ -7,24 +7,24 @@ from integator.shell import Shell
 
 class Git:
     def checkout_latest_commit(self, source_dir: pathlib.Path):
-        values = Shell.impl().run(f"git -C {source_dir} rev-parse HEAD")
+        values = Shell.impl().run_quietly(f"git -C {source_dir} rev-parse HEAD")
 
         if not values:
             raise RuntimeError("No commit found")
 
-        Shell.impl().interactive_cmd(f"git checkout {values[0]}")
+        Shell.impl().run_quietly(f"git checkout {values[0]}")
 
     def get_notes(self) -> str | None:
-        values = Shell.impl().run("git notes show")
+        values = Shell.impl().run_quietly("git notes show")
         if not values:
             return None
         return values[0]
 
     def update_notes(self, notes: str):
-        Shell.impl().interactive_cmd(f"git notes add -f -m '{notes}'")
+        Shell.impl().run_quietly(f"git notes add -f -m '{notes}'")
 
     def get_log(self, n_statuses: int) -> list[LogEntry]:
-        values = Shell.impl().run(
+        values = Shell.impl().run_quietly(
             'git log -n 10 --pretty=format:"C|%h| T|%ar| A|%aN| N|%N%-C()|%-C()"'
         )
 
