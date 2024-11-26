@@ -23,7 +23,7 @@ class Git:
         return values[0]
 
     def _source_branch(self) -> str:
-        values = Shell().run_quietly("git rev-parse --abbrev-ref HEAD")
+        values = Shell().run_quietly(f"git -C {self.source_dir} branch --show-current")
 
         if not values:
             raise RuntimeError("No branch found")
