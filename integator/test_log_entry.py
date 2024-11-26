@@ -6,7 +6,7 @@ from integator.log_entry import LogEntry, Statuses
 
 
 def test_serde_identity():
-    input = "C|a9c7203| T|16 hours ago| A|Martin Bernstorff| N||"
+    input = "C|a9c7203| T|16 hours ago| A|Martin Bernstorff| N|[?]|"
 
     for _ in range(1, 3):
         entry = LogEntry.from_str(input, 1)
@@ -25,7 +25,7 @@ def test_serde_identity():
                 hash="af7b573",
                 author="Martin Bernstorff",
                 notes="Test passed",
-                statuses=["G"],
+                statuses=Statuses(values=["G"], size=1),
             ),
         ),
         (
@@ -36,7 +36,7 @@ def test_serde_identity():
                 hash="123456",
                 author="Martin Bernstorff",
                 notes="",
-                statuses=[],
+                statuses=Statuses(values=["?"], size=1),
             ),
         ),
         (
@@ -47,7 +47,7 @@ def test_serde_identity():
                 hash="123456",
                 author="Martin Bernstorff",
                 notes="",
-                statuses=[],
+                statuses=Statuses(values=["?"], size=1),
             ),
         ),
     ],
