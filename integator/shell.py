@@ -76,17 +76,16 @@ class Shell:
                         sys.stdout.flush()
 
                     if output_file:
-                        with open(output_file, "w") as f:
-                            if output:
-                                # Write to file
-                                f.write("".join(lines))
-                                f.flush()
+                        output_file.write_text(output)
 
             # Get return code
-            return_code = process.poll()
+            return_code = ExitCode.from_int(process.poll())
+
+            if output_file:
+                output_file.write_text(f"{return_code}")
 
             return RunResult(
-                exit_code=ExitCode.from_int(return_code),
+                exit_code=return_code,
                 output="".join(lines),
             )
         except Exception as e:
