@@ -3,7 +3,7 @@ test = 2
 source_dir = "/Users/mabe/Desktop/Git/Integator"
 
 [[integator.commands]]
-name = "Unit test"
+name = "Unit tests"
 cmd = "uv run pytest"
 max_staleness_seconds = 0
 
