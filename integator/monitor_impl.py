@@ -1,4 +1,5 @@
 import datetime
+import enum
 
 from integator.git import Git
 from integator.log_entry import LogEntry
@@ -6,7 +7,12 @@ from integator.settings import RootSettings
 from integator.shell import ExitCode, RunResult, Shell
 
 
-def monitor_impl(shell: Shell, git: Git):
+class CommandRan(enum.Enum):
+    YES = enum.auto()
+    NO = enum.auto()
+
+
+def monitor_impl(shell: Shell, git: Git) -> CommandRan:
     git.checkout_latest_commit()
     settings = RootSettings()
 
@@ -14,7 +20,7 @@ def monitor_impl(shell: Shell, git: Git):
     latest = git.log.latest()
     if settings.integator.fail_fast and latest.has_failed():
         print(f"Latest commit {latest.hash} failed: {latest.statuses}")
-        return
+        return CommandRan.NO
 
     if not git.diff_against(settings.integator.trunk):
         for i in range(len(settings.integator.commands)):
@@ -23,8 +29,9 @@ def monitor_impl(shell: Shell, git: Git):
         print(
             f"{latest.__repr__()}: No changes compared to trunk at {settings.integator.trunk}, marking as good and skipping"
         )
-        return
+        return CommandRan.NO
 
+    status = CommandRan.NO
     # Run commands
     for status_position, cmd in enumerate(settings.integator.commands):
         if latest.is_failed(status_position):
@@ -43,6 +50,7 @@ def monitor_impl(shell: Shell, git: Git):
 
         if _is_stale(git.log.get_all(), cmd.max_staleness_seconds, status_position):
             print(f"Running {cmd.name}")
+            status = CommandRan.YES
             result = shell.run(
                 cmd.cmd,
                 output_file=output_file,
@@ -65,6 +73,8 @@ def monitor_impl(shell: Shell, git: Git):
 
     print(f"{now.strftime('%H:%M:%S')} {latest.__repr__()}")
     shell.clear()
+
+    return status
 
 
 def update_status(git: Git, latest: LogEntry, position: int, result: RunResult):

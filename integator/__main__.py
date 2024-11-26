@@ -9,7 +9,7 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 from integator.git import Git, Log
-from integator.monitor_impl import monitor_impl
+from integator.monitor_impl import CommandRan, monitor_impl
 from integator.settings import FILE_NAME, RootSettings, settings_file_exists
 from integator.shell import Shell
 
@@ -63,7 +63,7 @@ def monitor():
     while True:
         shell.clear()
 
-        monitor_impl(
+        status = monitor_impl(
             shell,
             git=Git(
                 source_dir=settings.integator.source_dir,
@@ -71,7 +71,8 @@ def monitor():
             ),
         )
 
-        time.sleep(1)
+        if status == CommandRan.YES:
+            time.sleep(1)
 
 
 @app.command("l")
