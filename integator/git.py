@@ -6,6 +6,9 @@ from integator.shell import Shell
 
 
 class Git:
+    def push(self):
+        Shell().run_quietly("git push")
+
     def checkout_latest_commit(self, source_dir: pathlib.Path):
         values = Shell().run_quietly(f"git -C {source_dir} rev-parse HEAD")
 

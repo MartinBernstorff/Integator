@@ -10,7 +10,12 @@ def monitor_impl(shell: Shell, git: Git):
     settings = RootSettings()
     git.checkout_latest_commit(settings.integator.source_dir)
 
-    entries = git.get_log(n_statuses=len(settings.integator.commands))
+    n_statuses = len(settings.integator.commands)
+
+    if settings.integator.push_if_all_ok:
+        n_statuses += 1
+
+    entries = git.get_log(n_statuses=n_statuses)
 
     latest_entry = entries[0]
 
@@ -45,6 +50,11 @@ def monitor_impl(shell: Shell, git: Git):
                 case ExitCode.ERROR:
                     latest_entry.set_failed(position)
 
+            git.update_notes(latest_entry.note())
+
+        if settings.integator.push_if_all_ok and latest_entry.all_ok():
+            git.push()
+            latest_entry.set_pushed(n_statuses)
             git.update_notes(latest_entry.note())
 
     print(f"{now.strftime('%H:%M:%S')} ({latest_entry.hash}) [{latest_entry.statuses}]")
