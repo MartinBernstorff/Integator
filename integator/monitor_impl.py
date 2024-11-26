@@ -25,8 +25,12 @@ def monitor_impl(shell: Shell, git: Git):
 
     # Run commands
     for position, cmd in commands:
-        current_time = datetime.datetime.now().strftime("%H:%M:%S")
-        output_file = settings.integator.log_dir / cmd.name / f"{current_time}.log"
+        now = datetime.datetime.now()
+        current_time = now.strftime("%H-%M-%S")
+        current_date = now.strftime("%Y-%m-%d")
+        output_file = (
+            settings.integator.log_dir / current_date / cmd.name / f"{current_time}.log"
+        )
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
         if _is_stale(entries, cmd.max_staleness_seconds, position):
