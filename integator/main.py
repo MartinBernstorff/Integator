@@ -56,10 +56,10 @@ def log():
     # Set up watchdog observer
     observer = Observer()
     settings = RootSettings()
-    observer.schedule(
-        CodeChangeHandler(), path=str(settings.integator.source_dir), recursive=True
-    )
-    observer.start()
+    # observer.schedule(
+    #     CodeChangeHandler(), path=str(settings.integator.source_dir), recursive=True
+    # )
+    # observer.start()
 
     try:
         git = Git()
@@ -71,7 +71,6 @@ def log():
 
             for item in log_items:
                 print(item.__repr__())
-
             time.sleep(1)
     except KeyboardInterrupt:
         observer.stop()
