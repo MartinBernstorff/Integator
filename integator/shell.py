@@ -3,7 +3,6 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 
 class ExitCode(enum.Enum):
@@ -116,14 +115,17 @@ class Shell:
 
             raise RuntimeError(error_message) from e
 
-    def run_quietly(self, command: str) -> Optional[list[str]]:
+    def run_quietly(self, command: str) -> list[str]:
         try:
-            return (
+            result = (
                 subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
                 .decode("utf-8")
                 .strip()
                 .split("\n")
             )
+            if result == [""]:
+                return []
+            return result
         except subprocess.CalledProcessError as e:
             raise RuntimeError(
                 f"""{command} failed.

@@ -10,14 +10,19 @@ def monitor_impl(shell: Shell, git: Git):
     git.checkout_latest_commit()
     settings = RootSettings()
 
-    if not git.diff_against(settings.integator.trunk):
-        print(f"No changes compared to trunk at {settings.integator.trunk}, skipping")
-        return
-
     # Update with the unknown state
     latest = git.log.latest()
     if settings.integator.fail_fast and latest.has_failed():
         print(f"Latest commit {latest.hash} failed: {latest.statuses}")
+        return
+
+    if not git.diff_against(settings.integator.trunk):
+        for i in range(len(settings.integator.commands)):
+            latest.set_ok(i)
+            git.update_notes(latest.note())
+        print(
+            f"{latest.__repr__()}: No changes compared to trunk at {settings.integator.trunk}, marking as good and skipping"
+        )
         return
 
     # Run commands
