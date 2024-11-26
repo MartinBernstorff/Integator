@@ -76,9 +76,6 @@ class LogEntry:
     def set_failed(self, position: int):
         self.statuses.update(Emojis.FAIL.value, position)
 
-    def set_pushed(self):
-        self.pushed = True
-
     def is_pushed(self) -> bool:
         return self.statuses.contains(Emojis.PUSHED.value)
 

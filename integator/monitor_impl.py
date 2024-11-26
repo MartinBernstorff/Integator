@@ -47,7 +47,7 @@ def monitor_impl(shell: Shell, git: Git):
     if latest.all_ok():
         if settings.integator.push_on_success and not latest.pushed:
             git.push()
-            latest.set_pushed()
+            latest.pushed = True
             git.update_notes(latest.note())
 
         if settings.integator.command_on_success:
