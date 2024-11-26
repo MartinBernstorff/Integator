@@ -63,8 +63,6 @@ class Shell:
                 stderr=subprocess.STDOUT,
                 universal_newlines=True,
                 shell=True,
-                executable="/bin/zsh",
-                # TODO: Make the executable a settable option
             )
             lines = []
 
