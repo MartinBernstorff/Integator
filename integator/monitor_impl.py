@@ -1,6 +1,6 @@
 import datetime
 
-from integator.config import RootSettings
+from integator.settings import RootSettings
 from integator.git import Git
 from integator.log_entry import LogEntry
 from integator.shell import Shell
@@ -31,8 +31,8 @@ def monitor_impl(shell: Shell, git: Git):
                 latest_entry.set_failed(position)
                 print(f"Command {cmd.name} failed: {e}")
             git.update_notes(latest_entry.note())
-        else:
-            print(f"{cmd.name} is up to date")
+
+    print(f"({latest_entry.hash}) [{latest_entry.statuses}]")
 
     # Print status
     print(datetime.datetime.now().strftime("%H:%M:%S"))
