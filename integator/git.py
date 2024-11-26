@@ -7,8 +7,32 @@ from integator.shell import Shell
 
 
 @dataclass
+class Log:
+    n_statuses: int
+
+    def get_all(self) -> list[LogEntry]:
+        values = Shell().run_quietly(
+            'git log -n 10 --pretty=format:"C|%h| T|%ar| A|%aN| N|%N%-C()|%-C()"'
+        )
+
+        if not values:
+            raise RuntimeError("No values returned from git log")
+
+        entries = [LogEntry.from_str(value, self.n_statuses) for value in values]
+        valid_entries = [e for e in entries if e]
+        if not valid_entries:
+            raise RuntimeError("No entries parsed from git log")
+
+        return valid_entries
+
+    def latest(self) -> LogEntry:
+        return self.get_all()[0]
+
+
+@dataclass
 class Git:
     source_dir: pathlib.Path
+    log: Log
 
     def push(self):
         latest_commit = self._latest_commit()

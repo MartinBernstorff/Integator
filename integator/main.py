@@ -8,7 +8,7 @@ import typer
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-from integator.git import Git
+from integator.git import Git, Log
 from integator.monitor_impl import monitor_impl
 from integator.settings import FILE_NAME, RootSettings, settings_file_exists
 from integator.shell import Shell
@@ -63,7 +63,10 @@ def monitor():
 
         monitor_impl(
             shell,
-            git=Git(source_dir=settings.integator.source_dir),
+            git=Git(
+                source_dir=settings.integator.source_dir,
+                log=Log(n_statuses=len(settings.integator.commands)),
+            ),
         )
 
         time.sleep(1)
@@ -74,7 +77,10 @@ def log():
     # Set up watchdog observer
     settings = RootSettings()
 
-    git = Git(source_dir=settings.integator.source_dir)
+    git = Git(
+        source_dir=settings.integator.source_dir,
+        log=Log(n_statuses=len(settings.integator.commands)),
+    )
     shell = Shell()
 
     while True:

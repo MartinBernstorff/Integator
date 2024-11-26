@@ -10,14 +10,10 @@ def monitor_impl(shell: Shell, git: Git):
     settings = RootSettings()
     git.checkout_latest_commit()
 
-    entries = git.get_log(n_statuses=len(settings.integator.commands))
-
-    latest_entry = entries[0]
-
     # Update with the unknown state
-    git.update_notes(latest_entry.note())
-    if latest_entry.has_failed():
-        print(f"Latest commit {latest_entry.hash} failed: {latest_entry.statuses}")
+    latest = git.log.latest()
+    if latest.has_failed():
+        print(f"Latest commit {latest.hash} failed: {latest.statuses}")
         return
 
     # Run commands
@@ -32,7 +28,7 @@ def monitor_impl(shell: Shell, git: Git):
         )
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
-        if _is_stale(entries, cmd.max_staleness_seconds, position):
+        if _is_stale(git.log.get_all(), cmd.max_staleness_seconds, position):
             print(f"Running {cmd.name}")
             result = shell.run(
                 cmd.cmd,
@@ -41,22 +37,23 @@ def monitor_impl(shell: Shell, git: Git):
 
             match result.exit_code:
                 case ExitCode.OK:
-                    latest_entry.set_ok(position)
+                    latest.set_ok(position)
                 case ExitCode.ERROR:
-                    latest_entry.set_failed(position)
+                    latest.set_failed(position)
 
-            git.update_notes(latest_entry.note())
+            git.update_notes(latest.note())
 
-    if latest_entry.all_ok():
-        if settings.integator.push_on_success and not latest_entry.pushed:
+    latest = git.log.latest()
+    if latest.all_ok():
+        if settings.integator.push_on_success and not latest.pushed:
             git.push()
-            latest_entry.set_pushed()
-            git.update_notes(latest_entry.note())
+            latest.set_pushed()
+            git.update_notes(latest.note())
 
         if settings.integator.command_on_success:
             shell.run_interactively(settings.integator.command_on_success)
 
-    print(f"{now.strftime('%H:%M:%S')} ({latest_entry.hash}) [{latest_entry.statuses}]")
+    print(f"{now.strftime('%H:%M:%S')} ({latest.hash}) [{latest.statuses}]")
     shell.clear()
 
 
