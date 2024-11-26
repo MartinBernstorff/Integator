@@ -27,6 +27,7 @@ def test_serde_identity():
                 author="Martin Bernstorff",
                 notes="Test passed",
                 statuses=Statuses(values=["G"], size=1),
+                pushed=False,
             ),
         ),
         (
@@ -38,6 +39,7 @@ def test_serde_identity():
                 author="Martin Bernstorff",
                 notes="",
                 statuses=Statuses(values=[Emojis.UNKNOWN.value], size=1),
+                pushed=False,
             ),
         ),
         (
@@ -49,6 +51,7 @@ def test_serde_identity():
                 author="Martin Bernstorff",
                 notes="",
                 statuses=Statuses(values=[Emojis.UNKNOWN.value], size=1),
+                pushed=False,
             ),
         ),
     ],
@@ -65,6 +68,7 @@ def test_status_setting_from_empty():
         author="Martin Bernstorff",
         notes="",
         statuses=Statuses(values=[], size=2),
+        pushed=False,
     )
 
     entry.set_ok(0)

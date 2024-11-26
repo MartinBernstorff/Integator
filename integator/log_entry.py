@@ -50,9 +50,12 @@ class LogEntry:
         return line
 
     def note(self) -> str:
-        if not self.statuses:
-            return self.notes
-        return f"[{self.statuses}] {self.notes} P:{self.pushed}".strip()
+        notes = self.notes
+        if self.statuses:
+            notes = f"[{self.statuses}] {notes}"
+        if self.pushed:
+            notes += f" P:{self.pushed}"
+        return notes.strip()
 
     @staticmethod
     def from_str(line: str, n_statuses: int) -> "LogEntry":
