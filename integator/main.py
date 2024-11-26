@@ -47,7 +47,6 @@ def monitor():
             shell,
             git=Git(),
         )
-
         time.sleep(1)
 
 
