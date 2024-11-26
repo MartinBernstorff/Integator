@@ -64,7 +64,7 @@ def monitor():
 
             monitor_impl(
                 shell,
-                git=Git(),
+                git=Git(source_dir=settings.integator.source_dir),
             )
 
             time.sleep(1)
@@ -76,7 +76,7 @@ def log():
     settings = RootSettings()
 
     with watch_directory(settings.integator.source_dir, CodeChangeHandler()):
-        git = Git()
+        git = Git(source_dir=settings.integator.source_dir)
         shell = Shell()
 
         while True:

@@ -1,21 +1,38 @@
 import datetime
 import pathlib
+from dataclasses import dataclass
 
 from integator.log_entry import LogEntry
 from integator.shell import Shell
 
 
+@dataclass
 class Git:
+    source_dir: pathlib.Path
+
     def push(self):
-        Shell().run_quietly("git push")
+        latest_commit = self._latest_commit()
+        source_branch = self._source_branch()
 
-    def checkout_latest_commit(self, source_dir: pathlib.Path):
-        values = Shell().run_quietly(f"git -C {source_dir} rev-parse HEAD")
+        Shell().run_quietly(f"git push origin {latest_commit}:{source_branch}")
 
+    def _latest_commit(self) -> str:
+        values = Shell().run_quietly("git rev-parse HEAD")
         if not values:
             raise RuntimeError("No commit found")
+        return values[0]
 
-        Shell().run_quietly(f"git checkout {values[0]}")
+    def _source_branch(self) -> str:
+        values = Shell().run_quietly("git rev-parse --abbrev-ref HEAD")
+
+        if not values:
+            raise RuntimeError("No branch found")
+
+        return values[0]
+
+    def checkout_latest_commit(self):
+        latest_commit = self._latest_commit()
+        Shell().run_quietly(f"git checkout {latest_commit}")
 
     def get_notes(self) -> str | None:
         values = Shell().run_quietly("git notes show")

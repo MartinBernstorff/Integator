@@ -8,7 +8,7 @@ from integator.shell import ExitCode, Shell
 
 def monitor_impl(shell: Shell, git: Git):
     settings = RootSettings()
-    git.checkout_latest_commit(settings.integator.source_dir)
+    git.checkout_latest_commit()
 
     entries = git.get_log(n_statuses=len(settings.integator.commands))
 
@@ -47,10 +47,13 @@ def monitor_impl(shell: Shell, git: Git):
 
             git.update_notes(latest_entry.note())
 
-        if settings.integator.push_if_all_ok and latest_entry.all_ok():
-            git.push()
-            latest_entry.set_pushed()
-            git.update_notes(latest_entry.note())
+        if latest_entry.all_ok():
+            if settings.integator.push_on_success:
+                git.push()
+                latest_entry.set_pushed()
+                git.update_notes(latest_entry.note())
+            if settings.integator.command_on_success:
+                shell.run_interactively(settings.integator.command_on_success)
 
     print(f"{now.strftime('%H:%M:%S')} ({latest_entry.hash}) [{latest_entry.statuses}]")
     shell.clear()
