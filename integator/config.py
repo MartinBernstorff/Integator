@@ -26,10 +26,12 @@ class Settings(pydantic_settings.BaseSettings):
     ) -> Tuple[pydantic_settings.PydanticBaseSettingsSource, ...]:
         return (pydantic_settings.TomlConfigSettingsSource(settings_cls),)
 
+
 class Command(pydantic.BaseModel):
     name: str
     cmd: str
     max_staleness_seconds: int
+
 
 def default_command() -> list[Command]:
     return [
@@ -42,13 +44,14 @@ def default_command() -> list[Command]:
             name="Command 2",
             cmd="echo 'test 2'",
             max_staleness_seconds=10,
-        )
+        ),
     ]
 
 
 class IntegatorSettings(pydantic.BaseModel):
     test: int = Field(default=2)
     commands: list[Command] = Field(default_factory=default_command)
+    source_dir: pathlib.Path = Field(default=pathlib.Path.cwd())
 
 
 class RootSettings(Settings):

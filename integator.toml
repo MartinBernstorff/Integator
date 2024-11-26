@@ -1,5 +1,6 @@
 [integator]
 test = 2
+source_dir = "/Users/mabe/Desktop/Git/Integator"
 
 [[integator.commands]]
 name = "Unit test"

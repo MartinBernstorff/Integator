@@ -38,11 +38,12 @@ def init():
 
 
 @app.command()
-def monitor():
+def monitor(path: pathlib.Path):
     while True:
         monitor_impl(
             Shell.impl(),
             git=Git(),
+            path=path,
         )
 
 

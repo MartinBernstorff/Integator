@@ -1,4 +1,5 @@
 import datetime
+import pathlib
 import time
 
 from integator.config import RootSettings
@@ -7,8 +8,10 @@ from integator.log_entry import LogEntry
 from integator.shell import Shell
 
 
-def monitor_impl(shell: Shell, git: Git):
+def monitor_impl(shell: Shell, git: Git, path: pathlib.Path):
     while True:
+        git.checkout_latest_commit(path)
+
         settings = RootSettings()
         commands = list(enumerate(settings.integator.commands))
         n_statuses = len(commands)
