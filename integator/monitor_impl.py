@@ -47,14 +47,14 @@ def monitor_impl(shell: Shell, git: Git):
 
             git.update_notes(latest_entry.note())
 
-        if latest_entry.all_ok():
-            if settings.integator.push_on_success and not latest_entry.pushed:
-                git.push()
-                latest_entry.set_pushed()
-                git.update_notes(latest_entry.note())
+    if latest_entry.all_ok():
+        if settings.integator.push_on_success and not latest_entry.pushed:
+            git.push()
+            latest_entry.set_pushed()
+            git.update_notes(latest_entry.note())
 
-            if settings.integator.command_on_success:
-                shell.run_interactively(settings.integator.command_on_success)
+        if settings.integator.command_on_success:
+            shell.run_interactively(settings.integator.command_on_success)
 
     print(f"{now.strftime('%H:%M:%S')} ({latest_entry.hash}) [{latest_entry.statuses}]")
     shell.clear()
