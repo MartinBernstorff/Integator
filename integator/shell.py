@@ -10,6 +10,14 @@ class ExitCode(enum.Enum):
     OK = 0
     ERROR = 1
 
+    @staticmethod
+    def from_int(value: int | None) -> "ExitCode":
+        if value is None:
+            return ExitCode.ERROR
+        if value == 0:
+            return ExitCode.OK
+        return ExitCode.ERROR
+
 
 @dataclass
 class RunResult:
@@ -71,8 +79,9 @@ class Shell:
 
                 # Get return code
                 return_code = process.poll()
+
                 return RunResult(
-                    exit_code=ExitCode.OK if return_code is None else ExitCode.ERROR,
+                    exit_code=ExitCode.from_int(return_code),
                     error_message=None,
                 )
         except Exception as e:
