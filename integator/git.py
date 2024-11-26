@@ -17,7 +17,7 @@ class Git:
         Shell().run_quietly(f"git push origin {latest_commit}:{source_branch}")
 
     def _latest_commit(self) -> str:
-        values = Shell().run_quietly("git rev-parse HEAD")
+        values = Shell().run_quietly(f"git -C {self.source_dir} rev-parse HEAD")
         if not values:
             raise RuntimeError("No commit found")
         return values[0]
