@@ -79,7 +79,7 @@ class Shell:
                         with open(output_file, "w") as f:
                             if output:
                                 # Write to file
-                                f.write(output)
+                                f.write("\n".join(lines))
                                 f.flush()
 
             # Get return code
