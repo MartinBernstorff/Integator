@@ -64,7 +64,7 @@ class Shell:
                 universal_newlines=True,
                 shell=True,
                 executable="/bin/zsh",
-                # TODO: Make the executable a settable flag
+                # TODO: Make the executable a settable option
             )
             lines = []
 
