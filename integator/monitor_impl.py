@@ -23,13 +23,12 @@ def monitor_impl(shell: Shell, git: Git):
     # Run commands
     for position, cmd in enumerate(settings.integator.commands):
         now = datetime.datetime.now()
-        current_time = now.strftime("%H:%M:%S")
         current_date = now.strftime("%Y-%m-%d")
         output_file = (
             settings.integator.log_dir
             / current_date
             / cmd.name
-            / f"{current_time}-{cmd.name}.log"
+            / f"{now.strftime('%H-%M-%S')}-{cmd.name}.log"
         )
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -48,7 +47,7 @@ def monitor_impl(shell: Shell, git: Git):
 
             git.update_notes(latest_entry.note())
 
-    print(f"{current_time} ({latest_entry.hash}) [{latest_entry.statuses}]")
+    print(f"{now.strftime('%H:%M:%S')} ({latest_entry.hash}) [{latest_entry.statuses}]")
     shell.clear()
 
 

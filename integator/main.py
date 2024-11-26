@@ -2,6 +2,7 @@ import pathlib
 import subprocess
 import sys
 import time
+from contextlib import contextmanager
 
 import typer
 from watchdog.events import FileSystemEventHandler
@@ -22,6 +23,21 @@ class CodeChangeHandler(FileSystemEventHandler):
             sys.exit()
 
 
+@contextmanager
+def watch_directory(
+    path: pathlib.Path, handler: FileSystemEventHandler, recursive: bool = True
+):
+    observer = Observer()
+    observer.schedule(handler, path=str(path), recursive=recursive)
+    observer.start()
+
+    try:
+        yield observer
+    finally:
+        observer.stop()
+        observer.join()
+
+
 app = typer.Typer()
 
 # TODO: Add monitoring command which runs a verify script
@@ -39,30 +55,30 @@ def init():
 
 @app.command()
 def monitor():
-    while True:
-        shell = Shell()
-        shell.clear()
+    settings = RootSettings()
 
-        monitor_impl(
-            shell,
-            git=Git(),
-        )
-        time.sleep(1)
+    with watch_directory(settings.integator.source_dir, CodeChangeHandler()):
+        shell = Shell()
+        while True:
+            shell.clear()
+
+            monitor_impl(
+                shell,
+                git=Git(),
+            )
+
+            time.sleep(1)
 
 
 @app.command()
 def log():
     # Set up watchdog observer
-    observer = Observer()
     settings = RootSettings()
-    # observer.schedule(
-    #     CodeChangeHandler(), path=str(settings.integator.source_dir), recursive=True
-    # )
-    # observer.start()
 
-    try:
+    with watch_directory(settings.integator.source_dir, CodeChangeHandler()):
         git = Git()
         shell = Shell()
+
         while True:
             settings = RootSettings()
             log_items = git.get_log(n_statuses=len(settings.integator.commands))
@@ -70,10 +86,8 @@ def log():
 
             for item in log_items:
                 print(item.__repr__())
+
             time.sleep(1)
-    except KeyboardInterrupt:
-        observer.stop()
-    observer.join()
 
 
 if __name__ == "__main__":

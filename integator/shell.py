@@ -79,7 +79,7 @@ class Shell:
                         with open(output_file, "w") as f:
                             if output:
                                 # Write to file
-                                f.write("\n".join(lines))
+                                f.write("".join(lines))
                                 f.flush()
 
             # Get return code
@@ -87,7 +87,7 @@ class Shell:
 
             return RunResult(
                 exit_code=ExitCode.from_int(return_code),
-                output="\n".join(lines),
+                output="".join(lines),
             )
         except Exception as e:
             return RunResult(
