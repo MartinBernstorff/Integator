@@ -54,7 +54,7 @@ def monitor_impl(shell: Shell, git: Git):
 
         if settings.integator.push_if_all_ok and latest_entry.all_ok():
             git.push()
-            latest_entry.set_pushed(n_statuses)
+            latest_entry.set_pushed()
             git.update_notes(latest_entry.note())
 
     print(f"{now.strftime('%H:%M:%S')} ({latest_entry.hash}) [{latest_entry.statuses}]")

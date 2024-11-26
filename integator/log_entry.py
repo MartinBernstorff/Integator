@@ -37,9 +37,13 @@ class LogEntry:
     author: str
     notes: str
     statuses: Statuses
+    pushed: bool
 
     def __repr__(self) -> str:
-        return f"({self.hash}) [{self.statuses}] {humanize.naturaldelta(self.time_since)} ago"
+        line = f"({self.hash}) [{self.statuses}] {humanize.naturaldelta(self.time_since)} ago"
+        if self.pushed:
+            line += f" {Emojis.PUSHED.value}"
+        return line
 
     def __str__(self) -> str:
         line = f"C|{self.hash}| T|{humanize.naturaldelta(self.time_since)} ago| A|{self.author}| N|{self.note()}|"
@@ -68,8 +72,8 @@ class LogEntry:
     def set_failed(self, position: int):
         self.statuses.update(Emojis.FAIL.value, position)
 
-    def set_pushed(self, position: int):
-        self.statuses.update(Emojis.PUSHED.value, position)
+    def set_pushed(self):
+        self.pushed = True
 
     def is_pushed(self) -> bool:
         return self.statuses.contains(Emojis.PUSHED.value)
