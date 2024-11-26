@@ -12,12 +12,16 @@ def monitor_impl(shell: Shell, git: Git):
 
     # Update with the unknown state
     latest = git.log.latest()
-    if latest.has_failed():
+    if settings.integator.fail_fast and latest.has_failed():
         print(f"Latest commit {latest.hash} failed: {latest.statuses}")
         return
 
     # Run commands
     for position, cmd in enumerate(settings.integator.commands):
+        if latest.is_failed(position):
+            print(f"{cmd.name} failed on the last run, continuing")
+            continue
+
         now = datetime.datetime.now()
         current_date = now.strftime("%Y-%m-%d")
         output_file = (
@@ -40,6 +44,8 @@ def monitor_impl(shell: Shell, git: Git):
                     latest.set_ok(position)
                 case ExitCode.ERROR:
                     latest.set_failed(position)
+                    if settings.integator.fail_fast:
+                        break
 
             git.update_notes(latest.note())
 
