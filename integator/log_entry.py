@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import humanize
 
 from integator.commit_parser import parse_commit
-from integator.cons import Emojis
+from integator.emojis import Emojis
 
 
 @dataclass

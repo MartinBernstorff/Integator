@@ -4,7 +4,7 @@ from typing import Any
 
 import pytimeparse
 
-from integator.cons import Emojis
+from integator.emojis import Emojis
 
 
 @staticmethod

@@ -2,7 +2,7 @@ import datetime
 
 import pytest
 
-from integator.cons import Emojis
+from integator.emojis import Emojis
 from integator.log_entry import LogEntry, Statuses
 
 
