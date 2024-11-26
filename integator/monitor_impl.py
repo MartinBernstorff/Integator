@@ -7,8 +7,8 @@ from integator.shell import ExitCode, Shell
 
 
 def monitor_impl(shell: Shell, git: Git):
-    settings = RootSettings()
     git.checkout_latest_commit()
+    settings = RootSettings()
 
     # Update with the unknown state
     latest = git.log.latest()
