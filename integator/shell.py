@@ -58,11 +58,13 @@ class Shell:
         """
         try:
             process = subprocess.Popen(
-                [command],
+                command,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 universal_newlines=True,
                 shell=True,
+                executable="/bin/zsh",
+                # TODO: Make the executable a settable flag
             )
             lines = []
 
