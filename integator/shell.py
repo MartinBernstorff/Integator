@@ -83,10 +83,13 @@ class Shell:
                         self._append_text(output, output_file)
 
             # Get return code
-            return_code = ExitCode.from_int(process.poll())
+            return_int = process.poll()
+            return_code = ExitCode.from_int(return_int)
 
             if output_file:
-                self._append_text(f"{return_code}", output_file)
+                self._append_text(
+                    f"int: {return_int}. Code: {return_code}", output_file
+                )
 
             return RunResult(
                 exit_code=return_code,
