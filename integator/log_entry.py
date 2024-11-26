@@ -18,7 +18,7 @@ class Statuses:
     def __post_init__(self):
         deficit = self.size - len(self.values)
         if deficit > 0:
-            self.values += ["?"] * deficit
+            self.values += [Emojis.UNKNOWN.value] * deficit
 
     def update(self, status: str, position: int):
         self.values[position] = status
