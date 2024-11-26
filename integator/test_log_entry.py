@@ -2,11 +2,12 @@ import datetime
 
 import pytest
 
+from integator.cons import Emojis
 from integator.log_entry import LogEntry, Statuses
 
 
 def test_serde_identity():
-    input = "C|a9c7203| T|16 hours ago| A|Martin Bernstorff| N|[?]|"
+    input = f"C|a9c7203| T|16 hours ago| A|Martin Bernstorff| N|[{Emojis.FAIL.value}]|"
 
     for _ in range(1, 3):
         entry = LogEntry.from_str(input, 1)
@@ -36,7 +37,7 @@ def test_serde_identity():
                 hash="123456",
                 author="Martin Bernstorff",
                 notes="",
-                statuses=Statuses(values=["?"], size=1),
+                statuses=Statuses(values=[Emojis.UNKNOWN.value], size=1),
             ),
         ),
         (
@@ -47,7 +48,7 @@ def test_serde_identity():
                 hash="123456",
                 author="Martin Bernstorff",
                 notes="",
-                statuses=Statuses(values=["?"], size=1),
+                statuses=Statuses(values=[Emojis.UNKNOWN.value], size=1),
             ),
         ),
     ],
@@ -67,4 +68,4 @@ def test_status_setting_from_empty():
     )
 
     entry.set_ok(0)
-    assert entry.statuses.values == ["G", "?"]
+    assert entry.statuses.values == [Emojis.OK.value, Emojis.UNKNOWN.value]
