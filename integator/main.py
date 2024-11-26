@@ -57,17 +57,16 @@ def init():
 def monitor():
     settings = RootSettings()
 
-    with watch_directory(settings.integator.source_dir, CodeChangeHandler()):
-        shell = Shell()
-        while True:
-            shell.clear()
+    shell = Shell()
+    while True:
+        shell.clear()
 
-            monitor_impl(
-                shell,
-                git=Git(source_dir=settings.integator.source_dir),
-            )
+        monitor_impl(
+            shell,
+            git=Git(source_dir=settings.integator.source_dir),
+        )
 
-            time.sleep(1)
+        time.sleep(1)
 
 
 @app.command()
