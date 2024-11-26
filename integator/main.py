@@ -43,6 +43,7 @@ app = typer.Typer()
 # TODO: Add monitoring command which runs a verify script
 
 
+@app.command("i")
 @app.command()
 def init():
     settings = RootSettings()
@@ -53,6 +54,7 @@ def init():
     print("Settings file created")
 
 
+@app.command("m")
 @app.command()
 def monitor():
     settings = RootSettings()
@@ -72,6 +74,7 @@ def monitor():
         time.sleep(1)
 
 
+@app.command("l")
 @app.command()
 def log():
     # Set up watchdog observer
