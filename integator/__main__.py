@@ -71,7 +71,7 @@ def monitor():
             ),
         )
 
-        if status == CommandRan.YES:
+        if status == CommandRan.NO:
             time.sleep(1)
 
 
