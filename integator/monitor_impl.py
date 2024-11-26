@@ -8,12 +8,9 @@ from integator.shell import ExitCode, Shell
 
 def monitor_impl(shell: Shell, git: Git):
     settings = RootSettings()
-
     git.checkout_latest_commit(settings.integator.source_dir)
 
-    commands = list(enumerate(settings.integator.commands))
-    n_statuses = len(commands)
-    entries = git.get_log(n_statuses=n_statuses)
+    entries = git.get_log(n_statuses=len(settings.integator.commands))
 
     latest_entry = entries[0]
 
@@ -24,7 +21,7 @@ def monitor_impl(shell: Shell, git: Git):
         return
 
     # Run commands
-    for position, cmd in commands:
+    for position, cmd in enumerate(settings.integator.commands):
         now = datetime.datetime.now()
         current_time = now.strftime("%H:%M:%S")
         current_date = now.strftime("%Y-%m-%d")

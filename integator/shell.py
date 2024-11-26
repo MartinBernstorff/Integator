@@ -1,7 +1,6 @@
 import enum
 import subprocess
 import sys
-from abc import ABC
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -23,26 +22,7 @@ class Stream(enum.Enum):
     NO = False
 
 
-class Shell(ABC):
-    def run(
-        self,
-        command: str,
-        output_file: Path,
-        stream: Stream = Stream.YES,
-    ) -> RunResult: ...
-
-    def run_interactively(self, command: str) -> None: ...
-
-    def run_quietly(self, command: str) -> Optional[list[str]]: ...
-
-    def clear(self) -> None: ...
-
-    @staticmethod
-    def impl() -> "Shell":
-        return ShellImpl()
-
-
-class ShellImpl(Shell):
+class Shell:
     def clear(self) -> None:
         print("\033c", end="")
 
