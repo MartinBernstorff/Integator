@@ -74,19 +74,18 @@ def log():
     # Set up watchdog observer
     settings = RootSettings()
 
-    with watch_directory(settings.integator.source_dir, CodeChangeHandler()):
-        git = Git(source_dir=settings.integator.source_dir)
-        shell = Shell()
+    git = Git(source_dir=settings.integator.source_dir)
+    shell = Shell()
 
-        while True:
-            settings = RootSettings()
-            log_items = git.get_log(n_statuses=len(settings.integator.commands))
-            shell.clear()
+    while True:
+        settings = RootSettings()
+        log_items = git.get_log(n_statuses=len(settings.integator.commands))
+        shell.clear()
 
-            for item in log_items:
-                print(item.__repr__())
+        for item in log_items:
+            print(item.__repr__())
 
-            time.sleep(1)
+        time.sleep(1)
 
 
 if __name__ == "__main__":
