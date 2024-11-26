@@ -4,6 +4,8 @@ from typing import Any
 
 import pytimeparse
 
+from integator.cons import Emojis
+
 
 @staticmethod
 def _statuses(notes: str, n_statuses: int) -> list[str]:
@@ -15,7 +17,7 @@ def _statuses(notes: str, n_statuses: int) -> list[str]:
 
     missing_statuses = n_statuses - len(icons)
     if missing_statuses > 0:
-        icons += "?" * missing_statuses
+        icons += Emojis.UNKNOWN.value * missing_statuses
 
     return [c for c in icons]
 
