@@ -1,12 +1,12 @@
 [integator]
 test = 2
+
 [[integator.commands]]
-name = "Command 1"
-cmd = "echo 'test 1'"
-max_staleness_seconds = 10
+name = "Unit test"
+cmd = "uv run pytest"
+max_staleness_seconds = 0
 
 [[integator.commands]]
 name = "Command 2"
 cmd = "echo 'test 2'"
 max_staleness_seconds = 10
-

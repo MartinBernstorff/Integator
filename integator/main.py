@@ -39,9 +39,11 @@ def init():
 
 @app.command()
 def monitor():
-    settings = RootSettings()
-    commands = list(enumerate(settings.integator.commands))
-    monitor_impl(commands, Shell.impl(), n_statuses=len(settings.integator.commands))
+    while True:
+        monitor_impl(
+            Shell.impl(),
+            git=Git(),
+        )
 
 
 @app.command()
@@ -56,7 +58,6 @@ def log():
             git = Git()
             settings = RootSettings()
             log_items = git.get_log(n_statuses=len(settings.integator.commands))
-            git.print_log(log_items)
             time.sleep(1)
     except KeyboardInterrupt:
         observer.stop()

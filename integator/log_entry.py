@@ -1,14 +1,33 @@
 import datetime
-import re
 from dataclasses import dataclass
-from typing import NewType
 
 import humanize
-from pytimeparse import parse
 
+from integator.commit_parser import parse_commit
 from integator.cons import Emojis
 
-Status = NewType("Status", str)
+
+@dataclass
+class Statuses:
+    values: list[str]
+    size: int
+
+    def __str__(self) -> str:
+        return "".join(self.values)
+
+    def __post_init__(self):
+        deficit = self.size - len(self.values)
+        if deficit > 0:
+            self.values += ["?"] * deficit
+
+    def update(self, status: str, position: int):
+        self.values[position] = status
+
+    def contains(self, status: str) -> bool:
+        return status in self.values
+
+    def all(self, compare: str) -> bool:
+        return all(status == compare for status in self.values)
 
 
 @dataclass
@@ -17,82 +36,46 @@ class LogEntry:
     hash: str
     author: str
     notes: str
-    statuses: list[Status]
+    statuses: Statuses
 
-    def to_str(self) -> str:
-        line = f"{self.hash} {humanize.naturaldelta(self.time_since)} ago {self.author} {self.note()}"
+    def __str__(self) -> str:
+        line = f"C|{self.hash}| T|{humanize.naturaldelta(self.time_since)} ago| A|{self.author}| N|{self.note()}|"
         return line
 
     def note(self) -> str:
-        return f"[{''.join(self.statuses)}] {self.notes}".strip()
+        if not self.statuses:
+            return self.notes
+        return f"[{self.statuses}] {self.notes}".strip()
 
     @staticmethod
-    def from_str(line: str, n_statuses: int) -> "LogEntry | None":
-        regex = r"^(\w+)\s+(\d+)\s+(\w+)\s+ago\s+(.+)(\[.*\])(.*)$"
-        match = re.match(regex, line)
-
-        if not match:
-            return None
-
-        hash = match.group(1)
-        time_int = int(match.group(2))
-        time_unit = match.group(3)
-        author = match.group(4).strip()
-        statuses = LogEntry._statuses(match.group(5), n_statuses)
-        notes = match.group(6).strip()
-
-        time_string = f"{time_int} {time_unit}"
-        time_since = parse(time_string)
-
-        if time_since is None:
-            return None
-
+    def from_str(line: str, n_statuses: int) -> "LogEntry":
+        result = parse_commit(line, n_statuses)
+        statuses = Statuses(values=result["statuses"], size=n_statuses)
         return LogEntry(
-            hash=hash,
-            time_since=datetime.timedelta(seconds=time_since),
-            author=author,
+            time_since=result["time"],
+            hash=result["commit"],
+            author=result["author"],
+            notes=result["notes"],
             statuses=statuses,
-            notes=notes,
         )
 
-    @staticmethod
-    def _statuses(notes: str, n_statuses: int) -> list[Status]:
-        regex = r"\[.+\]"
-        match = re.search(regex, notes)
-        if not match:
-            return []
-        emojis = match.group(0).strip("[]")
-
-        missing_statuses = n_statuses - len(emojis)
-        if missing_statuses > 0:
-            emojis += "?" * missing_statuses
-
-        return [Status(emoji) for emoji in emojis]
-
     def set_ok(self, position: int):
-        self.statuses[position] = Status(Emojis.OK.value)
+        self.statuses.update(Emojis.OK.value, position)
 
     def set_failed(self, position: int):
-        self.statuses[position] = Status(Emojis.FAIL.value)
-
-    def has_status(self) -> bool:
-        return len(self.statuses) > 0
+        self.statuses.update(Emojis.FAIL.value, position)
 
     def is_pushed(self) -> bool:
-        return Emojis.PUSHED.value in self.statuses
+        return self.statuses.contains(Emojis.PUSHED.value)
 
     def is_failed(self, position: int) -> bool:
-        if len(self.statuses) <= position:
-            return False
-        return self.statuses[position] == Emojis.FAIL.value
+        return self.statuses.values[position] == Emojis.FAIL.value
 
     def has_failed(self) -> bool:
-        return any(status == Emojis.FAIL.value for status in self.statuses)
+        return self.statuses.contains(Emojis.FAIL.value)
 
     def is_ok(self, position: int) -> bool:
-        if not self.has_status():
-            return False
-        return self.statuses[position] == Emojis.OK.value
+        return self.statuses.values[position] == Emojis.OK.value
 
     def all_ok(self) -> bool:
-        return all(status == Emojis.OK.value for status in self.statuses)
+        return self.statuses.all(Emojis.OK.value)
