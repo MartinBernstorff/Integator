@@ -39,6 +39,19 @@ class LogEntry:
     statuses: Statuses
     pushed: bool
 
+    @staticmethod
+    def from_str(line: str, n_statuses: int) -> "LogEntry":
+        result = parse_commit(line, n_statuses)
+        statuses = Statuses(values=result["statuses"], size=n_statuses)
+        return LogEntry(
+            time_since=result["time"],
+            hash=result["commit"],
+            author=result["author"],
+            notes=result["notes"],
+            statuses=statuses,
+            pushed=result["pushed"],
+        )
+
     def __repr__(self) -> str:
         line = f"({self.hash}) [{self.statuses}] {humanize.naturaldelta(self.time_since)} ago"
         if self.pushed:
@@ -56,19 +69,6 @@ class LogEntry:
         if self.pushed:
             notes += f" P:{self.pushed}"
         return notes.strip()
-
-    @staticmethod
-    def from_str(line: str, n_statuses: int) -> "LogEntry":
-        result = parse_commit(line, n_statuses)
-        statuses = Statuses(values=result["statuses"], size=n_statuses)
-        return LogEntry(
-            time_since=result["time"],
-            hash=result["commit"],
-            author=result["author"],
-            notes=result["notes"],
-            statuses=statuses,
-            pushed=result["pushed"],
-        )
 
     def set_ok(self, position: int):
         self.statuses.update(Emojis.OK.value, position)

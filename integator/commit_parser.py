@@ -22,18 +22,18 @@ def _statuses(notes: str, n_statuses: int) -> list[str]:
     return [c for c in icons]
 
 
-def _notes_sans_statuses(notes: str) -> str:
+def _find_statuses(notes: str) -> str:
     regex = r"\[.+\]"
     match = re.search(regex, notes)
     if not match:
-        return notes
-    return notes.replace(match.group(0), "").strip()
+        return ""
+    return match.group(0)
 
 
 def _pushed(notes: str) -> bool:
-    regex = r"P:true"
-    match = re.search(regex, notes)
-    return match is not None
+    if "P:True" in notes:
+        return True
+    return False
 
 
 def parse_commit(line: str, n_statuses: int) -> dict[str, Any]:
@@ -57,9 +57,15 @@ def parse_commit(line: str, n_statuses: int) -> dict[str, Any]:
 
             results[name] = datetime.timedelta(seconds=seconds)
         elif name == "notes":
-            results[name] = _notes_sans_statuses(match.group(1))
             results["statuses"] = _statuses(match.group(1), n_statuses)
             results["pushed"] = _pushed(match.group(1))
+            notes = (
+                match.group(1)
+                .replace(_find_statuses(match.group(1)), "")
+                .replace(f"P:{results['pushed']}", "")
+                .strip()
+            )
+            results[name] = notes
         else:
             results[name] = match.group(1) if match else ""
 

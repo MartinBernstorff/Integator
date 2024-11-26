@@ -7,7 +7,7 @@ from integator.log_entry import LogEntry, Statuses
 
 
 def test_serde_identity():
-    input = f"C|a9c7203| T|16 hours ago| A|Martin Bernstorff| N|[{Emojis.FAIL.value}]|"
+    input = f"C|a9c7203| T|16 hours ago| A|Martin Bernstorff| N|[{Emojis.FAIL.value}] P:false|"
 
     for _ in range(1, 3):
         entry = LogEntry.from_str(input, 1)
@@ -31,11 +31,11 @@ def test_serde_identity():
             ),
         ),
         (
-            "C|123456| T|2 minutes ago| A|Martin Bernstorff| N||",
+            "C|1| T|2 minutes ago| A|Martin Bernstorff| N||",
             1,
             LogEntry(
                 time_since=datetime.timedelta(minutes=2),
-                hash="123456",
+                hash="1",
                 author="Martin Bernstorff",
                 notes="",
                 statuses=Statuses(values=[Emojis.UNKNOWN.value], size=1),
@@ -43,22 +43,22 @@ def test_serde_identity():
             ),
         ),
         (
-            "C|123456| T|2 minutes ago| A|Martin Bernstorff| N||",
+            "C|2| T|3 minutes ago| A|Martin Bernstorff| N|P:True|",
             1,
             LogEntry(
-                time_since=datetime.timedelta(minutes=2),
-                hash="123456",
+                time_since=datetime.timedelta(minutes=3),
+                hash="2",
                 author="Martin Bernstorff",
                 notes="",
                 statuses=Statuses(values=[Emojis.UNKNOWN.value], size=1),
-                pushed=False,
+                pushed=True,
             ),
         ),
     ],
 )
 def test_log_entry_parsing(input: str, n_statuses: int, expected: LogEntry):
-    entry = LogEntry.from_str(input, n_statuses)
-    assert entry.__str__() == expected.__str__()
+    parsed = LogEntry.from_str(input, n_statuses)
+    assert parsed.__str__() == expected.__str__()
 
 
 def test_status_setting_from_empty():
