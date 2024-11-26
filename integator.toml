@@ -6,8 +6,3 @@ source_dir = "/Users/mabe/Desktop/Git/Integator"
 name = "Unit tests"
 cmd = "uv run pytest"
 max_staleness_seconds = 60
-
-[[integator.commands]]
-name = "Command 2"
-cmd = "echo 'test 2'"
-max_staleness_seconds = 10
