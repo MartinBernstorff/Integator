@@ -1,5 +1,4 @@
 import datetime
-import time
 
 import pytest
 
@@ -69,5 +68,4 @@ def test_status_setting_from_empty():
     )
 
     entry.set_ok(0)
-    time.sleep(10)
     assert entry.statuses.values == [Emojis.OK.value, Emojis.UNKNOWN.value]

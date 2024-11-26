@@ -51,6 +51,7 @@ class Shell:
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     universal_newlines=True,
+                    shell=True,
                 )
 
                 # Stream output
