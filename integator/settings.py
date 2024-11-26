@@ -49,12 +49,13 @@ def default_command() -> list[Command]:
 
 
 class IntegatorSettings(pydantic.BaseModel):
+    commands: list[Command] = Field(default_factory=default_command)
     command_on_success: str = Field(default="echo 'Success!'")
     fail_fast: bool = Field(default=True)
-    push_on_success: bool = Field(default=False)
-    commands: list[Command] = Field(default_factory=default_command)
     log_dir: pathlib.Path = Field(default=pathlib.Path.cwd() / ".logs")
+    push_on_success: bool = Field(default=False)
     source_dir: pathlib.Path = Field(default=pathlib.Path.cwd())
+    trunk: str = Field(default="main")
 
 
 class RootSettings(Settings):

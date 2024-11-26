@@ -34,6 +34,13 @@ class Git:
     source_dir: pathlib.Path
     log: Log
 
+    def diff_against(self, reference: str) -> list[str]:
+        Shell().run_quietly(f"git fetch origin {reference}")
+        result = Shell().run_quietly(f"git diff origin/{reference}")
+        if not result:
+            return []
+        return result
+
     def push(self):
         latest_commit = self._latest_commit()
         source_branch = self._source_branch()
