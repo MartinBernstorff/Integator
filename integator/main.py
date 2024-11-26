@@ -40,7 +40,7 @@ def init():
 @app.command()
 def monitor():
     while True:
-        shell = Shell.impl()
+        shell = Shell()
         shell.clear()
 
         monitor_impl(
@@ -63,7 +63,7 @@ def log():
 
     try:
         git = Git()
-        shell = Shell.impl()
+        shell = Shell()
         while True:
             settings = RootSettings()
             log_items = git.get_log(n_statuses=len(settings.integator.commands))
