@@ -53,7 +53,7 @@ def monitor_impl(shell: Shell, git: Git):
         if settings.integator.command_on_success:
             shell.run_interactively(settings.integator.command_on_success)
 
-    print(f"{now.strftime('%H:%M:%S')} ({latest.hash}) [{latest.statuses}]")
+    print(f"{now.strftime('%H:%M:%S')} {latest.__repr__()}")
     shell.clear()
 
 

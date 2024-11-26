@@ -34,6 +34,10 @@ class Shell:
     def clear(self) -> None:
         print("\033c", end="")
 
+    def _append_text(self, text: str, file: Path) -> None:
+        with file.open("a") as f:
+            f.write(text)
+
     def run(
         self,
         command: str,
@@ -76,13 +80,13 @@ class Shell:
                         sys.stdout.flush()
 
                     if output_file:
-                        output_file.write_text(output)
+                        self._append_text(output, output_file)
 
             # Get return code
             return_code = ExitCode.from_int(process.poll())
 
             if output_file:
-                output_file.write_text(f"{return_code}")
+                self._append_text(f"{return_code}", output_file)
 
             return RunResult(
                 exit_code=return_code,
