@@ -22,7 +22,7 @@ class ExitCode(enum.Enum):
 @dataclass
 class RunResult:
     exit_code: ExitCode
-    error_message: str | None
+    output: str | None
 
 
 class Stream(enum.Enum):
@@ -37,7 +37,7 @@ class Shell:
     def run(
         self,
         command: str,
-        output_file: Path,
+        output_file: Path | None = None,
         stream: Stream = Stream.YES,
     ) -> RunResult:
         """
@@ -53,41 +53,46 @@ class Shell:
             Tuple containing (return_code, error_message)
         """
         try:
-            with open(output_file, "w") as f:
-                process = subprocess.Popen(
-                    [command],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    universal_newlines=True,
-                    shell=True,
-                )
+            process = subprocess.Popen(
+                [command],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                universal_newlines=True,
+                shell=True,
+            )
+            lines = []
 
-                # Stream output
-                while True:
-                    output = process.stdout.readline()
-                    if output == "" and process.poll() is not None:
-                        break
-                    if output:
-                        # Write to file
-                        f.write(output)
-                        f.flush()
+            while True:
+                output = process.stdout.readline()
+                if output == "" and process.poll() is not None:
+                    break
 
-                        # Optionally write to terminal
-                        if stream == Stream.YES:
-                            sys.stdout.write(output)
-                            sys.stdout.flush()
+                if output:
+                    lines.append(output)
 
-                # Get return code
-                return_code = process.poll()
+                    # Optionally write to terminal
+                    if stream == Stream.YES:
+                        sys.stdout.write(output)
+                        sys.stdout.flush()
 
-                return RunResult(
-                    exit_code=ExitCode.from_int(return_code),
-                    error_message=None,
-                )
+                    if output_file:
+                        with open(output_file, "w") as f:
+                            if output:
+                                # Write to file
+                                f.write(output)
+                                f.flush()
+
+            # Get return code
+            return_code = process.poll()
+
+            return RunResult(
+                exit_code=ExitCode.from_int(return_code),
+                output="\n".join(lines),
+            )
         except Exception as e:
             return RunResult(
                 exit_code=ExitCode.ERROR,
-                error_message=str(e),
+                output=str(e),
             )
 
     def run_interactively(self, command: str) -> None:
