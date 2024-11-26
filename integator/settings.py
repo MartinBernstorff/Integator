@@ -51,6 +51,7 @@ def default_command() -> list[Command]:
 class IntegatorSettings(pydantic.BaseModel):
     test: int = Field(default=2)
     commands: list[Command] = Field(default_factory=default_command)
+    log_dir: pathlib.Path = Field(default=pathlib.Path.cwd() / "logs")
     source_dir: pathlib.Path = Field(default=pathlib.Path.cwd())
 
 

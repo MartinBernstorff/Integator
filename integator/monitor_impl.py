@@ -25,17 +25,23 @@ def monitor_impl(shell: Shell, git: Git):
 
     # Run commands
     for position, cmd in commands:
+        current_time = datetime.datetime.now().strftime("%H:%M:%S")
+        output_file = settings.integator.log_dir / cmd.name / f"{current_time}.log"
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+
         if _is_stale(entries, cmd.max_staleness_seconds, position):
             print(f"Running {cmd.name}")
             try:
-                shell.run_quietly(cmd.cmd)
+                shell.run(
+                    cmd.cmd,
+                    output_file=output_file,
+                )
                 latest_entry.set_ok(position)
             except Exception as e:
                 latest_entry.set_failed(position)
                 print(f"Command {cmd.name} failed: {e}")
             git.update_notes(latest_entry.note())
 
-    current_time = datetime.datetime.now().strftime("%H:%M:%S")
     print(f"{current_time} ({latest_entry.hash}) [{latest_entry.statuses}]")
     shell.clear()
 

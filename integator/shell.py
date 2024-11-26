@@ -1,9 +1,31 @@
+import enum
 import subprocess
+import sys
 from abc import ABC
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
 
 
+@dataclass
+class RunResult:
+    return_code: int
+    error_message: str | None
+
+
+class Stream(enum.Enum):
+    YES = True
+    NO = False
+
+
 class Shell(ABC):
+    def run(
+        self,
+        command: str,
+        output_file: Path,
+        stream: Stream = Stream.YES,
+    ) -> RunResult: ...
+
     def run_interactively(self, command: str) -> None: ...
 
     def run_quietly(self, command: str) -> Optional[list[str]]: ...
@@ -18,6 +40,54 @@ class Shell(ABC):
 class ShellImpl(Shell):
     def clear(self) -> None:
         print("\033c", end="")
+
+    def run(
+        self,
+        command: str,
+        output_file: Path,
+        stream: Stream = Stream.YES,
+    ) -> RunResult:
+        """
+        Runs a shell script and streams the output to a file, optionally displaying in terminal.
+
+        Args:
+            script_path: Path to the shell script to execute
+            output_file: Path where the output should be saved
+            stream_to_terminal: If True, also display output in terminal
+            shell: If True, run command through shell
+
+        Returns:
+            Tuple containing (return_code, error_message)
+        """
+        try:
+            with open(output_file, "w") as f:
+                process = subprocess.Popen(
+                    [command],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    universal_newlines=True,
+                )
+
+                # Stream output
+                while True:
+                    output = process.stdout.readline()
+                    if output == "" and process.poll() is not None:
+                        break
+                    if output:
+                        # Write to file
+                        f.write(output)
+                        f.flush()
+
+                        # Optionally write to terminal
+                        if stream == Stream.YES:
+                            sys.stdout.write(output)
+                            sys.stdout.flush()
+
+                # Get return code
+                return_code = process.poll()
+                return RunResult(return_code if return_code is not None else 0, None)
+        except Exception as e:
+            return RunResult(1, str(e))
 
     def run_interactively(self, command: str) -> None:
         try:
