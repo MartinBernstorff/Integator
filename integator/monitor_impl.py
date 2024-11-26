@@ -3,7 +3,7 @@ import datetime
 from integator.git import Git
 from integator.log_entry import LogEntry
 from integator.settings import RootSettings
-from integator.shell import Shell
+from integator.shell import ExitCode, Shell
 
 
 def monitor_impl(shell: Shell, git: Git):
@@ -38,15 +38,17 @@ def monitor_impl(shell: Shell, git: Git):
 
         if _is_stale(entries, cmd.max_staleness_seconds, position):
             print(f"Running {cmd.name}")
-            try:
-                shell.run(
-                    cmd.cmd,
-                    output_file=output_file,
-                )
-                latest_entry.set_ok(position)
-            except Exception as e:
-                latest_entry.set_failed(position)
-                print(f"Command {cmd.name} failed: {e}")
+            result = shell.run(
+                cmd.cmd,
+                output_file=output_file,
+            )
+
+            match result.exit_code:
+                case ExitCode.OK:
+                    latest_entry.set_ok(position)
+                case ExitCode.ERROR:
+                    latest_entry.set_failed(position)
+
             git.update_notes(latest_entry.note())
 
     print(f"{current_time} ({latest_entry.hash}) [{latest_entry.statuses}]")

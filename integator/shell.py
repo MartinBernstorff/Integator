@@ -7,9 +7,14 @@ from pathlib import Path
 from typing import Optional
 
 
+class ExitCode(enum.Enum):
+    OK = 0
+    ERROR = 1
+
+
 @dataclass
 class RunResult:
-    return_code: int
+    exit_code: ExitCode
     error_message: str | None
 
 
@@ -85,9 +90,15 @@ class ShellImpl(Shell):
 
                 # Get return code
                 return_code = process.poll()
-                return RunResult(return_code if return_code is not None else 0, None)
+                return RunResult(
+                    exit_code=ExitCode.OK if return_code is None else ExitCode.ERROR,
+                    error_message=None,
+                )
         except Exception as e:
-            return RunResult(1, str(e))
+            return RunResult(
+                exit_code=ExitCode.ERROR,
+                error_message=str(e),
+            )
 
     def run_interactively(self, command: str) -> None:
         try:
