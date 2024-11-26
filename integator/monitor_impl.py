@@ -52,6 +52,7 @@ def monitor_impl(shell: Shell, git: Git):
                 git.push()
                 latest_entry.set_pushed()
                 git.update_notes(latest_entry.note())
+
             if settings.integator.command_on_success:
                 shell.run_interactively(settings.integator.command_on_success)
 
