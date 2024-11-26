@@ -64,7 +64,7 @@ def _is_stale(
     )
 
     max_staleness = datetime.timedelta(seconds=max_staleness_seconds)
-    if time_since_success > max_staleness:
+    if time_since_success >= max_staleness:
         return True
 
     return False
