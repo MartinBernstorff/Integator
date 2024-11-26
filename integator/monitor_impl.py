@@ -3,7 +3,7 @@ import datetime
 from integator.git import Git
 from integator.log_entry import LogEntry
 from integator.settings import RootSettings
-from integator.shell import ExitCode, Shell
+from integator.shell import ExitCode, RunResult, Shell
 
 
 def monitor_impl(shell: Shell, git: Git):
@@ -26,8 +26,8 @@ def monitor_impl(shell: Shell, git: Git):
         return
 
     # Run commands
-    for position, cmd in enumerate(settings.integator.commands):
-        if latest.is_failed(position):
+    for status_position, cmd in enumerate(settings.integator.commands):
+        if latest.is_failed(status_position):
             print(f"{cmd.name} failed on the last run, continuing")
             continue
 
@@ -41,22 +41,17 @@ def monitor_impl(shell: Shell, git: Git):
         )
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
-        if _is_stale(git.log.get_all(), cmd.max_staleness_seconds, position):
+        if _is_stale(git.log.get_all(), cmd.max_staleness_seconds, status_position):
             print(f"Running {cmd.name}")
             result = shell.run(
                 cmd.cmd,
                 output_file=output_file,
             )
 
-            match result.exit_code:
-                case ExitCode.OK:
-                    latest.set_ok(position)
-                case ExitCode.ERROR:
-                    latest.set_failed(position)
-                    if settings.integator.fail_fast:
-                        break
+            update_status(git, latest, status_position, result)
 
-            git.update_notes(latest.note())
+            if settings.integator.fail_fast:
+                break
 
     latest = git.log.latest()
     if latest.all_ok():
@@ -70,6 +65,15 @@ def monitor_impl(shell: Shell, git: Git):
 
     print(f"{now.strftime('%H:%M:%S')} {latest.__repr__()}")
     shell.clear()
+
+
+def update_status(git: Git, latest: LogEntry, position: int, result: RunResult):
+    match result.exit_code:
+        case ExitCode.OK:
+            latest.set_ok(position)
+        case ExitCode.ERROR:
+            latest.set_failed(position)
+    git.update_notes(latest.note())
 
 
 def _is_stale(
