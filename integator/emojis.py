@@ -3,6 +3,6 @@ from enum import Enum
 
 class Emojis(Enum):
     OK = "✅"
-    PUSHED = "🔄"
+    PUSHED = "🌥️"
     UNKNOWN = "🌀"
     FAIL = "❌"
