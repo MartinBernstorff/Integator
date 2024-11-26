@@ -52,7 +52,7 @@ class LogEntry:
     def note(self) -> str:
         if not self.statuses:
             return self.notes
-        return f"[{self.statuses}] {self.notes}".strip()
+        return f"[{self.statuses}] {self.notes} P:{self.pushed}".strip()
 
     @staticmethod
     def from_str(line: str, n_statuses: int) -> "LogEntry":
@@ -64,6 +64,7 @@ class LogEntry:
             author=result["author"],
             notes=result["notes"],
             statuses=statuses,
+            pushed=result["pushed"],
         )
 
     def set_ok(self, position: int):

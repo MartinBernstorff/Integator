@@ -10,12 +10,7 @@ def monitor_impl(shell: Shell, git: Git):
     settings = RootSettings()
     git.checkout_latest_commit(settings.integator.source_dir)
 
-    n_statuses = len(settings.integator.commands)
-
-    if settings.integator.push_if_all_ok:
-        n_statuses += 1
-
-    entries = git.get_log(n_statuses=n_statuses)
+    entries = git.get_log(n_statuses=len(settings.integator.commands))
 
     latest_entry = entries[0]
 

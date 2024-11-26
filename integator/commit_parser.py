@@ -30,6 +30,12 @@ def _notes_sans_statuses(notes: str) -> str:
     return notes.replace(match.group(0), "").strip()
 
 
+def _pushed(notes: str) -> bool:
+    regex = r"P:true"
+    match = re.search(regex, notes)
+    return match is not None
+
+
 def parse_commit(line: str, n_statuses: int) -> dict[str, Any]:
     regexes = [
         ("commit", r"^C\|(.*?)\|"),
@@ -53,6 +59,7 @@ def parse_commit(line: str, n_statuses: int) -> dict[str, Any]:
         elif name == "notes":
             results[name] = _notes_sans_statuses(match.group(1))
             results["statuses"] = _statuses(match.group(1), n_statuses)
+            results["pushed"] = _pushed(match.group(1))
         else:
             results[name] = match.group(1) if match else ""
 
