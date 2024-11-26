@@ -52,7 +52,7 @@ class IntegatorSettings(pydantic.BaseModel):
     command_on_success: str = Field(default="echo 'Success!'")
     push_on_success: bool = Field(default=False)
     commands: list[Command] = Field(default_factory=default_command)
-    log_dir: pathlib.Path = Field(default=pathlib.Path.cwd() / "logs")
+    log_dir: pathlib.Path = Field(default=pathlib.Path.cwd() / ".logs")
     source_dir: pathlib.Path = Field(default=pathlib.Path.cwd())
 
 

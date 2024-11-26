@@ -53,9 +53,10 @@ class LogEntry:
         )
 
     def __repr__(self) -> str:
-        line = f"({self.hash}) [{self.statuses}] {humanize.naturaldelta(self.time_since)} ago"
+        line = f"({self.hash}) [{self.statuses}]"
+        line += f" {humanize.naturaldelta(self.time_since)} ago"
         if self.pushed:
-            line += f" {Emojis.PUSHED.value}"
+            line += f" {Emojis.PUSHED.value} "
         return line
 
     def __str__(self) -> str:
