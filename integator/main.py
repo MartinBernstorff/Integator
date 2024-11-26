@@ -40,10 +40,15 @@ def init():
 @app.command()
 def monitor():
     while True:
+        shell = Shell.impl()
+        shell.clear()
+
         monitor_impl(
-            Shell.impl(),
+            shell,
             git=Git(),
         )
+
+        time.sleep(1)
 
 
 @app.command()
