@@ -1,5 +1,5 @@
 [integator]
-push_if_all_ok = true
+push_on_success = true
 source_dir = "/Users/mabe/Desktop/Git/Integator"
 
 [[integator.commands]]
