@@ -1,5 +1,6 @@
 import datetime
 import enum
+import pathlib
 
 from integator.git import Git
 from integator.log_entry import LogEntry
@@ -13,8 +14,10 @@ class CommandRan(enum.Enum):
 
 
 def monitor_impl(shell: Shell, git: Git) -> CommandRan:
-    git.checkout_latest_commit()
     settings = RootSettings()
+
+    if pathlib.Path.cwd() != settings.integator.source_dir:
+        git.checkout_latest_commit()
 
     # Update with the unknown state
     latest = git.log.latest()
@@ -31,7 +34,7 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
         )
         return CommandRan.NO
 
-    status = CommandRan.NO
+    command_ran = CommandRan.NO
     # Run commands
     for status_position, cmd in enumerate(settings.integator.commands):
         if latest.is_failed(status_position):
@@ -50,7 +53,7 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
 
         if _is_stale(git.log.get_all(), cmd.max_staleness_seconds, status_position):
             print(f"Running {cmd.name}")
-            status = CommandRan.YES
+            command_ran = CommandRan.YES
             result = shell.run(
                 cmd.cmd,
                 output_file=output_file,
@@ -74,7 +77,7 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
     print(f"{now.strftime('%H:%M:%S')} {latest.__repr__()}")
     shell.clear()
 
-    return status
+    return command_ran
 
 
 def update_status(git: Git, latest: LogEntry, position: int, result: RunResult):
