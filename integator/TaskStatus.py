@@ -10,3 +10,4 @@ class TaskStatus:
    status: EnumStatus
    duration: dt.timedelta
     
+# DTO to handle the empty note. Only parse the TaskStatus' if they exist.
