@@ -1,4 +1,12 @@
+class Commit:
+   hash: str
+   timestamp: dt.datetime
+   author: str
+   tasks: List[TaskStatus]
+
 class TaskStatus:
-    name: str
-    status: EnumStatus
+   name: str
+   command: str
+   status: EnumStatus
+   duration: dt.timedelta
     
