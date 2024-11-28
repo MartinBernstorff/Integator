@@ -1,42 +1,12 @@
 import pathlib
-import subprocess
-import sys
 import time
-from contextlib import contextmanager
 
 import typer
-from watchdog.events import DirModifiedEvent, FileModifiedEvent, FileSystemEventHandler
-from watchdog.observers import Observer
 
 from integator.git import Git, Log
 from integator.monitor_impl import CommandRan, monitor_impl
 from integator.settings import FILE_NAME, RootSettings, settings_file_exists
 from integator.shell import Shell
-
-
-class CodeChangeHandler(FileSystemEventHandler):
-    def on_modified(self, event: DirModifiedEvent | FileModifiedEvent):
-        if event.src_path.endswith(".py"):  # type: ignore
-            print("Code changed, restarting...")
-            # Restart the current script
-            subprocess.call([sys.executable] + sys.argv)
-            sys.exit()
-
-
-@contextmanager
-def watch_directory(
-    path: pathlib.Path, handler: FileSystemEventHandler, recursive: bool = True
-):
-    observer = Observer()
-    observer.schedule(handler, path=str(path), recursive=recursive)
-    observer.start()
-
-    try:
-        yield observer
-    finally:
-        observer.stop()
-        observer.join()
-
 
 app = typer.Typer()
 
@@ -78,7 +48,6 @@ def monitor():
 @app.command("l")
 @app.command()
 def log():
-    # Set up watchdog observer
     settings = RootSettings()
 
     git = Git(
@@ -89,12 +58,10 @@ def log():
 
     while True:
         settings = RootSettings()
-        git.print_log
+        git.print_log()
         shell.clear()
         time.sleep(1)
 
 
 if __name__ == "__main__":
-    monitor()
-    # log()
-    # app()
+    app()

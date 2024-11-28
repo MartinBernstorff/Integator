@@ -80,7 +80,7 @@ class Git:
 
         print("Log:")
         for entry in log_entries:
-            print(f"\t{entry.__str__()}")
+            print(f"\t{entry}")
 
         self._print_status_line(log_entries)
 
@@ -91,6 +91,6 @@ class Git:
         ok_entries = [entry for entry in entries if entry.all_ok()]
         if ok_entries:
             ok_entry = ok_entries[-1]
-            print(f"Last commit passing tests:\n\t{ok_entry.__str__()}")
+            print(f"Last commit passing tests:\n\t{ok_entry}")
         else:
             print("No commit has passing tests yet")
