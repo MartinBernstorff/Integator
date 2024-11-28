@@ -66,7 +66,7 @@ class Shell:
             lines = []
 
             while True:
-                output = process.stdout.readline()
+                output = process.stdout.readline()  # type: ignore
                 if output == "" and process.poll() is not None:
                     break
 

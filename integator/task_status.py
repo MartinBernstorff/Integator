@@ -30,22 +30,27 @@ def parse_commit_str(line: str):
     for name, regex in regexes:
         match = re.search(regex, line)
 
+        if match is None:
+            raise ValueError(f"Could not find {name} in {line}")
+
+        result: str = match.group(1)  # type: ignore
+
         if name == "timestamp":
-            seconds = pytimeparse.parse(match.group(1))  # type: ignore
+            seconds = pytimeparse.parse(result)  # type: ignore
 
             if seconds is None:
-                raise ValueError(f"Invalid time: {match.group(1)}")
+                raise ValueError(f"Invalid time: {result}")
 
             time_since = dt.datetime.now() - dt.timedelta(seconds=seconds)
 
             results[name] = time_since
         elif name == "notes":
-            if match.group(1) == "":
+            if result == "":
                 results[name] = '{"values": []}'
             else:
-                results[name] = match.group(1)
+                results[name] = result
         else:
-            results[name] = match.group(1) if match else ""
+            results[name] = result if match else ""
 
     return CommitDTO(**results)  # type: ignore
 

@@ -48,6 +48,10 @@ def parse_commit(line: str, n_statuses: int) -> dict[str, Any]:
 
     for name, regex in regexes:
         match = re.search(regex, line)
+
+        if match is None:
+            raise ValueError(f"Could not find {name} in {line}")
+
         result: str = match.group(1)
 
         if name == "time":
