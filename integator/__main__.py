@@ -42,7 +42,7 @@ def monitor():
             shell,
             git=Git(
                 source_dir=settings.integator.source_dir,
-                log=Log(expected_cmd_names=settings.cmd_names()),
+                log=Log(expected_cmd_names=set(settings.cmd_names())),
             ),
         )
 
