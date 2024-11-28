@@ -197,5 +197,8 @@ class Commit(pydantic.BaseModel):
     def all_ok(self) -> bool:
         return self.statuses.all(ExecutionState.SUCCESS)
 
+    def age(self) -> dt.timedelta:
+        return dt.datetime.now() - self.timestamp
+
 
 # DTO to handle the empty note. Only parse the TaskStatus' if they exist.

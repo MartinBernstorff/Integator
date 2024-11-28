@@ -65,8 +65,8 @@ class RootSettings(Settings):
         values = json.loads(self.model_dump_json())
         toml.dump(values, open(path, "w"))
 
-    def cmd_names(self) -> set[str]:
-        return {cmd.name for cmd in self.integator.commands}
+    def cmd_names(self) -> list[str]:
+        return [cmd.name for cmd in self.integator.commands]
 
 
 def settings_file_exists() -> bool:

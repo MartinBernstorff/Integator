@@ -1,4 +1,3 @@
-import datetime
 import pathlib
 from dataclasses import dataclass
 
@@ -73,24 +72,3 @@ class Git:
 
     def update_notes(self, notes: str):
         Shell().run_quietly(f"git notes add -f -m '{notes}'")
-
-    def print_log(self):
-        Shell().clear()
-        log_entries = self.log.get()
-
-        print("Log:")
-        for entry in log_entries:
-            print(f"\t{entry}")
-
-        self._print_status_line(log_entries)
-
-        # Print current time
-        print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')}")
-
-    def _print_status_line(self, entries: list[Commit]):
-        ok_entries = [entry for entry in entries if entry.all_ok()]
-        if ok_entries:
-            ok_entry = ok_entries[-1]
-            print(f"Last commit passing tests:\n\t{ok_entry}")
-        else:
-            print("No commit has passing tests yet")
