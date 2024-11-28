@@ -2,7 +2,7 @@ import datetime
 import re
 from typing import Any
 
-import pytimeparse
+import pytimeparse  # type: ignore
 
 from integator.emojis import Emojis
 
@@ -49,24 +49,28 @@ def parse_commit(line: str, n_statuses: int) -> dict[str, Any]:
     for name, regex in regexes:
         match = re.search(regex, line)
 
+        if match is None:
+            raise ValueError(f"Could not find {name} in {line}")
+
+        result: str = match.group(1)
+
         if name == "time":
-            seconds = pytimeparse.parse(match.group(1))
+            seconds = pytimeparse.parse(result)  # type: ignore
 
             if seconds is None:
-                raise ValueError(f"Invalid time: {match.group(1)}")
+                raise ValueError(f"Invalid time: {result}")
 
             results[name] = datetime.timedelta(seconds=seconds)
         elif name == "notes":
-            results["statuses"] = _statuses(match.group(1), n_statuses)
-            results["pushed"] = _pushed(match.group(1))
+            results["statuses"] = _statuses(result, n_statuses)
+            results["pushed"] = _pushed(result)
             notes = (
-                match.group(1)
-                .replace(_find_statuses(match.group(1)), "")
+                result.replace(_find_statuses(result), "")
                 .replace(f"P:{results['pushed']}", "")
                 .strip()
             )
             results[name] = notes
         else:
-            results[name] = match.group(1) if match else ""
+            results[name] = result if match else ""
 
-    return results
+    return results  # type: ignore

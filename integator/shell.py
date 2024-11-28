@@ -20,7 +20,7 @@ class ExitCode(enum.Enum):
 
 @dataclass
 class RunResult:
-    exit_code: ExitCode
+    exit: ExitCode
     output: str | None
 
 
@@ -66,12 +66,12 @@ class Shell:
             lines = []
 
             while True:
-                output = process.stdout.readline()
+                output = process.stdout.readline()  # type: ignore
                 if output == "" and process.poll() is not None:
                     break
 
                 if output:
-                    lines.append(output)
+                    lines.append(output)  # type: ignore
 
                     # Optionally write to terminal
                     if stream == Stream.YES:
@@ -91,12 +91,12 @@ class Shell:
                 )
 
             return RunResult(
-                exit_code=return_code,
-                output="".join(lines),
+                exit=return_code,
+                output="".join(lines),  # type: ignore
             )
         except Exception as e:
             return RunResult(
-                exit_code=ExitCode.ERROR,
+                exit=ExitCode.ERROR,
                 output=str(e),
             )
 

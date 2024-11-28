@@ -3,9 +3,9 @@ import enum
 import pathlib
 
 from integator.git import Git
-from integator.log_entry import LogEntry
 from integator.settings import RootSettings
-from integator.shell import ExitCode, RunResult, Shell
+from integator.shell import ExitCode, Shell
+from integator.task_status import Commit, Statuses
 
 
 class CommandRan(enum.Enum):
@@ -26,18 +26,16 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
         return CommandRan.NO
 
     if not git.diff_against(settings.integator.trunk):
-        for i in range(len(settings.integator.commands)):
-            latest.set_ok(i)
-            git.update_notes(latest.note())
         print(
-            f"{latest.__repr__()}: No changes compared to trunk at {settings.integator.trunk}, marking as good and skipping"
+            f"{latest}: No changes compared to trunk at {settings.integator.trunk}, marking as good and skipping"
         )
         return CommandRan.NO
 
     command_ran = CommandRan.NO
+    statuses = latest.statuses
     # Run commands
-    for status_position, cmd in enumerate(settings.integator.commands):
-        if latest.is_failed(status_position):
+    for cmd in settings.integator.commands:
+        if latest.is_failed(cmd.name):
             print(f"{cmd.name} failed on the last run, continuing")
             continue
 
@@ -51,7 +49,7 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
         )
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
-        if _is_stale(git.log.get_all(), cmd.max_staleness_seconds, status_position):
+        if _is_stale(git.log.get(), cmd.max_staleness_seconds, cmd.name):
             print(f"Running {cmd.name}")
             command_ran = CommandRan.YES
             result = shell.run(
@@ -59,7 +57,13 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
                 output_file=output_file,
             )
 
-            update_status(git, latest, status_position, result)
+            match result.exit:
+                case ExitCode.OK:
+                    statuses.set_ok(cmd.name)
+                case ExitCode.ERROR:
+                    statuses.set_failed(cmd.name)
+
+            update_status(git, statuses)
 
             if settings.integator.fail_fast:
                 break
@@ -69,36 +73,30 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
         if settings.integator.push_on_success and not latest.pushed:
             git.push()
             latest.pushed = True
-            git.update_notes(latest.note())
 
         if settings.integator.command_on_success:
             shell.run_interactively(settings.integator.command_on_success)
 
-    print(f"{now.strftime('%H:%M:%S')} {latest.__repr__()}")
+    print(f"{datetime.datetime.now().strftime('%H:%M:%S')} {latest.__repr__()}")
     shell.clear()
 
     return command_ran
 
 
-def update_status(git: Git, latest: LogEntry, position: int, result: RunResult):
-    match result.exit_code:
-        case ExitCode.OK:
-            latest.set_ok(position)
-        case ExitCode.ERROR:
-            latest.set_failed(position)
-    git.update_notes(latest.note())
+def update_status(git: Git, statuses: Statuses):
+    git.update_notes(statuses.model_dump_json())
 
 
-def _is_stale(
-    entries: list[LogEntry], max_staleness_seconds: int, position: int
-) -> bool:
-    if entries[0].is_ok(position):
+def _is_stale(entries: list[Commit], max_staleness_seconds: int, cmd_name: str) -> bool:
+    if entries[0].is_ok(cmd_name):
         return False
 
-    successes = [entry for entry in entries if entry.is_ok(position)]
+    successes = [entry for entry in entries if entry.is_ok(cmd_name)]
 
     time_since_success = (
-        successes[0].time_since if successes else datetime.timedelta(days=30)
+        datetime.datetime.now() - successes[0].timestamp
+        if successes
+        else datetime.timedelta(days=30)
     )
 
     max_staleness = datetime.timedelta(seconds=max_staleness_seconds)

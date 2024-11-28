@@ -5,4 +5,9 @@ source_dir = "/Users/mabe/Desktop/Git/Integator"
 [[integator.commands]]
 name = "Unit tests"
 cmd = "uv run pytest"
-max_staleness_seconds = 10
+max_staleness_seconds = 1
+
+[[integator.commands]]
+name = "Types"
+cmd = "uv run pyright"
+max_staleness_seconds = 1
