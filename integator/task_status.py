@@ -129,7 +129,7 @@ class Commit(pydantic.BaseModel):
     pushed: bool
 
     def __str__(self):
-        line = f"({self.hash}) [{self.statuses}]"
+        line = f"({self.hash[0:4]}) [{self.statuses}]"
         line += f" {humanize.naturaldelta(dt.datetime.now() - self.timestamp)} ago"
         if self.pushed:
             line += f" {Emojis.PUSHED.value} "
