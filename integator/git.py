@@ -8,7 +8,7 @@ from integator.task_status import Commit
 
 @dataclass
 class Log:
-    n_statuses: int
+    expected_cmd_names: set[str]
 
     def get(self) -> list[Commit]:
         values = self._log_str()
@@ -16,7 +16,7 @@ class Log:
         if not values:
             raise RuntimeError("No values returned from git log")
 
-        entries = [Commit.from_str(value) for value in values]
+        entries = [Commit.from_str(value, self.expected_cmd_names) for value in values]
 
         return entries
 

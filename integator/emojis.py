@@ -6,4 +6,5 @@ class Emojis(Enum):
     PUSHED = "🌥️"
     UNKNOWN = "🌀"
     IN_PROGRESS = "⏳"
+    SKIPPED = "⏭️"
     FAIL = "❌"

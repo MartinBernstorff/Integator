@@ -71,7 +71,7 @@ class Shell:
                     break
 
                 if output:
-                    lines.append(output)
+                    lines.append(output)  # type: ignore
 
                     # Optionally write to terminal
                     if stream == Stream.YES:
@@ -92,7 +92,7 @@ class Shell:
 
             return RunResult(
                 exit=return_code,
-                output="".join(lines),
+                output="".join(lines),  # type: ignore
             )
         except Exception as e:
             return RunResult(

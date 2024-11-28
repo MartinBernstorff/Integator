@@ -4,7 +4,7 @@ from enum import Enum, auto
 
 import humanize
 import pydantic
-import pytimeparse
+import pytimeparse  # type: ignore
 from pydantic import Field
 
 from integator.emojis import Emojis
@@ -31,7 +31,7 @@ def parse_commit_str(line: str):
         match = re.search(regex, line)
 
         if name == "timestamp":
-            seconds = pytimeparse.parse(match.group(1))
+            seconds = pytimeparse.parse(match.group(1))  # type: ignore
 
             if seconds is None:
                 raise ValueError(f"Invalid time: {match.group(1)}")
@@ -47,7 +47,7 @@ def parse_commit_str(line: str):
         else:
             results[name] = match.group(1) if match else ""
 
-    return CommitDTO(**results)
+    return CommitDTO(**results)  # type: ignore
 
 
 class ExecutionState(Enum):
@@ -67,6 +67,8 @@ class ExecutionState(Enum):
                 return Emojis.FAIL.value
             case self.SUCCESS:
                 return Emojis.OK.value
+            case self.SKIPPED:
+                return Emojis.SKIPPED.value
 
 
 class Task(pydantic.BaseModel):
@@ -82,6 +84,9 @@ class TaskStatus(pydantic.BaseModel):
 
 class Statuses(pydantic.BaseModel):
     values: list[TaskStatus] = Field(default_factory=list)
+
+    def __str__(self):
+        return f"[{''.join(str(status.state) for status in self.values)}]"
 
     @classmethod
     def from_str(
@@ -102,8 +107,19 @@ class Statuses(pydantic.BaseModel):
             )
         return exist
 
+    def names(self) -> set[str]:
+        return {status.task.name for status in self.values}
+
     def get(self, name: str) -> TaskStatus:
-        return next((status for status in self.values if status.task.name == name))
+        matching = [task for task in self.values if task.task.name == name]
+
+        if len(matching) == 0:
+            return TaskStatus(
+                task=Task(name=name, cmd="UNKNOWN"),
+                state=ExecutionState.UNKNOWN,
+                duration=dt.timedelta(),
+            )
+        return matching[0]
 
     def update(self, status: ExecutionState, name: str):
         self.get(name).state = status
@@ -129,17 +145,17 @@ class Commit(pydantic.BaseModel):
     pushed: bool
 
     def __str__(self):
-        line = f"({self.hash[0:4]}) [{self.statuses}]"
+        line = f"({self.hash[0:4]}) {self.statuses}"
         line += f" {humanize.naturaldelta(dt.datetime.now() - self.timestamp)} ago"
         if self.pushed:
             line += f" {Emojis.PUSHED.value} "
         return line
 
     @staticmethod
-    def from_str(line: str):
+    def from_str(line: str, expected_names: set[str]) -> "Commit":
         dto = parse_commit_str(line)
         try:
-            statuses = Statuses().model_validate_json(dto.notes)
+            statuses = Statuses().from_str(dto.notes, expected_names)
         except pydantic.ValidationError:
             statuses = Statuses()
 

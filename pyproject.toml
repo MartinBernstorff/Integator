@@ -21,5 +21,10 @@ dependencies = [
 [tool.uv]
 package = true
 
+[dependency-groups]
+dev = [
+    "pyright>=1.1.389",
+]
+
 [project.scripts]
 integator = "integator.__main__:app"

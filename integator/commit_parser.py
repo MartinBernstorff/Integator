@@ -2,7 +2,7 @@ import datetime
 import re
 from typing import Any
 
-import pytimeparse
+import pytimeparse  # type: ignore
 
 from integator.emojis import Emojis
 
@@ -50,7 +50,7 @@ def parse_commit(line: str, n_statuses: int) -> dict[str, Any]:
         match = re.search(regex, line)
 
         if name == "time":
-            seconds = pytimeparse.parse(match.group(1))
+            seconds = pytimeparse.parse(match.group(1))  # type: ignore
 
             if seconds is None:
                 raise ValueError(f"Invalid time: {match.group(1)}")
@@ -69,4 +69,4 @@ def parse_commit(line: str, n_statuses: int) -> dict[str, Any]:
         else:
             results[name] = match.group(1) if match else ""
 
-    return results
+    return results  # type: ignore

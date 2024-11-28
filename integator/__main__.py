@@ -5,7 +5,7 @@ import time
 from contextlib import contextmanager
 
 import typer
-from watchdog.events import FileSystemEventHandler
+from watchdog.events import DirModifiedEvent, FileModifiedEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
 from integator.git import Git, Log
@@ -15,7 +15,7 @@ from integator.shell import Shell
 
 
 class CodeChangeHandler(FileSystemEventHandler):
-    def on_modified(self, event):
+    def on_modified(self, event: DirModifiedEvent | FileModifiedEvent):
         if event.src_path.endswith(".py"):  # type: ignore
             print("Code changed, restarting...")
             # Restart the current script
@@ -67,7 +67,7 @@ def monitor():
             shell,
             git=Git(
                 source_dir=settings.integator.source_dir,
-                log=Log(n_statuses=len(settings.integator.commands)),
+                log=Log(expected_cmd_names=settings.cmd_names()),
             ),
         )
 
@@ -83,7 +83,7 @@ def log():
 
     git = Git(
         source_dir=settings.integator.source_dir,
-        log=Log(n_statuses=len(settings.integator.commands)),
+        log=Log(settings.cmd_names()),
     )
     shell = Shell()
 
