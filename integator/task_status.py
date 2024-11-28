@@ -2,6 +2,7 @@ import datetime as dt
 import re
 from enum import Enum, auto
 
+import humanize
 import pydantic
 import pytimeparse
 from pydantic import Field
@@ -127,6 +128,13 @@ class Commit(pydantic.BaseModel):
     statuses: Statuses
     pushed: bool
 
+    def __str__(self):
+        line = f"({self.hash}) [{self.statuses}]"
+        line += f" {humanize.naturaldelta(dt.datetime.now() - self.timestamp)} ago"
+        if self.pushed:
+            line += f" {Emojis.PUSHED.value} "
+        return line
+
     @staticmethod
     def from_str(line: str):
         dto = parse_commit_str(line)
@@ -142,9 +150,6 @@ class Commit(pydantic.BaseModel):
             statuses=statuses,
             pushed=False,
         )
-
-    def __str__(self):
-        return f"{self.statuses}"
 
     # TODO: Move these to the statuses collection
     def is_pushed(self) -> bool:
