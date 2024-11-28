@@ -4,29 +4,30 @@ from dataclasses import dataclass
 
 from integator.log_entry import LogEntry
 from integator.shell import Shell
+from integator.task_status import Commit
 
 
 @dataclass
 class Log:
     n_statuses: int
 
-    def get_all(self) -> list[LogEntry]:
-        values = Shell().run_quietly(
-            'git log -n 10 --pretty=format:"C|%h| T|%ar| A|%aN| N|%N%-C()|%-C()"'
-        )
+    def get(self) -> list[Commit]:
+        values = self._log_str()
 
         if not values:
             raise RuntimeError("No values returned from git log")
 
-        entries = [LogEntry.from_str(value, self.n_statuses) for value in values]
-        valid_entries = [e for e in entries if e]
-        if not valid_entries:
-            raise RuntimeError("No entries parsed from git log")
+        entries = [Commit.from_str(value) for value in values]
 
-        return valid_entries
+        return entries
 
-    def latest(self) -> LogEntry:
-        return self.get_all()[0]
+    def _log_str(self):
+        return Shell().run_quietly(
+            'git log -n 10 --pretty=format:"C|%h| T|%ar| A|%aN| N|%N%-C()|%-C()"'
+        )
+
+    def latest(self) -> Commit:
+        return self.get()[0]
 
 
 @dataclass

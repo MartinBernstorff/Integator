@@ -51,7 +51,7 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
         )
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
-        if _is_stale(git.log.get_all(), cmd.max_staleness_seconds, status_position):
+        if _is_stale(git.log.get(), cmd.max_staleness_seconds, status_position):
             print(f"Running {cmd.name}")
             command_ran = CommandRan.YES
             result = shell.run(
