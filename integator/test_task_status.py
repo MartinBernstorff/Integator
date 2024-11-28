@@ -1,38 +1,21 @@
 import datetime as dt
 
-import pytest
-
-from integator.task_status import Commit, ExecutionStatus, TaskStati, TaskStatus
+from integator.task_status import ExecutionState, Statuses, Task, TaskStatus
 
 
-@pytest.mark.parametrize(
-    "val",
-    [
-        Commit(
-            hash="a9c7203",
-            timestamp=dt.datetime.now(),
-            author="Martin Bernstorff",
-            stati=TaskStati(
-                values=[
-                    TaskStatus(
-                        name="Task 1",
-                        command="echo 'Hello'",
-                        status=ExecutionStatus.SUCCESS,
-                        duration=dt.timedelta(seconds=1),
-                    ),
-                    TaskStatus(
-                        name="Task 2",
-                        command="echo 'World'",
-                        status=ExecutionStatus.SUCCESS,
-                        duration=dt.timedelta(seconds=1),
-                    ),
-                ]
-            ),
-            pushed=False,
-        )
-    ],
-)
-def test_serde_identity(val: Commit):
-    ser = val.model_dump_json()
-    deser = Commit.model_validate_json(ser)
-    assert val == deser
+def test_status():
+    return Statuses(
+        values=[
+            TaskStatus(
+                task=Task(name="Test 1", cmd="echo"),
+                state=ExecutionState.IN_PROGRESS,
+                duration=dt.timedelta(seconds=1),
+            )
+        ]
+    )
+
+
+def test_init_taskstati():
+    input = test_status().model_dump_json()
+    val = Statuses().from_str(input, {"Test 1", "Task 2"})
+    assert len(val.values) == 2

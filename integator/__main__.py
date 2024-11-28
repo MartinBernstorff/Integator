@@ -89,12 +89,8 @@ def log():
 
     while True:
         settings = RootSettings()
-        log_items = git.get_log(n_statuses=len(settings.integator.commands))
+        git.print_log
         shell.clear()
-
-        for item in log_items:
-            print(item.__repr__())
-
         time.sleep(1)
 
 

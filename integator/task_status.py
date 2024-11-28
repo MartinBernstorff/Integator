@@ -6,6 +6,8 @@ import pydantic
 import pytimeparse
 from pydantic import Field
 
+from integator.emojis import Emojis
+
 
 class CommitDTO(pydantic.BaseModel):
     hash: str
@@ -47,7 +49,7 @@ def parse_commit_str(line: str):
     return CommitDTO(**results)
 
 
-class ExecutionStatus(Enum):
+class ExecutionState(Enum):
     UNKNOWN = auto()
     IN_PROGRESS = auto()
     SKIPPED = auto()
@@ -55,63 +57,110 @@ class ExecutionStatus(Enum):
     SUCCESS = auto()
 
     def __str__(self):
-        match self.name:
-            case "UNKNOWN":
-                return "🌀"
-            case "IN_PROGRESS":
-                return "⏳"
-            case "FAILURE":
-                return "❌"
-            case "SUCCESS":
-                return "✅"
+        match self:
+            case self.UNKNOWN:
+                return Emojis.UNKNOWN.value
+            case self.IN_PROGRESS:
+                return Emojis.IN_PROGRESS.value
+            case self.FAILURE:
+                return Emojis.FAIL.value
+            case self.SUCCESS:
+                return Emojis.OK.value
+
+
+class Task(pydantic.BaseModel):
+    name: str
+    cmd: str
 
 
 class TaskStatus(pydantic.BaseModel):
-    name: str
-    command: str
-    status: ExecutionStatus
+    task: Task
+    state: ExecutionState
     duration: dt.timedelta
 
 
-class TaskStati(pydantic.BaseModel):
+class Statuses(pydantic.BaseModel):
     values: list[TaskStatus] = Field(default_factory=list)
 
-    def update(self, status: ExecutionStatus, position: int):
-        self.values[position].status = status
+    @classmethod
+    def from_str(
+        cls: type["Statuses"], line: str, expected_names: set[str]
+    ) -> "Statuses":
+        exist = cls.model_validate_json(line)
+        existing_names = {status.task.name for status in exist.values}
 
-    def contains(self, status: ExecutionStatus) -> bool:
-        return any(task.status == status for task in self.values)
+        missing_names = expected_names - existing_names
 
-    def all(self, compare: ExecutionStatus) -> bool:
-        return all(task.status == compare for task in self.values)
+        for name in missing_names:
+            exist.values.append(
+                TaskStatus(
+                    task=Task(name=name, cmd="UNKNOWN"),
+                    state=ExecutionState.UNKNOWN,
+                    duration=dt.timedelta(),
+                )
+            )
+        return exist
+
+    def get(self, name: str) -> TaskStatus:
+        return next((status for status in self.values if status.task.name == name))
+
+    def update(self, status: ExecutionState, name: str):
+        self.get(name).state = status
+
+    def set_ok(self, name: str):
+        self.update(ExecutionState.SUCCESS, name)
+
+    def set_failed(self, name: str):
+        self.update(ExecutionState.FAILURE, name)
+
+    def contains(self, status: ExecutionState) -> bool:
+        return any(task.state == status for task in self.values)
+
+    def all(self, compare: ExecutionState) -> bool:
+        return all(task.state == compare for task in self.values)
 
 
 class Commit(pydantic.BaseModel):
     hash: str
     timestamp: dt.datetime
     author: str
-    stati: TaskStati
+    statuses: Statuses
     pushed: bool
 
     @staticmethod
     def from_str(line: str):
         dto = parse_commit_str(line)
         try:
-            stati = TaskStati().model_validate_json(dto.notes)
+            statuses = Statuses().model_validate_json(dto.notes)
         except pydantic.ValidationError:
-            stati = TaskStati()
+            statuses = Statuses()
 
         return Commit(
             hash=dto.hash,
             timestamp=dto.timestamp,
             author=dto.author,
-            stati=stati,
+            statuses=statuses,
             pushed=False,
         )
 
     def __str__(self):
-        return f"{self.stati}"
+        return f"{self.statuses}"
+
+    # TODO: Move these to the statuses collection
+    def is_pushed(self) -> bool:
+        return self.statuses.contains(ExecutionState.IN_PROGRESS)
+
+    def is_failed(self, name: str) -> bool:
+        return self.statuses.get(name).state == ExecutionState.FAILURE
+
+    def has_failed(self) -> bool:
+        return self.statuses.contains(ExecutionState.FAILURE)
+
+    def is_ok(self, name: str) -> bool:
+        return self.statuses.get(name).state == ExecutionState.SUCCESS
+
+    def all_ok(self) -> bool:
+        return self.statuses.all(ExecutionState.SUCCESS)
 
 
 # DTO to handle the empty note. Only parse the TaskStatus' if they exist.
-# XXX: Remove log_entry

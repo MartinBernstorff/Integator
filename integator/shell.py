@@ -20,7 +20,7 @@ class ExitCode(enum.Enum):
 
 @dataclass
 class RunResult:
-    exit_code: ExitCode
+    exit: ExitCode
     output: str | None
 
 
@@ -91,12 +91,12 @@ class Shell:
                 )
 
             return RunResult(
-                exit_code=return_code,
+                exit=return_code,
                 output="".join(lines),
             )
         except Exception as e:
             return RunResult(
-                exit_code=ExitCode.ERROR,
+                exit=ExitCode.ERROR,
                 output=str(e),
             )
 
