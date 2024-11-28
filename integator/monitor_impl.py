@@ -31,6 +31,8 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
         )
         for cmd in settings.integator.commands:
             latest.statuses.create_ok(cmd.name)
+        update_status(git, latest.statuses)
+
         return CommandRan.NO
 
     command_ran = CommandRan.NO
