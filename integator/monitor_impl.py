@@ -29,6 +29,8 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
         print(
             f"{latest}: No changes compared to trunk at {settings.integator.trunk}, marking as good and skipping"
         )
+        for cmd in settings.integator.commands:
+            latest.statuses.create_ok(cmd.name)
         return CommandRan.NO
 
     command_ran = CommandRan.NO

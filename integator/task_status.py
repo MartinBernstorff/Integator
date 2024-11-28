@@ -132,6 +132,15 @@ class Statuses(pydantic.BaseModel):
     def set_ok(self, name: str):
         self.update(ExecutionState.SUCCESS, name)
 
+    def create_ok(self, name: str):
+        self.values.append(
+            TaskStatus(
+                task=Task(name=name, cmd="From main"),
+                state=ExecutionState.SUCCESS,
+                duration=dt.timedelta(),
+            )
+        )
+
     def set_failed(self, name: str):
         self.update(ExecutionState.FAILURE, name)
 
