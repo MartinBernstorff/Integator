@@ -24,7 +24,7 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
     if settings.integator.fail_fast and latest.has_failed():
         print(f"Latest commit {latest.hash} failed")
         for failure in latest.statuses.get_failures():
-            print(f"{failure.task.name} failed: {failure.log_location}")
+            print(f"{failure.task.name} failed. Logs: '{failure.log_location}'")
         return CommandRan.NO
 
     if not git.diff_against(settings.integator.trunk):
@@ -47,8 +47,8 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
         output_file = (
             settings.integator.log_dir
             / current_date
-            / cmd.name
-            / f"{now.strftime('%H-%M-%S')}-{cmd.name}.log"
+            / cmd.name.replace(" ", "-")
+            / f"{now.strftime('%H-%M-%S')}-{cmd.name.replace(' ', '-')}.log"
         )
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
