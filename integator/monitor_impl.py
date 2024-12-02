@@ -22,7 +22,9 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
     # Update with the unknown state
     latest = git.log.latest()
     if settings.integator.fail_fast and latest.has_failed():
-        print(f"Latest commit {latest.hash} failed: {latest.statuses}")
+        print(f"Latest commit {latest.hash} failed")
+        for failure in latest.statuses.get_failures():
+            print(f"{failure.task.name} failed: {failure.log_location}")
         return CommandRan.NO
 
     if not git.diff_against(settings.integator.trunk):
@@ -63,6 +65,8 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
                     statuses.set_ok(cmd.name)
                 case ExitCode.ERROR:
                     statuses.set_failed(cmd.name)
+
+            statuses.get(cmd.name).log_location = output_file
 
             update_status(git, statuses)
 

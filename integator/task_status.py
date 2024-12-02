@@ -1,4 +1,5 @@
 import datetime as dt
+import pathlib
 import re
 from enum import Enum, auto
 
@@ -85,6 +86,7 @@ class TaskStatus(pydantic.BaseModel):
     task: Task
     state: ExecutionState
     duration: dt.timedelta
+    log_location: pathlib.Path | None
 
 
 class Statuses(pydantic.BaseModel):
@@ -108,6 +110,7 @@ class Statuses(pydantic.BaseModel):
                     task=Task(name=name, cmd="UNKNOWN"),
                     state=ExecutionState.UNKNOWN,
                     duration=dt.timedelta(),
+                    log_location=None,
                 )
             )
         return exist
@@ -123,6 +126,7 @@ class Statuses(pydantic.BaseModel):
                 task=Task(name=name, cmd="UNKNOWN"),
                 state=ExecutionState.UNKNOWN,
                 duration=dt.timedelta(),
+                log_location=None,
             )
         return matching[0]
 
@@ -138,6 +142,7 @@ class Statuses(pydantic.BaseModel):
                 task=Task(name=name, cmd="From main"),
                 state=ExecutionState.SUCCESS,
                 duration=dt.timedelta(),
+                log_location=None,
             )
         )
 
@@ -149,6 +154,9 @@ class Statuses(pydantic.BaseModel):
 
     def all(self, compare: ExecutionState) -> bool:
         return all(task.state == compare for task in self.values)
+
+    def get_failures(self) -> list[TaskStatus]:
+        return [task for task in self.values if task.state == ExecutionState.FAILURE]
 
 
 class Commit(pydantic.BaseModel):

@@ -1,0 +1,16 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Monitor",
+            "type": "shell",
+            "command": "integator monitor",
+            "presentation": {
+                "reveal": "always",
+            },
+            "runOptions": {
+                "runOn": "folderOpen",
+            }
+        }
+    ]
+}
