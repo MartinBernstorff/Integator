@@ -164,12 +164,11 @@ class Commit(pydantic.BaseModel):
     timestamp: dt.datetime
     author: str
     statuses: Statuses
-    pushed: bool
 
     def __str__(self):
         line = f"({self.hash[0:4]}) {self.statuses}"
         line += f" {humanize.naturaldelta(dt.datetime.now() - self.timestamp)} ago"
-        if self.pushed:
+        if self.statuses.get("Push").state == ExecutionState.SUCCESS:
             line += f" {Emojis.PUSHED.value} "
         return line
 
@@ -186,13 +185,9 @@ class Commit(pydantic.BaseModel):
             timestamp=dto.timestamp,
             author=dto.author,
             statuses=statuses,
-            pushed=False,
         )
 
     # TODO: Move these to the statuses collection
-    def is_pushed(self) -> bool:
-        return self.statuses.contains(ExecutionState.IN_PROGRESS)
-
     def is_failed(self, name: str) -> bool:
         return self.statuses.get(name).state == ExecutionState.FAILURE
 
@@ -207,6 +202,9 @@ class Commit(pydantic.BaseModel):
 
     def age(self) -> dt.timedelta:
         return dt.datetime.now() - self.timestamp
+
+    def is_pushed(self) -> bool:
+        return self.statuses.get("Push").state == ExecutionState.SUCCESS
 
 
 # DTO to handle the empty note. Only parse the TaskStatus' if they exist.

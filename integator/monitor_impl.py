@@ -1,11 +1,14 @@
 import datetime
 import enum
+import logging
 import pathlib
 
 from integator.git import Git
 from integator.settings import RootSettings
 from integator.shell import ExitCode, Shell
 from integator.task_status import Commit, Statuses
+
+l = logging.getLogger(__name__)
 
 
 class CommandRan(enum.Enum):
@@ -14,12 +17,14 @@ class CommandRan(enum.Enum):
 
 
 def monitor_impl(shell: Shell, git: Git) -> CommandRan:
+    l.debug("Getting settings")
     settings = RootSettings()
 
+    l.debug("Checking out latest commit")
     if pathlib.Path.cwd() != settings.integator.source_dir:
         git.checkout_latest_commit()
 
-    # Update with the unknown state
+    l.debug("Updating")
     latest = git.log.latest()
     if settings.integator.fail_fast and latest.has_failed():
         print(f"Latest commit {latest.hash} failed")
@@ -27,6 +32,7 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
             print(f"{failure.task.name} failed. Logs: '{failure.log_location}'")
         return CommandRan.NO
 
+    l.debug("Diffing againt trunk")
     if not git.diff_against(settings.integator.trunk):
         print(
             f"{latest}: No changes compared to trunk at {settings.integator.trunk}, waiting"
@@ -38,6 +44,7 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
     statuses = latest.statuses
     # Run commands
     for cmd in settings.integator.commands:
+        l.debug(f"Checking status for {cmd.name}")
         if latest.is_failed(cmd.name):
             print(f"{cmd.name} failed on the last run, continuing")
             continue
@@ -72,18 +79,20 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
 
             if settings.integator.fail_fast:
                 break
+        l.debug(f"Finished checking for {cmd.name}")
 
     latest = git.log.latest()
     if latest.all_ok():
-        if settings.integator.push_on_success and not latest.pushed:
+        if settings.integator.push_on_success and not latest.is_pushed():
+            l.debug("Pushing!")
             git.push()
-            latest.pushed = True
+            latest.statuses.create_ok("Push")
 
         if settings.integator.command_on_success:
             shell.run_interactively(settings.integator.command_on_success)
 
-    print(f"{datetime.datetime.now().strftime('%H:%M:%S')} {latest}")
-    shell.clear()
+    l.info("Finished monitoring")
+    # shell.clear()
 
     return command_ran
 

@@ -34,7 +34,6 @@ class Git:
     log: Log
 
     def diff_against(self, reference: str) -> list[str]:
-        Shell().run_quietly(f"git fetch origin {reference}")
         result = Shell().run_quietly(f"git diff origin/{reference}")
         if not result:
             return []

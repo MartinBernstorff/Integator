@@ -1,4 +1,5 @@
 import datetime
+import logging
 import pathlib
 import time
 
@@ -12,6 +13,13 @@ from integator.monitor_impl import CommandRan, monitor_impl
 from integator.settings import FILE_NAME, RootSettings, settings_file_exists
 from integator.shell import Shell
 from integator.task_status import Commit
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+
+logger = logging.getLogger(__name__)
 
 app = typer.Typer()
 
@@ -36,16 +44,21 @@ def monitor():
 
     shell = Shell()
     while True:
-        shell.clear()
+        # shell.clear()
 
-        status = monitor_impl(
-            shell,
-            git=Git(
-                source_dir=settings.integator.source_dir,
-                log=Log(expected_cmd_names=set(settings.cmd_names())),
-            ),
+        logger.debug("Init'ing")
+        git = Git(
+            source_dir=settings.integator.source_dir,
+            log=Log(expected_cmd_names=set(settings.cmd_names())),
         )
 
+        logger.debug("Running")
+        status = monitor_impl(
+            shell,
+            git=git,
+        )
+
+        logger.debug("Sleeping")
         if status == CommandRan.NO:
             time.sleep(1)
 
