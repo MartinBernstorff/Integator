@@ -1,4 +1,5 @@
 import datetime as dt
+from pathlib import Path
 
 from integator.task_status import ExecutionState, Statuses, Task, TaskStatus
 
@@ -10,6 +11,7 @@ def test_status():
                 task=Task(name="Test 1", cmd="echo"),
                 state=ExecutionState.IN_PROGRESS,
                 duration=dt.timedelta(seconds=1),
+                log_location=Path(),
             )
         ]
     )
