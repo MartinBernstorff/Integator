@@ -21,3 +21,4 @@ def test_init_taskstati():
     input = test_status().model_dump_json()
     val = Statuses().from_str(input, {"Test 1", "Task 2"})
     assert len(val.values) == 2
+    assert 1 == 2

@@ -87,6 +87,7 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
             l.debug("Pushing!")
             git.push()
             latest.statuses.create_ok("Push")
+            update_status(git, latest.statuses)
 
         if settings.integator.command_on_success:
             shell.run_interactively(settings.integator.command_on_success)
