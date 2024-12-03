@@ -8,6 +8,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from integator.emojis import Emojis
 from integator.git import Git, Log
 from integator.monitor_impl import CommandRan, monitor_impl
 from integator.settings import FILE_NAME, RootSettings, settings_file_exists
@@ -90,17 +91,17 @@ def log():
         print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')}")
 
     def _print_status_line(entries: list[Commit]):
+        latest_entry = entries[0]
+        if latest_entry.has_failed():
+            print(f"{Emojis.FAIL.value} Latest failed: {latest_entry}")
+            print(f"\t{latest_entry.statuses.get_failures()[0].log}")
+
         ok_entries = [entry for entry in entries if entry.all_ok()]
         if ok_entries:
             ok_entry = ok_entries[-1]
-            print(f"Last commit passing tests:\n\t{ok_entry}")
+            print(f"{Emojis.OK.value} Latest success: {ok_entry}")
         else:
             print("No commit has passing tests yet")
-
-        latest_entry = entries[-1]
-        if latest_entry.has_failed():
-            print(f"Last commit failed tests:\n\t{latest_entry}")
-            print(f"Log: {latest_entry.statuses.get_failures()[0].log}")
 
     settings = RootSettings()
 
@@ -117,4 +118,4 @@ def log():
 
 
 if __name__ == "__main__":
-    app()
+    log()
