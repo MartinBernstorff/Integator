@@ -55,7 +55,7 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
             settings.integator.log_dir
             / current_date
             / cmd.name.replace(" ", "-")
-            / f"{now.strftime('%H-%M-%S')}-{cmd.name.replace(' ', '-')}.log"
+            / f"{now.strftime('%H-%M-%S')}-{latest.hash}-{cmd.name.replace(' ', '-')}.log"
         )
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
