@@ -86,7 +86,7 @@ class TaskStatus(pydantic.BaseModel):
     task: Task
     state: ExecutionState
     duration: dt.timedelta
-    log_location: pathlib.Path | None
+    log: pathlib.Path | None
 
 
 class Statuses(pydantic.BaseModel):
@@ -110,7 +110,7 @@ class Statuses(pydantic.BaseModel):
                     task=Task(name=name, cmd="UNKNOWN"),
                     state=ExecutionState.UNKNOWN,
                     duration=dt.timedelta(),
-                    log_location=None,
+                    log=None,
                 )
             )
         return exist
@@ -126,7 +126,7 @@ class Statuses(pydantic.BaseModel):
                 task=Task(name=name, cmd="UNKNOWN"),
                 state=ExecutionState.UNKNOWN,
                 duration=dt.timedelta(),
-                log_location=None,
+                log=None,
             )
         return matching[0]
 
@@ -142,7 +142,7 @@ class Statuses(pydantic.BaseModel):
                 task=Task(name=name, cmd="From main"),
                 state=ExecutionState.SUCCESS,
                 duration=dt.timedelta(),
-                log_location=None,
+                log=None,
             )
         )
 

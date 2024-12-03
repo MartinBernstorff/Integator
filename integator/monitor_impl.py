@@ -29,7 +29,7 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
     if settings.integator.fail_fast and latest.has_failed():
         print(f"Latest commit {latest.hash} failed")
         for failure in latest.statuses.get_failures():
-            print(f"{failure.task.name} failed. Logs: '{failure.log_location}'")
+            print(f"{failure.task.name} failed. Logs: '{failure.log}'")
         return CommandRan.NO
 
     l.debug("Diffing againt trunk")
@@ -73,7 +73,7 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
                 case ExitCode.ERROR:
                     statuses.set_failed(cmd.name)
 
-            statuses.get(cmd.name).log_location = output_file
+            statuses.get(cmd.name).log = output_file
 
             update_status(git, statuses)
 

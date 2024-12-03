@@ -45,7 +45,7 @@ def monitor():
 
     shell = Shell()
     while True:
-        # shell.clear()
+        shell.clear()
 
         logger.debug("Init'ing")
         git = Git(
@@ -85,7 +85,6 @@ def log():
         Console().print(table)
 
         _print_status_line(entries)
-        print("Testing")
 
         # Print current time
         print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')}")
@@ -97,6 +96,11 @@ def log():
             print(f"Last commit passing tests:\n\t{ok_entry}")
         else:
             print("No commit has passing tests yet")
+
+        latest_entry = entries[-1]
+        if latest_entry.has_failed():
+            print(f"Last commit failed tests:\n\t{latest_entry}")
+            print(f"Log: {latest_entry.statuses.get_failures()[0].log}")
 
     settings = RootSettings()
 
