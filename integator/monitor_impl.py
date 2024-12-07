@@ -56,21 +56,22 @@ def monitor_impl(shell: Shell, git: Git, status_repo: TaskStatusRepo) -> Command
     command_ran = CommandRan.NO
     # Run commands
     for cmd in settings.integator.commands:
-        l.debug(f"Processing {cmd.name}")
+        log = logging.getLogger(f"{__name__}.{cmd.name}")
+        log.debug(f"Processing {cmd.name}")
         latest_cmd_status = latest_statuses.get(cmd.name).state
-        l.debug(f"Latest status: {latest_cmd_status}")
+        log.debug(f"Latest status: {latest_cmd_status}")
 
         match latest_cmd_status:
             case ExecutionState.SUCCESS:
-                print(f"{cmd.name} succeeded on the last run, continuing")
+                log.info(f"{cmd.name} succeeded on the last run, continuing")
                 continue
             case ExecutionState.FAILURE:
-                print(f"{cmd.name} failed on the last run, continuing")
+                log.info(f"{cmd.name} failed on the last run, continuing")
                 continue
             case ExecutionState.IN_PROGRESS:
-                print(f"{cmd.name} crashed while running, executing again")
+                log.info(f"{cmd.name} crashed while running, executing again")
             case ExecutionState.UNKNOWN:
-                print(f"{cmd.name} has not been run yet, executing")
+                log.info(f"{cmd.name} has not been run yet, executing")
 
         now = datetime.datetime.now()
         current_date = now.strftime("%Y-%m-%d")

@@ -44,7 +44,7 @@ def monitor():
     while True:
         # shell.clear()
 
-        logger.debug("Init'ing")
+        logger.debug("--- Init'ing ---")
         git = Git(
             source_dir=settings.integator.source_dir,
             log=Log(expected_cmd_names=set(settings.cmd_names())),
@@ -57,7 +57,7 @@ def monitor():
             status_repo=TaskStatusRepo(),
         )
 
-        logger.debug("Sleeping")
+        logger.debug("--- Sleeping ---")
         if status == CommandRan.NO:
             time.sleep(1)
 
