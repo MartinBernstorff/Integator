@@ -4,20 +4,14 @@ from typing import Any
 
 import pytimeparse  # type: ignore
 
-from integator.emojis import Emojis
-
 
 @staticmethod
-def _statuses(notes: str, n_statuses: int) -> list[str]:
+def _statuses(notes: str) -> list[str]:
     regex = r"\[.+\]"
     match = re.search(regex, notes)
     if not match:
         return []
     icons = match.group(0).strip("[]")
-
-    missing_statuses = n_statuses - len(icons)
-    if missing_statuses > 0:
-        icons += Emojis.UNKNOWN.value * missing_statuses
 
     return [c for c in icons]
 
@@ -36,7 +30,7 @@ def _pushed(notes: str) -> bool:
     return False
 
 
-def parse_commit(line: str, n_statuses: int) -> dict[str, Any]:
+def parse_commit(line: str) -> dict[str, Any]:
     regexes = [
         ("commit", r"^C\|(.*?)\|"),
         ("time", r"T\|(.*?)\s+ago\|"),
@@ -62,7 +56,7 @@ def parse_commit(line: str, n_statuses: int) -> dict[str, Any]:
 
             results[name] = datetime.timedelta(seconds=seconds)
         elif name == "notes":
-            results["statuses"] = _statuses(result, n_statuses)
+            results["statuses"] = _statuses(result)
             results["pushed"] = _pushed(result)
             notes = (
                 result.replace(_find_statuses(result), "")
