@@ -100,4 +100,4 @@ class Statuses(BaseModel):
         return self.contains(ExecutionState.FAILURE)
 
     def is_pushed(self) -> bool:
-        return self.get(str("Push")).state == ExecutionState.SUCCESS
+        return self.get("Push").state == ExecutionState.SUCCESS
