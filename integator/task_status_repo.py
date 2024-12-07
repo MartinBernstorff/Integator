@@ -1,3 +1,7 @@
+import re
+
+import pydantic
+
 from integator.shell import Shell
 from integator.task_status import Statuses
 
@@ -9,13 +13,18 @@ class TaskStatusRepo:
     def get(hash: str) -> Statuses:
         log_str = Shell().run_quietly(f"git log -1 {hash} {TaskStatusRepo.FORMAT_STR}")
 
-        if not log_str:
-            raise RuntimeError("No values returned from git log")
-
         if len(log_str) > 1:
             raise RuntimeError("More than one commit matches hash")
 
-        return Statuses.from_str(log_str[0])
+        notes = re.search(r"N\|(.*?)\|", log_str[0])
+
+        if not notes:
+            raise RuntimeError("No values returned from git log")
+
+        try:
+            return Statuses.from_str(notes.groups()[0])
+        except pydantic.ValidationError:
+            return Statuses()
 
     @staticmethod
     def update(hash: str, statuses: Statuses):

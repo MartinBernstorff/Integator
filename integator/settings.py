@@ -7,7 +7,6 @@ import toml
 from pydantic import Field
 
 from integator.basemodel import BaseModel
-from integator.task_status import CommandName, TaskName
 
 FILE_NAME = "integator.toml"
 
@@ -30,21 +29,21 @@ class Settings(pydantic_settings.BaseSettings):
 
 
 class TaskSpecification(BaseModel):
-    name: TaskName
-    cmd: CommandName
+    name: str
+    cmd: str
     max_staleness_seconds: int
 
 
 def default_command() -> list[TaskSpecification]:
     return [
         TaskSpecification(
-            name=TaskName("Command 1"),
-            cmd=CommandName("echo 'test 1'"),
+            name=str("Command 1"),
+            cmd=str("echo 'test 1'"),
             max_staleness_seconds=10,
         ),
         TaskSpecification(
-            name=TaskName("Command 2"),
-            cmd=CommandName("echo 'test 2'"),
+            name=str("Command 2"),
+            cmd=str("echo 'test 2'"),
             max_staleness_seconds=10,
         ),
     ]
@@ -67,7 +66,7 @@ class RootSettings(Settings):
         values = json.loads(self.model_dump_json())
         toml.dump(values, open(path, "w"))
 
-    def cmd_names(self) -> list[TaskName]:
+    def cmd_names(self) -> list[str]:
         return [cmd.name for cmd in self.integator.commands]
 
 

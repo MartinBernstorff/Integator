@@ -42,7 +42,7 @@ def monitor():
 
     shell = Shell()
     while True:
-        shell.clear()
+        # shell.clear()
 
         logger.debug("Init'ing")
         git = Git(

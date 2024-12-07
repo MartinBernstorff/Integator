@@ -10,7 +10,7 @@ from integator.emojis import Emojis
 from integator.git import Commit, Git, Log
 from integator.settings import RootSettings
 from integator.shell import Shell
-from integator.task_status import ExecutionState, Statuses, TaskName
+from integator.task_status import ExecutionState, Statuses
 from integator.task_status_repo import TaskStatusRepo
 
 
@@ -32,7 +32,7 @@ def _print_status_line(pairs: list[tuple[Commit, Statuses]]):
 
 
 def print_log(
-    entries: list[Commit], task_names: list[TaskName], status_repo: TaskStatusRepo
+    entries: list[Commit], task_names: list[str], status_repo: TaskStatusRepo
 ):
     Shell().clear()
 

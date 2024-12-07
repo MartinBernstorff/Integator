@@ -5,15 +5,13 @@ import pathlib
 
 from iterpy import Arr
 
-from integator.git import Commit, Git
+from integator.git import Commit, Git, Log
 from integator.settings import RootSettings
 from integator.shell import Shell
 from integator.task_status import (
-    CommandName,
     ExecutionState,
     Statuses,
     Task,
-    TaskName,
     TaskStatus,
 )
 from integator.task_status_repo import TaskStatusRepo
@@ -55,10 +53,21 @@ def monitor_impl(shell: Shell, git: Git, status_repo: TaskStatusRepo) -> Command
     command_ran = CommandRan.NO
     # Run commands
     for cmd in settings.integator.commands:
-        l.debug(f"Checking status for {cmd.name}")
-        if latest_statuses.get(cmd.name):
-            print(f"{cmd.name} failed on the last run, continuing")
-            continue
+        l.debug(f"Processing {cmd.name}")
+        latest_cmd_status = latest_statuses.get(cmd.name).state
+        l.debug(f"Latest status: {latest_cmd_status}")
+
+        match latest_cmd_status:
+            case ExecutionState.SUCCESS:
+                print(f"{cmd.name} succeeded on the last run, continuing")
+                continue
+            case ExecutionState.FAILURE:
+                print(f"{cmd.name} failed on the last run, continuing")
+                continue
+            case ExecutionState.IN_PROGRESS:
+                print(f"{cmd.name} crashed while running, executing again")
+            case ExecutionState.UNKNOWN:
+                print(f"{cmd.name} has not been run yet, executing")
 
         now = datetime.datetime.now()
         current_date = now.strftime("%Y-%m-%d")
@@ -106,7 +115,7 @@ def monitor_impl(shell: Shell, git: Git, status_repo: TaskStatusRepo) -> Command
             git.push_head()
             latest_statuses.add(
                 TaskStatus(
-                    task=Task(name=TaskName("Push"), cmd=CommandName("Push")),
+                    task=Task(name=str("Push"), cmd=str("Push")),
                     state=ExecutionState.SUCCESS,
                     span=(datetime.datetime.now(), datetime.datetime.now()),
                     log=None,
@@ -126,7 +135,7 @@ def monitor_impl(shell: Shell, git: Git, status_repo: TaskStatusRepo) -> Command
 def _is_stale(
     entries: list[tuple[Commit, Statuses]],
     max_staleness_seconds: int,
-    cmd_name: TaskName,
+    cmd_name: str,
 ) -> bool:
     successes = (
         Arr(entries)
@@ -146,3 +155,9 @@ def _is_stale(
         return True
 
     return False
+
+
+if __name__ == "__main__":
+    monitor_impl(
+        Shell(), Git(source_dir=pathlib.Path.cwd(), log=Log({"None"})), TaskStatusRepo()
+    )

@@ -12,7 +12,6 @@ from integator.shell import ExitCode
 class ExecutionState(Enum):
     UNKNOWN = auto()
     IN_PROGRESS = auto()
-    SKIPPED = auto()
     FAILURE = auto()
     SUCCESS = auto()
 
@@ -26,8 +25,6 @@ class ExecutionState(Enum):
                 return Emojis.FAIL.value
             case self.SUCCESS:
                 return Emojis.OK.value
-            case self.SKIPPED:
-                return Emojis.SKIPPED.value
 
     @classmethod
     def from_exit_code(cls, exit_code: ExitCode) -> "ExecutionState":
@@ -38,17 +35,9 @@ class ExecutionState(Enum):
                 return ExecutionState.FAILURE
 
 
-class TaskName(str):
-    pass
-
-
-class CommandName(str):
-    pass
-
-
 class Task(BaseModel):
-    name: TaskName
-    cmd: CommandName
+    name: str
+    cmd: str
 
 
 class TaskStatus(BaseModel):
@@ -77,19 +66,22 @@ class Statuses(BaseModel):
     def from_str(cls: type["Statuses"], line: str) -> "Statuses":
         return cls.model_validate_json(line)
 
-    def names(self) -> set[TaskName]:
+    def names(self) -> set[str]:
         return {status.task.name for status in self.values}
 
-    def get(self, name: TaskName) -> TaskStatus:
+    def get(self, name: str) -> TaskStatus:
         matching = [task for task in self.values if task.task.name == name]
 
         if len(matching) == 0:
-            return TaskStatus(
-                task=Task(name=name, cmd=CommandName("UNKNOWN")),
+            new_status = TaskStatus(
+                task=Task(name=name, cmd=str("UNKNOWN")),
                 state=ExecutionState.UNKNOWN,
                 span=(dt.datetime.now(), dt.datetime.now()),
                 log=None,
             )
+            self.add(new_status)
+            return new_status
+
         return matching[0]
 
     def add(self, task_status: TaskStatus):
@@ -108,4 +100,4 @@ class Statuses(BaseModel):
         return self.contains(ExecutionState.FAILURE)
 
     def is_pushed(self) -> bool:
-        return self.get(TaskName("Push")).state == ExecutionState.SUCCESS
+        return self.get(str("Push")).state == ExecutionState.SUCCESS
