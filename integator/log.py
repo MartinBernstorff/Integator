@@ -40,6 +40,7 @@ def print_log(
     table.add_column("")
     table.add_column("".join([n[0:2] for n in task_names]), justify="center")
     table.add_column("")
+    table.add_column("")
 
     pairs = [(entry, status_repo.get(entry.hash)) for entry in entries]
 
@@ -49,6 +50,7 @@ def print_log(
             entry.hash[0:4],
             "".join(state_emojis),
             f"{humanize.naturaldelta(entry.age())} ago",
+            statuses.get("Push").state.__str__(),
         )
     Console().print(table)
 

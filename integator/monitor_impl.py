@@ -119,7 +119,7 @@ def monitor_impl(shell: Shell, git: Git, status_repo: TaskStatusRepo) -> Command
             git.push_head()
             latest_statuses.add(
                 TaskStatus(
-                    task=Task(name=str("Push"), cmd=str("Push")),
+                    task=Task(name="Push", cmd="Push"),
                     state=ExecutionState.SUCCESS,
                     span=(datetime.datetime.now(), datetime.datetime.now()),
                     log=None,
