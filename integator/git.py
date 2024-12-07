@@ -1,8 +1,8 @@
 import pathlib
 from dataclasses import dataclass
 
+from integator.commit import Commit
 from integator.shell import Shell
-from integator.task_status import Commit
 
 
 @dataclass
@@ -10,19 +10,15 @@ class Log:
     expected_cmd_names: set[str]
 
     def get(self) -> list[Commit]:
-        values = self._log_str()
+        values = Shell().run_quietly(
+            'git log -n 10 --pretty=format:"C|%h| T|%ar| A|%aN| N|%N%-C()|%-C()"'
+        )
 
         if not values:
             raise RuntimeError("No values returned from git log")
 
-        entries = [Commit.from_str(value, self.expected_cmd_names) for value in values]
-
+        entries = [Commit.from_str(value) for value in values]
         return entries
-
-    def _log_str(self):
-        return Shell().run_quietly(
-            'git log -n 10 --pretty=format:"C|%h| T|%ar| A|%aN| N|%N%-C()|%-C()"'
-        )
 
     def latest(self) -> Commit:
         return self.get()[0]
@@ -39,7 +35,7 @@ class Git:
             return []
         return result
 
-    def push(self):
+    def push_head(self):
         latest_commit = self._latest_commit()
         source_branch = self._source_branch()
 
@@ -59,15 +55,6 @@ class Git:
 
         return values[0]
 
-    def checkout_latest_commit(self):
+    def checkout_head(self):
         latest_commit = self._latest_commit()
         Shell().run_quietly(f"git checkout {latest_commit}")
-
-    def get_notes(self) -> str | None:
-        values = Shell().run_quietly("git notes show")
-        if not values:
-            return None
-        return values[0]
-
-    def update_notes(self, notes: str):
-        Shell().run_quietly(f"git notes add -f -m '{notes}'")

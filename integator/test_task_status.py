@@ -1,16 +1,23 @@
 import datetime as dt
 from pathlib import Path
 
-from integator.task_status import ExecutionState, Statuses, Task, TaskStatus
+from integator.task_status import (
+    CommandName,
+    ExecutionState,
+    Statuses,
+    Task,
+    TaskName,
+    TaskStatus,
+)
 
 
 def test_status():
     return Statuses(
         values=[
             TaskStatus(
-                task=Task(name="Test 1", cmd="echo"),
+                task=Task(name=TaskName("Test 1"), cmd=CommandName("echo")),
                 state=ExecutionState.IN_PROGRESS,
-                duration=dt.timedelta(seconds=1),
+                span=(dt.datetime.now(), dt.datetime.now()),
                 log=Path(),
             )
         ]
@@ -19,5 +26,5 @@ def test_status():
 
 def test_init_taskstati():
     input = test_status().model_dump_json()
-    val = Statuses().from_str(input, {"Test 1", "Task 2"})
-    assert len(val.values) == 2
+    val = Statuses().from_str(input)
+    assert len(val.values) == 1

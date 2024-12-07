@@ -1,59 +1,13 @@
 import datetime as dt
 import pathlib
-import re
 from enum import Enum, auto
+from typing import NewType
 
-import humanize
 import pydantic
-import pytimeparse  # type: ignore
 from pydantic import Field
 
 from integator.emojis import Emojis
-
-
-class CommitDTO(pydantic.BaseModel):
-    hash: str
-    timestamp: dt.datetime
-    author: str
-    notes: str
-
-
-def parse_commit_str(line: str):
-    regexes = [
-        ("hash", r"^C\|(.*?)\|"),
-        ("timestamp", r"T\|(.*?)\s+ago\|"),
-        ("author", r"A\|(.*?)\|"),
-        ("notes", r"N\|(.*?)\|"),
-    ]
-
-    results = {}
-
-    for name, regex in regexes:
-        match = re.search(regex, line)
-
-        if match is None:
-            raise ValueError(f"Could not find {name} in {line}")
-
-        result: str = match.group(1)  # type: ignore
-
-        if name == "timestamp":
-            seconds = pytimeparse.parse(result)  # type: ignore
-
-            if seconds is None:
-                raise ValueError(f"Invalid time: {result}")
-
-            time_since = dt.datetime.now() - dt.timedelta(seconds=seconds)
-
-            results[name] = time_since
-        elif name == "notes":
-            if result == "":
-                results[name] = '{"values": []}'
-            else:
-                results[name] = result
-        else:
-            results[name] = result if match else ""
-
-    return CommitDTO(**results)  # type: ignore
+from integator.shell import ExitCode
 
 
 class ExecutionState(Enum):
@@ -76,17 +30,39 @@ class ExecutionState(Enum):
             case self.SKIPPED:
                 return Emojis.SKIPPED.value
 
+    @classmethod
+    def from_exit_code(cls, exit_code: ExitCode) -> "ExecutionState":
+        match exit_code:
+            case ExitCode.OK:
+                return ExecutionState.SUCCESS
+            case ExitCode.ERROR:
+                return ExecutionState.FAILURE
+
+
+TaskName = NewType("TaskName", str)
+
+CommandName = NewType("CommandName", str)
+
 
 class Task(pydantic.BaseModel):
-    name: str
-    cmd: str
+    name: TaskName
+    cmd: CommandName
 
 
 class TaskStatus(pydantic.BaseModel):
     task: Task
     state: ExecutionState
-    duration: dt.timedelta
+    span: tuple[dt.datetime, dt.datetime]
     log: pathlib.Path | None
+
+    @classmethod
+    def unknown(cls, task: Task) -> "TaskStatus":
+        return cls(
+            task=task,
+            state=ExecutionState.UNKNOWN,
+            span=(dt.datetime.now(), dt.datetime.now()),
+            log=None,
+        )
 
 
 class Statuses(pydantic.BaseModel):
@@ -96,58 +72,26 @@ class Statuses(pydantic.BaseModel):
         return f"[{''.join(str(status.state) for status in self.values)}]"
 
     @classmethod
-    def from_str(
-        cls: type["Statuses"], line: str, expected_names: set[str]
-    ) -> "Statuses":
-        exist = cls.model_validate_json(line)
-        existing_names = {status.task.name for status in exist.values}
+    def from_str(cls: type["Statuses"], line: str) -> "Statuses":
+        return cls.model_validate_json(line)
 
-        missing_names = expected_names - existing_names
-
-        for name in missing_names:
-            exist.values.append(
-                TaskStatus(
-                    task=Task(name=name, cmd="UNKNOWN"),
-                    state=ExecutionState.UNKNOWN,
-                    duration=dt.timedelta(),
-                    log=None,
-                )
-            )
-        return exist
-
-    def names(self) -> set[str]:
+    def names(self) -> set[TaskName]:
         return {status.task.name for status in self.values}
 
-    def get(self, name: str) -> TaskStatus:
+    def get(self, name: TaskName) -> TaskStatus:
         matching = [task for task in self.values if task.task.name == name]
 
         if len(matching) == 0:
             return TaskStatus(
-                task=Task(name=name, cmd="UNKNOWN"),
+                task=Task(name=name, cmd=CommandName("UNKNOWN")),
                 state=ExecutionState.UNKNOWN,
-                duration=dt.timedelta(),
+                span=(dt.datetime.now(), dt.datetime.now()),
                 log=None,
             )
         return matching[0]
 
-    def update(self, status: ExecutionState, name: str):
-        self.get(name).state = status
-
-    def set_ok(self, name: str):
-        self.update(ExecutionState.SUCCESS, name)
-
-    def create_ok(self, name: str):
-        self.values.append(
-            TaskStatus(
-                task=Task(name=name, cmd="From main"),
-                state=ExecutionState.SUCCESS,
-                duration=dt.timedelta(),
-                log=None,
-            )
-        )
-
-    def set_failed(self, name: str):
-        self.update(ExecutionState.FAILURE, name)
+    def add(self, task_status: TaskStatus):
+        self.values.append(task_status)
 
     def contains(self, status: ExecutionState) -> bool:
         return any(task.state == status for task in self.values)
@@ -158,53 +102,8 @@ class Statuses(pydantic.BaseModel):
     def get_failures(self) -> list[TaskStatus]:
         return [task for task in self.values if task.state == ExecutionState.FAILURE]
 
-
-class Commit(pydantic.BaseModel):
-    hash: str
-    timestamp: dt.datetime
-    author: str
-    statuses: Statuses
-
-    def __str__(self):
-        line = f"({self.hash[0:4]}) {self.statuses}"
-        line += f" {humanize.naturaldelta(dt.datetime.now() - self.timestamp)} ago"
-        if self.statuses.get("Push").state == ExecutionState.SUCCESS:
-            line += f" {Emojis.PUSHED.value} "
-        return line
-
-    @staticmethod
-    def from_str(line: str, expected_names: set[str]) -> "Commit":
-        dto = parse_commit_str(line)
-        try:
-            statuses = Statuses().from_str(dto.notes, expected_names)
-        except pydantic.ValidationError:
-            statuses = Statuses()
-
-        return Commit(
-            hash=dto.hash,
-            timestamp=dto.timestamp,
-            author=dto.author,
-            statuses=statuses,
-        )
-
-    # TODO: Move these to the statuses collection
-    def is_failed(self, name: str) -> bool:
-        return self.statuses.get(name).state == ExecutionState.FAILURE
-
     def has_failed(self) -> bool:
-        return self.statuses.contains(ExecutionState.FAILURE)
-
-    def is_ok(self, name: str) -> bool:
-        return self.statuses.get(name).state == ExecutionState.SUCCESS
-
-    def all_ok(self) -> bool:
-        return self.statuses.all(ExecutionState.SUCCESS)
-
-    def age(self) -> dt.timedelta:
-        return dt.datetime.now() - self.timestamp
+        return self.contains(ExecutionState.FAILURE)
 
     def is_pushed(self) -> bool:
-        return self.statuses.get("Push").state == ExecutionState.SUCCESS
-
-
-# DTO to handle the empty note. Only parse the TaskStatus' if they exist.
+        return self.get(TaskName("Push")).state == ExecutionState.SUCCESS

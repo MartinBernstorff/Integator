@@ -7,6 +7,8 @@ import pydantic_settings
 import toml
 from pydantic import Field
 
+from integator.task_status import CommandName, TaskName
+
 FILE_NAME = "integator.toml"
 
 
@@ -27,29 +29,29 @@ class Settings(pydantic_settings.BaseSettings):
         return (pydantic_settings.TomlConfigSettingsSource(settings_cls),)
 
 
-class Command(pydantic.BaseModel):
-    name: str
-    cmd: str
+class TaskSpecification(pydantic.BaseModel):
+    name: TaskName
+    cmd: CommandName
     max_staleness_seconds: int
 
 
-def default_command() -> list[Command]:
+def default_command() -> list[TaskSpecification]:
     return [
-        Command(
-            name="Command 1",
-            cmd="echo 'test 1'",
+        TaskSpecification(
+            name=TaskName("Command 1"),
+            cmd=CommandName("echo 'test 1'"),
             max_staleness_seconds=10,
         ),
-        Command(
-            name="Command 2",
-            cmd="echo 'test 2'",
+        TaskSpecification(
+            name=TaskName("Command 2"),
+            cmd=CommandName("echo 'test 2'"),
             max_staleness_seconds=10,
         ),
     ]
 
 
 class IntegatorSettings(pydantic.BaseModel):
-    commands: list[Command] = Field(default_factory=default_command)
+    commands: list[TaskSpecification] = Field(default_factory=default_command)
     command_on_success: str = Field(default="echo 'Success!'")
     fail_fast: bool = Field(default=True)
     log_dir: pathlib.Path = Field(default=pathlib.Path.cwd() / ".logs")
@@ -65,7 +67,7 @@ class RootSettings(Settings):
         values = json.loads(self.model_dump_json())
         toml.dump(values, open(path, "w"))
 
-    def cmd_names(self) -> list[str]:
+    def cmd_names(self) -> list[TaskName]:
         return [cmd.name for cmd in self.integator.commands]
 
 

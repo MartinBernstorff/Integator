@@ -3,10 +3,20 @@ import enum
 import logging
 import pathlib
 
-from integator.git import Git
+from iterpy import Arr
+
+from integator.git import Commit, Git
 from integator.settings import RootSettings
-from integator.shell import ExitCode, Shell
-from integator.task_status import Commit, Statuses
+from integator.shell import Shell
+from integator.task_status import (
+    CommandName,
+    ExecutionState,
+    Statuses,
+    Task,
+    TaskName,
+    TaskStatus,
+)
+from integator.task_status_repo import TaskStatusRepo
 
 l = logging.getLogger(__name__)
 
@@ -16,19 +26,21 @@ class CommandRan(enum.Enum):
     NO = enum.auto()
 
 
-def monitor_impl(shell: Shell, git: Git) -> CommandRan:
+def monitor_impl(shell: Shell, git: Git, status_repo: TaskStatusRepo) -> CommandRan:
+    # Starting setup
     l.debug("Getting settings")
     settings = RootSettings()
 
     l.debug("Checking out latest commit")
     if pathlib.Path.cwd() != settings.integator.source_dir:
-        git.checkout_latest_commit()
+        git.checkout_head()
 
     l.debug("Updating")
     latest = git.log.latest()
-    if settings.integator.fail_fast and latest.has_failed():
+    latest_statuses = status_repo.get(latest.hash)
+    if settings.integator.fail_fast and latest_statuses.has_failed():
         print(f"Latest commit {latest.hash} failed")
-        for failure in latest.statuses.get_failures():
+        for failure in latest_statuses.get_failures():
             print(f"{failure.task.name} failed. Logs: '{failure.log}'")
         return CommandRan.NO
 
@@ -41,11 +53,10 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
         return CommandRan.NO
 
     command_ran = CommandRan.NO
-    statuses = latest.statuses
     # Run commands
     for cmd in settings.integator.commands:
         l.debug(f"Checking status for {cmd.name}")
-        if latest.is_failed(cmd.name):
+        if latest_statuses.get(cmd.name):
             print(f"{cmd.name} failed on the last run, continuing")
             continue
 
@@ -59,35 +70,49 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
         )
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
-        if _is_stale(git.log.get(), cmd.max_staleness_seconds, cmd.name):
+        commits = git.log.get()
+        if _is_stale(
+            [(commit, status_repo.get(commit.hash)) for commit in commits],
+            cmd.max_staleness_seconds,
+            cmd.name,
+        ):
             print(f"Running {cmd.name}")
-            command_ran = CommandRan.YES
+            latest_statuses.get(cmd.name).state = ExecutionState.IN_PROGRESS
+            status_repo.update(latest.hash, latest_statuses)
+
             result = shell.run(
                 cmd.cmd,
                 output_file=output_file,
             )
 
-            match result.exit:
-                case ExitCode.OK:
-                    statuses.set_ok(cmd.name)
-                case ExitCode.ERROR:
-                    statuses.set_failed(cmd.name)
+            latest_statuses.get(cmd.name).state = ExecutionState.from_exit_code(
+                result.exit
+            )
 
-            statuses.get(cmd.name).log = output_file
+            latest_statuses.get(cmd.name).log = output_file
+            status_repo.update(latest.hash, latest_statuses)
 
-            update_status(git, statuses)
-
+            command_ran = CommandRan.YES
             if settings.integator.fail_fast:
                 break
         l.debug(f"Finished checking for {cmd.name}")
 
     latest = git.log.latest()
-    if latest.all_ok():
-        if settings.integator.push_on_success and not latest.is_pushed():
+    latest_statuses = status_repo.get(latest.hash)
+
+    if latest_statuses.all(ExecutionState.SUCCESS):
+        if settings.integator.push_on_success and not latest_statuses.is_pushed():
             l.debug("Pushing!")
-            git.push()
-            latest.statuses.create_ok("Push")
-            update_status(git, latest.statuses)
+            git.push_head()
+            latest_statuses.add(
+                TaskStatus(
+                    task=Task(name=TaskName("Push"), cmd=CommandName("Push")),
+                    state=ExecutionState.SUCCESS,
+                    span=(datetime.datetime.now(), datetime.datetime.now()),
+                    log=None,
+                )
+            )
+            status_repo.update(latest.hash, latest_statuses)
 
         if settings.integator.command_on_success:
             shell.run_interactively(settings.integator.command_on_success)
@@ -98,18 +123,20 @@ def monitor_impl(shell: Shell, git: Git) -> CommandRan:
     return command_ran
 
 
-def update_status(git: Git, statuses: Statuses):
-    git.update_notes(statuses.model_dump_json())
-
-
-def _is_stale(entries: list[Commit], max_staleness_seconds: int, cmd_name: str) -> bool:
-    if entries[0].is_ok(cmd_name):
-        return False
-
-    successes = [entry for entry in entries if entry.is_ok(cmd_name)]
+def _is_stale(
+    entries: list[tuple[Commit, Statuses]],
+    max_staleness_seconds: int,
+    cmd_name: TaskName,
+) -> bool:
+    successes = (
+        Arr(entries)
+        .map(lambda it: it[1].get(cmd_name))
+        .filter(lambda it: it.state == ExecutionState.SUCCESS)
+        .to_list()
+    )
 
     time_since_success = (
-        datetime.datetime.now() - successes[0].timestamp
+        datetime.datetime.now() - successes[0].span[1]
         if successes
         else datetime.timedelta(days=30)
     )

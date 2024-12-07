@@ -55,6 +55,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "humanize" },
+    { name = "iterpy" },
     { name = "pydantic-settings" },
     { name = "pytest" },
     { name = "pytimeparse" },
@@ -71,6 +72,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "humanize", specifier = ">=4.11.0" },
+    { name = "iterpy", specifier = ">=1.9.1" },
     { name = "pydantic-settings", specifier = ">=2.6.1" },
     { name = "pytest", specifier = ">=8.3.3" },
     { name = "pytimeparse", specifier = ">=1.1.8" },
@@ -81,6 +83,15 @@ requires-dist = [
 
 [package.metadata.dependency-groups]
 dev = [{ name = "pyright", specifier = ">=1.1.389" }]
+
+[[package]]
+name = "iterpy"
+version = "1.9.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e6/61/f4e6f64749fec96c8a1eae5e6fcf8015d849c7f73087de344cc865396447/iterpy-1.9.1.tar.gz", hash = "sha256:561f59161cfe26f900b5711e1195a99b9e1f1f7847f2fc05437722add953740f", size = 37622 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3b/b3/afc1c753c2a0848a36cb8d8b054d0a33d0f86029cedc6c3d73aa03501ddf/iterpy-1.9.1-py3-none-any.whl", hash = "sha256:e946284bcddde280d1967c766d692a2562a28c94e8beca4d6a3aafb5caaeeceb", size = 11998 },
+]
 
 [[package]]
 name = "markdown-it-py"
