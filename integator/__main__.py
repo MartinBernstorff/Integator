@@ -91,10 +91,12 @@ def log():
         print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')}")
 
     def _print_status_line(entries: list[Commit]):
-        latest_entry = entries[0]
-        if latest_entry.has_failed():
-            print(f"{Emojis.FAIL.value} Latest failed: {latest_entry}")
-            print(f"\t{latest_entry.statuses.get_failures()[0].log}")
+        print("\n")
+        failures = [entry for entry in entries if entry.has_failed()]
+        if len(failures) > 0:
+            print(f"{Emojis.FAIL.value} Latest failed: {failures[0]}")
+            print(f"\t{failures[0].statuses.get_failures()[0].log}")
+            return
 
         ok_entries = [entry for entry in entries if entry.all_ok()]
         if ok_entries:
