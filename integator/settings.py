@@ -2,11 +2,11 @@ import json
 import pathlib
 from typing import Tuple, Type
 
-import pydantic
 import pydantic_settings
 import toml
 from pydantic import Field
 
+from integator.basemodel import BaseModel
 from integator.task_status import CommandName, TaskName
 
 FILE_NAME = "integator.toml"
@@ -29,7 +29,7 @@ class Settings(pydantic_settings.BaseSettings):
         return (pydantic_settings.TomlConfigSettingsSource(settings_cls),)
 
 
-class TaskSpecification(pydantic.BaseModel):
+class TaskSpecification(BaseModel):
     name: TaskName
     cmd: CommandName
     max_staleness_seconds: int
@@ -50,7 +50,7 @@ def default_command() -> list[TaskSpecification]:
     ]
 
 
-class IntegatorSettings(pydantic.BaseModel):
+class IntegatorSettings(BaseModel):
     commands: list[TaskSpecification] = Field(default_factory=default_command)
     command_on_success: str = Field(default="echo 'Success!'")
     fail_fast: bool = Field(default=True)

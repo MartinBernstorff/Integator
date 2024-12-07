@@ -1,34 +1,31 @@
 import datetime as dt
 import re
-from typing import NewType
 
-import pydantic
 import pytimeparse  # type: ignore
 
-Hash = NewType("Hash", str)
-Author = NewType("Author", str)
+from integator.basemodel import BaseModel  # type: ignore
 
 
-class Commit(pydantic.BaseModel):
-    hash: Hash
+class Commit(BaseModel):
+    hash: str
     timestamp: dt.datetime
-    author: Author
+    author: str
 
     @staticmethod
     def from_str(line: str) -> "Commit":
         dto = parse_commit_str(line)
 
         return Commit(
-            hash=Hash(dto.hash),
+            hash=str(dto.hash),
             timestamp=dto.timestamp,
-            author=Author(dto.author),
+            author=str(dto.author),
         )
 
     def age(self) -> dt.timedelta:
         return dt.datetime.now() - self.timestamp
 
 
-class CommitDTO(pydantic.BaseModel):
+class CommitDTO(BaseModel):
     hash: str
     timestamp: dt.datetime
     author: str

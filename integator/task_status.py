@@ -1,11 +1,10 @@
 import datetime as dt
 import pathlib
 from enum import Enum, auto
-from typing import NewType
 
-import pydantic
 from pydantic import Field
 
+from integator.basemodel import BaseModel
 from integator.emojis import Emojis
 from integator.shell import ExitCode
 
@@ -39,17 +38,20 @@ class ExecutionState(Enum):
                 return ExecutionState.FAILURE
 
 
-TaskName = NewType("TaskName", str)
+class TaskName(str):
+    pass
 
-CommandName = NewType("CommandName", str)
+
+class CommandName(str):
+    pass
 
 
-class Task(pydantic.BaseModel):
+class Task(BaseModel):
     name: TaskName
     cmd: CommandName
 
 
-class TaskStatus(pydantic.BaseModel):
+class TaskStatus(BaseModel):
     task: Task
     state: ExecutionState
     span: tuple[dt.datetime, dt.datetime]
@@ -65,7 +67,7 @@ class TaskStatus(pydantic.BaseModel):
         )
 
 
-class Statuses(pydantic.BaseModel):
+class Statuses(BaseModel):
     values: list[TaskStatus] = Field(default_factory=list)
 
     def __str__(self):
