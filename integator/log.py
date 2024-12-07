@@ -18,7 +18,7 @@ def _print_status_line(pairs: list[tuple[Commit, Statuses]]):
     print("\n")
     with_failures = Arr(pairs).filter(lambda i: i[1].has_failed())
     if with_failures.count() > 0:
-        print(f"{Emojis.FAIL.value} Latest failed: {with_failures[0]}")
+        print(f"{Emojis.FAIL.value} Latest failed: {with_failures[0][0].hash[0:4]}")
         latest_failure = with_failures[0][1].get_failures()[0]
         print(f"\t{latest_failure.log}")
         return

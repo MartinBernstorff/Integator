@@ -43,7 +43,10 @@ def monitor_impl(shell: Shell, git: Git, status_repo: TaskStatusRepo) -> Command
         return CommandRan.NO
 
     l.debug("Diffing againt trunk")
-    if not git.diff_against(settings.integator.trunk):
+    if (
+        not git.diff_against(settings.integator.trunk)
+        and settings.integator.skip_if_no_diff_against_trunk
+    ):
         print(
             f"{latest}: No changes compared to trunk at {settings.integator.trunk}, waiting"
         )

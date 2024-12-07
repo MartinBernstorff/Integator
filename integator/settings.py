@@ -56,6 +56,7 @@ class IntegatorSettings(BaseModel):
     log_dir: pathlib.Path = Field(default=pathlib.Path.cwd() / ".logs")
     push_on_success: bool = Field(default=False)
     source_dir: pathlib.Path = Field(default=pathlib.Path.cwd())
+    skip_if_no_diff_against_trunk: bool = Field(default=False)
     trunk: str = Field(default="main")
 
 
