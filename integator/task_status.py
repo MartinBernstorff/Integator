@@ -1,6 +1,7 @@
 import datetime as dt
 import pathlib
 from enum import Enum, auto
+from typing import Set
 
 from pydantic import Field
 
@@ -99,8 +100,11 @@ class Statuses(BaseModel):
     def contains(self, status: ExecutionState) -> bool:
         return any(task.state == status for task in self.values)
 
-    def all(self, compare: ExecutionState) -> bool:
-        return all(task.state == compare for task in self.values)
+    def all(self, names: Set[str], expected_state: ExecutionState) -> bool:
+        for name in names:
+            if not self.get(name).state == expected_state:
+                return False
+        return True
 
     def get_failures(self) -> list[TaskStatus]:
         return [task for task in self.values if task.state == ExecutionState.FAILURE]

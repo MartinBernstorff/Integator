@@ -14,7 +14,7 @@ from integator.task_status import ExecutionState, Statuses
 from integator.task_status_repo import TaskStatusRepo
 
 
-def _print_status_line(pairs: list[tuple[Commit, Statuses]]):
+def _print_status_line(pairs: list[tuple[Commit, Statuses]], task_names: set[str]):
     print("\n")
     with_failures = Arr(pairs).filter(lambda i: i[1].has_failed())
     if with_failures.count() > 0:
@@ -23,7 +23,9 @@ def _print_status_line(pairs: list[tuple[Commit, Statuses]]):
         print(f"\t{latest_failure.log}")
         return
 
-    ok_entries = Arr(pairs).filter(lambda i: i[1].all(ExecutionState.SUCCESS))
+    ok_entries = Arr(pairs).filter(
+        lambda i: i[1].all(task_names, ExecutionState.SUCCESS)
+    )
     if ok_entries.count() > 0:
         ok_entry = ok_entries[0]
         print(f"{Emojis.OK.value} Latest success: {ok_entry}")
@@ -31,9 +33,7 @@ def _print_status_line(pairs: list[tuple[Commit, Statuses]]):
         print("No commit has passing tests yet")
 
 
-def print_log(
-    entries: list[Commit], task_names: list[str], status_repo: TaskStatusRepo
-):
+def print_log(entries: list[Commit], task_names: set[str], status_repo: TaskStatusRepo):
     Shell().clear()
 
     table = Table(box=None)
@@ -54,7 +54,7 @@ def print_log(
         )
     Console().print(table)
 
-    _print_status_line(pairs)
+    _print_status_line(pairs, task_names)
 
     # Print current time
     print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')}")
