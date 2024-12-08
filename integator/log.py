@@ -17,9 +17,11 @@ from integator.task_status_repo import TaskStatusRepo
 
 
 def _progress_bar(filled: int, total: int) -> str:
-    filled_length = int(round(filled / total))
-    empty_length = total - filled_length
-    return f"{''.join(['█' for _ in range(filled_length)])}{''.join(['░' for _ in range(empty_length)])}"
+    if filled >= total:
+        return "█" * total
+
+    empty_length = total - filled
+    return f"{''.join(['█' for _ in range(filled)])}{''.join(['░' for _ in range(empty_length)])}"
 
 
 def _print_status_line(pairs: list[tuple[Commit, Statuses]], task_names: set[str]):
@@ -60,9 +62,9 @@ def print_log(
 
         n_blocks_since_last_commit = 0
         if idx < len(pairs) - 1:
-            next = pairs[idx + 1][0].timestamp
             current = pairs[idx][0].timestamp
-            time_since_last_commit = current - next
+            prior = pairs[idx + 1][0].timestamp
+            time_since_last_commit = current - prior
 
             if time_since_last_commit.total_seconds() > 5 * 60 * 60:
                 # Above threshold, probably didn't work on it in this interval
