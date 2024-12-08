@@ -25,9 +25,10 @@ class Commit(BaseModel):
         return dt.datetime.now() - self.timestamp
 
 
-class CommitDTO(BaseModel):
-    FORMAT_STR = "C|%h| T|%ar| A|%aN| N|%N%-C()|%-C()"
+FORMAT_STR = "C|%h| T|%ar| A|%aN| N|%N%-C()|%-C()"
 
+
+class CommitDTO(BaseModel):
     hash: str
     timestamp: dt.datetime
     author: str

@@ -1,16 +1,14 @@
 import pathlib
 from dataclasses import dataclass
 
-from integator.commit import Commit, CommitDTO
+from integator.commit import FORMAT_STR, Commit
 from integator.shell import Shell
 
 
 @dataclass
 class Log:
     def get(self) -> list[Commit]:
-        values = Shell().run_quietly(
-            f"git log -n 10 --pretty=format:{CommitDTO.FORMAT_STR}"
-        )
+        values = Shell().run_quietly(f'git log -n 10 --pretty=format:"{FORMAT_STR}"')
 
         if not values:
             raise RuntimeError("No values returned from git log")
