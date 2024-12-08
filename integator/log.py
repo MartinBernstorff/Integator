@@ -65,7 +65,7 @@ def log_impl():
 
     git = Git(
         source_dir=settings.integator.source_dir,
-        log=Log(set(settings.cmd_names())),
+        log=Log(),
     )
 
     while True:

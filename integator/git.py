@@ -7,8 +7,6 @@ from integator.shell import Shell
 
 @dataclass
 class Log:
-    expected_cmd_names: set[str]
-
     def get(self) -> list[Commit]:
         values = Shell().run_quietly(
             'git log -n 10 --pretty=format:"C|%h| T|%ar| A|%aN| N|%N%-C()|%-C()"'

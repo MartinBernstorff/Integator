@@ -55,6 +55,9 @@ class TaskStatus(BaseModel):
             log=None,
         )
 
+    def __repr__(self) -> str:
+        return f"{self.task.name}: {self.state}"
+
 
 class Statuses(BaseModel):
     values: list[TaskStatus] = Field(default_factory=list)
@@ -68,6 +71,12 @@ class Statuses(BaseModel):
 
     def names(self) -> set[str]:
         return {status.task.name for status in self.values}
+
+    def replace(self, new: TaskStatus):
+        self.values = [
+            status for status in self.values if status.task.name != new.task.name
+        ]
+        self.add(new)
 
     def get(self, name: str) -> TaskStatus:
         matching = [task for task in self.values if task.task.name == name]

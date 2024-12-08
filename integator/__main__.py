@@ -21,8 +21,6 @@ logger = logging.getLogger(__name__)
 
 app = typer.Typer()
 
-# TODO: Add monitoring command which runs a verify script
-
 
 @app.command("i")
 @app.command()
@@ -47,7 +45,7 @@ def monitor():
         logger.debug("--- Init'ing ---")
         git = Git(
             source_dir=settings.integator.source_dir,
-            log=Log(expected_cmd_names=set(settings.cmd_names())),
+            log=Log(),
         )
 
         logger.debug("Running")
@@ -69,4 +67,4 @@ def log():
 
 
 if __name__ == "__main__":
-    log()
+    app()

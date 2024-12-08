@@ -5,7 +5,7 @@ import pathlib
 
 from iterpy import Arr
 
-from integator.git import Commit, Git, Log
+from integator.git import Commit, Git
 from integator.settings import RootSettings
 from integator.shell import Shell
 from integator.task_status import (
@@ -117,7 +117,7 @@ def monitor_impl(shell: Shell, git: Git, status_repo: TaskStatusRepo) -> Command
         if settings.integator.push_on_success and not latest_statuses.is_pushed():
             l.debug("Pushing!")
             git.push_head()
-            latest_statuses.add(
+            latest_statuses.replace(
                 TaskStatus(
                     task=Task(name="Push", cmd="Push"),
                     state=ExecutionState.SUCCESS,
@@ -159,9 +159,3 @@ def _is_stale(
         return True
 
     return False
-
-
-if __name__ == "__main__":
-    monitor_impl(
-        Shell(), Git(source_dir=pathlib.Path.cwd(), log=Log({"None"})), TaskStatusRepo()
-    )
