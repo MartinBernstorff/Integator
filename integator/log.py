@@ -50,6 +50,7 @@ def print_log(
     for idx, (entry, statuses) in enumerate(pairs):
         state_emojis = [statuses.get(cmd).state.__str__() for cmd in task_names]
 
+        n_blocks_since_last_commit = 0
         if idx < len(pairs) - 1:
             next = pairs[idx + 1][0].timestamp
             current = pairs[idx][0].timestamp
