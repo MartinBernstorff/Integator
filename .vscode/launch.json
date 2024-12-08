@@ -14,7 +14,17 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": true
+        },
+        {
+            "name": "Debug log",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "integator",
+            "args": [
+                "log"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
         }
     ]
-]
 }

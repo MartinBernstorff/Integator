@@ -28,7 +28,7 @@ def _print_status_line(pairs: list[tuple[Commit, Statuses]], task_names: set[str
     )
     if ok_entries.count() > 0:
         ok_entry = ok_entries[0]
-        print(f"{Emojis.OK.value} Latest success: {ok_entry}")
+        print(f"{Emojis.OK.value} Latest success: {ok_entry[0].hash[0:4]}")
     else:
         print("No commit has passing tests yet")
 
@@ -43,15 +43,26 @@ def print_log(
     table.add_column("".join([n[0:2] for n in task_names]), justify="center")
     table.add_column("")
     table.add_column("")
+    table.add_column("")
 
     pairs = [(entry, status_repo.get(entry.hash)) for entry in entries]
 
-    for entry, statuses in pairs:
+    for idx, (entry, statuses) in enumerate(pairs):
         state_emojis = [statuses.get(cmd).state.__str__() for cmd in task_names]
+
+        if idx < len(pairs) - 1:
+            next = pairs[idx + 1][0].timestamp
+            current = pairs[idx][0].timestamp
+            time_since_last_commit = current - next
+            n_blocks_since_last_commit = min(
+                int(time_since_last_commit.total_seconds() / 60 / 5), 10
+            )
+
         table.add_row(
-            entry.hash[0:4],
+            f"{entry.hash[0:4]}",
             "".join(state_emojis),
             f"{humanize.naturaldelta(entry.age())} ago",
+            "█" * n_blocks_since_last_commit,
             "🌥️" if statuses.get("Push").state == ExecutionState.SUCCESS else "️",
         )
     Console().print(table)
