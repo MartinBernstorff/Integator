@@ -66,10 +66,10 @@ def print_log(
                 # Above threshold, probably didn't work on it in this interval
                 n_blocks_since_last_commit = 0
             else:
-                n_blocks_since_last_commit = min(
-                    int(time_since_last_commit.total_seconds() / 60 / 5), 10
+                minutes_per_block = 5
+                n_blocks_since_last_commit = int(
+                    time_since_last_commit.total_seconds() / 60 / minutes_per_block
                 )
-
         table.add_row(
             f"{entry.hash[0:4]}",
             "".join(state_emojis),
