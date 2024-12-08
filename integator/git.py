@@ -1,7 +1,7 @@
 import pathlib
 from dataclasses import dataclass
 
-from integator.commit import Commit
+from integator.commit import Commit, CommitDTO
 from integator.shell import Shell
 
 
@@ -9,7 +9,7 @@ from integator.shell import Shell
 class Log:
     def get(self) -> list[Commit]:
         values = Shell().run_quietly(
-            'git log -n 10 --pretty=format:"C|%h| T|%ar| A|%aN| N|%N%-C()|%-C()"'
+            f"git log -n 10 --pretty=format:{CommitDTO.FORMAT_STR}"
         )
 
         if not values:

@@ -26,6 +26,8 @@ class Commit(BaseModel):
 
 
 class CommitDTO(BaseModel):
+    FORMAT_STR = "C|%h| T|%ar| A|%aN| N|%N%-C()|%-C()"
+
     hash: str
     timestamp: dt.datetime
     author: str
