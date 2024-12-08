@@ -14,6 +14,12 @@ from integator.task_status import ExecutionState, Statuses
 from integator.task_status_repo import TaskStatusRepo
 
 
+def _progress_bar(filled: int, total: int) -> str:
+    filled_length = int(round(filled / total))
+    empty_length = total - filled_length
+    return f"{''.join(['█' for _ in range(filled_length)])}{''.join(['░' for _ in range(empty_length)])}"
+
+
 def _print_status_line(pairs: list[tuple[Commit, Statuses]], task_names: set[str]):
     print("\n")
     with_failures = Arr(pairs).filter(lambda i: i[1].has_failed())
@@ -55,15 +61,20 @@ def print_log(
             next = pairs[idx + 1][0].timestamp
             current = pairs[idx][0].timestamp
             time_since_last_commit = current - next
-            n_blocks_since_last_commit = min(
-                int(time_since_last_commit.total_seconds() / 60 / 5), 10
-            )
+
+            if time_since_last_commit.total_seconds() > 5 * 60 * 60:
+                # Above threshold, probably didn't work on it in this interval
+                n_blocks_since_last_commit = 0
+            else:
+                n_blocks_since_last_commit = min(
+                    int(time_since_last_commit.total_seconds() / 60 / 5), 10
+                )
 
         table.add_row(
             f"{entry.hash[0:4]}",
             "".join(state_emojis),
             f"{humanize.naturaldelta(entry.age())} ago",
-            "█" * n_blocks_since_last_commit,
+            _progress_bar(n_blocks_since_last_commit, 10),
             "🌥️" if statuses.get("Push").state == ExecutionState.SUCCESS else "️",
         )
     Console().print(table)
