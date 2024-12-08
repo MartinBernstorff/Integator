@@ -1,29 +1,14 @@
 import pathlib
 from dataclasses import dataclass
 
-from integator.commit import FORMAT_STR, Commit
+from integator.git_log import GitLog
 from integator.shell import Shell
-
-
-@dataclass
-class Log:
-    def get(self) -> list[Commit]:
-        values = Shell().run_quietly(f'git log -n 10 --pretty=format:"{FORMAT_STR}"')
-
-        if not values:
-            raise RuntimeError("No values returned from git log")
-
-        entries = [Commit.from_str(value) for value in values]
-        return entries
-
-    def latest(self) -> Commit:
-        return self.get()[0]
 
 
 @dataclass
 class Git:
     source_dir: pathlib.Path
-    log: Log
+    log: GitLog
 
     def diff_against(self, reference: str) -> list[str]:
         result = Shell().run_quietly(f"git diff origin/{reference}")

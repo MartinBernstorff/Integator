@@ -5,7 +5,8 @@ import pathlib
 
 from iterpy import Arr
 
-from integator.git import Commit, Git
+from integator.commit import Commit
+from integator.git import Git
 from integator.settings import RootSettings
 from integator.shell import Shell
 from integator.task_status import (

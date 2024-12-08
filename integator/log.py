@@ -6,8 +6,10 @@ from iterpy import Arr
 from rich.console import Console
 from rich.table import Table
 
+from integator.commit import Commit
 from integator.emojis import Emojis
-from integator.git import Commit, Git, Log
+from integator.git import Git
+from integator.git_log import GitLog
 from integator.settings import RootSettings
 from integator.shell import Shell
 from integator.task_status import ExecutionState, Statuses
@@ -90,7 +92,7 @@ def log_impl():
 
     git = Git(
         source_dir=settings.integator.source_dir,
-        log=Log(),
+        log=GitLog(),
     )
 
     while True:

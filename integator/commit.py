@@ -1,9 +1,38 @@
 import datetime as dt
 import re
 
-import pytimeparse  # type: ignore
+from integator.basemodel import BaseModel
 
-from integator.basemodel import BaseModel  # type: ignore
+
+def parse_commit_str(line: str):
+    regexes = [
+        ("hash", r"^C\|(.*?)\|"),
+        ("timestamp", r"T\|(.*?)\|"),
+        ("author", r"A\|(.*?)\|"),
+        ("notes", r"N\|(.*?)\|"),
+    ]
+
+    results = {}
+
+    for name, regex in regexes:
+        match = re.search(regex, line)
+
+        if match is None:
+            raise ValueError(f"Could not find {name} in {line}")
+
+        result: str = match.group(1)  # type: ignore
+
+        if name == "timestamp":
+            results[name] = dt.datetime.fromisoformat(result).replace(tzinfo=None)
+        elif name == "notes":
+            if result == "":
+                results[name] = '{"values": []}'
+            else:
+                results[name] = result
+        else:
+            results[name] = result if match else ""
+
+    return CommitDTO(**results)  # type: ignore
 
 
 class Commit(BaseModel):
@@ -25,49 +54,8 @@ class Commit(BaseModel):
         return dt.datetime.now() - self.timestamp
 
 
-FORMAT_STR = "C|%h| T|%ar| A|%aN| N|%N%-C()|%-C()"
-
-
 class CommitDTO(BaseModel):
     hash: str
     timestamp: dt.datetime
     author: str
     notes: str
-
-
-def parse_commit_str(line: str):
-    regexes = [
-        ("hash", r"^C\|(.*?)\|"),
-        ("timestamp", r"T\|(.*?)\s+ago\|"),
-        ("author", r"A\|(.*?)\|"),
-        ("notes", r"N\|(.*?)\|"),
-    ]
-
-    results = {}
-
-    for name, regex in regexes:
-        match = re.search(regex, line)
-
-        if match is None:
-            raise ValueError(f"Could not find {name} in {line}")
-
-        result: str = match.group(1)  # type: ignore
-
-        if name == "timestamp":
-            seconds = pytimeparse.parse(result)  # type: ignore
-
-            if seconds is None:
-                raise ValueError(f"Invalid time: {result}")
-
-            time_since = dt.datetime.now() - dt.timedelta(seconds=seconds)
-
-            results[name] = time_since
-        elif name == "notes":
-            if result == "":
-                results[name] = '{"values": []}'
-            else:
-                results[name] = result
-        else:
-            results[name] = result if match else ""
-
-    return CommitDTO(**results)  # type: ignore

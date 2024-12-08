@@ -4,7 +4,8 @@ import time
 
 import typer
 
-from integator.git import Git, Log
+from integator.git import Git
+from integator.git_log import GitLog
 from integator.log import log_impl
 from integator.monitor_impl import CommandRan, monitor_impl
 from integator.settings import FILE_NAME, RootSettings, settings_file_exists
@@ -45,7 +46,7 @@ def monitor():
         logger.debug("--- Init'ing ---")
         git = Git(
             source_dir=settings.integator.source_dir,
-            log=Log(),
+            log=GitLog(),
         )
 
         logger.debug("Running")
