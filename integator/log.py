@@ -33,7 +33,9 @@ def _print_status_line(pairs: list[tuple[Commit, Statuses]], task_names: set[str
         print("No commit has passing tests yet")
 
 
-def print_log(entries: list[Commit], task_names: set[str], status_repo: TaskStatusRepo):
+def print_log(
+    entries: list[Commit], task_names: list[str], status_repo: TaskStatusRepo
+):
     Shell().clear()
 
     table = Table(box=None)
@@ -54,7 +56,7 @@ def print_log(entries: list[Commit], task_names: set[str], status_repo: TaskStat
         )
     Console().print(table)
 
-    _print_status_line(pairs, task_names)
+    _print_status_line(pairs, set(task_names))
 
     # Print current time
     print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')}")
