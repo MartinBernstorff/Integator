@@ -50,7 +50,7 @@ def print_log(
             entry.hash[0:4],
             "".join(state_emojis),
             f"{humanize.naturaldelta(entry.age())} ago",
-            statuses.get("Push").state.__str__(),
+            "🌥️" if statuses.get("Push").state == ExecutionState.SUCCESS else "️",
         )
     Console().print(table)
 
