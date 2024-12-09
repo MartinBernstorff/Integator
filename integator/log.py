@@ -118,7 +118,7 @@ def _is_ready_for_changes(
     if (
         datetime.datetime.now() - latest_passing_commit.timestamp
         < datetime.timedelta(minutes=15)
-        and not latest_failing_commit_index > latest_passing_commit_index
+        and not latest_failing_commit_index < latest_passing_commit_index
     ):
         log.info("No failures for the last 15 minutes")
         return True
@@ -135,11 +135,9 @@ def _print_ready_status(ready: bool):
     print("")
 
 
-def print_log(
+def _print_log(
     entries: list[Commit], task_names: list[str], status_repo: TaskStatusRepo
 ):
-    Shell().clear()
-
     pairs = [(entry, status_repo.get(entry.hash)) for entry in entries]
 
     _print_ready_status(_is_ready_for_changes(pairs, set(task_names)))
@@ -161,5 +159,6 @@ def log_impl():
     while True:
         settings = RootSettings()
         commits = git.log.get()
-        print_log(commits, settings.cmd_names(), TaskStatusRepo())
+        Shell().clear()
+        _print_log(commits, settings.cmd_names(), TaskStatusRepo())
         time.sleep(1)
