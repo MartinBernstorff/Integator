@@ -23,9 +23,10 @@ dependencies = [
 package = true
 
 [dependency-groups]
-dev = [
-    "pyright>=1.1.389",
-]
+dev = ["pyright>=1.1.389"]
 
 [project.scripts]
 integator = "integator.__main__:app"
+
+[tool.pyright]
+exclude = ["build/integator/**"]
