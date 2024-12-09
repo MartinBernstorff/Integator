@@ -29,4 +29,4 @@ dev = ["pyright>=1.1.389"]
 integator = "integator.__main__:app"
 
 [tool.pyright]
-exclude = ["build/integator/**"]
+exclude = ["**/node_modules", "**/__pycache__", "**/.*", "build/integator/**"]
