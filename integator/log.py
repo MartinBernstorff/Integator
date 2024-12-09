@@ -12,7 +12,6 @@ from integator.emojis import Emojis
 from integator.git import Git
 from integator.git_log import GitLog
 from integator.settings import RootSettings
-from integator.shell import Shell
 from integator.task_status import ExecutionState, Statuses
 from integator.task_status_repo import TaskStatusRepo
 
@@ -82,7 +81,7 @@ def _print_table(task_names: list[str], pairs: list[tuple[Commit, Statuses]]):
     Console().print(table)
 
 
-def _is_ready_for_changes(
+def _ready_for_changes(
     pairs: list[tuple[Commit, Statuses]], task_names: set[str]
 ) -> bool:
     maybe_latest_passing_commit = (
@@ -140,7 +139,7 @@ def _print_log(
 ):
     pairs = [(entry, status_repo.get(entry.hash)) for entry in entries]
 
-    _print_ready_status(_is_ready_for_changes(pairs, set(task_names)))
+    _print_ready_status(_ready_for_changes(pairs, set(task_names)))
     _print_table(task_names, pairs)
     _print_last_status_commit(pairs, set(task_names))
 
@@ -159,6 +158,6 @@ def log_impl():
     while True:
         settings = RootSettings()
         commits = git.log.get()
-        Shell().clear()
+        # Shell().clear()
         _print_log(commits, settings.cmd_names(), TaskStatusRepo())
         time.sleep(1)
