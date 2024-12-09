@@ -100,7 +100,7 @@ class Statuses(BaseModel):
     def contains(self, status: ExecutionState) -> bool:
         return any(task.state == status for task in self.values)
 
-    def all_passed(self, names: Set[str]) -> bool:
+    def all_succeeded(self, names: Set[str]) -> bool:
         return self.all(names, ExecutionState.SUCCESS)
 
     def all(self, names: Set[str], expected_state: ExecutionState) -> bool:

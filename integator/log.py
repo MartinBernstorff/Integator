@@ -85,7 +85,9 @@ def _ready_for_changes(
     pairs: list[tuple[Commit, Statuses]], task_names: set[str]
 ) -> bool:
     maybe_latest_passing_commit = (
-        Arr(pairs).filter(lambda i: not i[1].has_failed()).map(lambda it: it[0])
+        Arr(pairs)
+        .filter(lambda i: i[1].all_succeeded(task_names))
+        .map(lambda it: it[0])
     )
 
     if maybe_latest_passing_commit.count() == 0:
@@ -100,7 +102,7 @@ def _ready_for_changes(
 
     latest_passing_commit_index = None
     for idx, pair in enumerate(pairs):
-        if pair[1].all_passed(task_names):
+        if pair[1].all_succeeded(task_names):
             latest_passing_commit_index = idx
             break
 
