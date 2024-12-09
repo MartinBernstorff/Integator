@@ -3,6 +3,7 @@ from pathlib import Path
 
 from integator.task_status import (
     ExecutionState,
+    Span,
     Statuses,
     Task,
     TaskStatus,
@@ -15,7 +16,7 @@ def test_status():
             TaskStatus(
                 task=Task(name=str("Test 1"), cmd=str("echo")),
                 state=ExecutionState.IN_PROGRESS,
-                span=(dt.datetime.now(), dt.datetime.now()),
+                span=Span(start=dt.datetime.now(), end=dt.datetime.now()),
                 log=Path(),
             )
         ]

@@ -41,10 +41,21 @@ class Task(BaseModel):
     cmd: str
 
 
+class Span(BaseModel):
+    start: dt.datetime
+    end: dt.datetime | None
+
+    def duration(self) -> dt.timedelta:
+        if self.start is None or self.end is None:
+            return dt.timedelta()
+
+        return self.end - self.start
+
+
 class TaskStatus(BaseModel):
     task: Task
     state: ExecutionState
-    span: tuple[dt.datetime, dt.datetime]
+    span: Span
     log: pathlib.Path | None
 
     @classmethod
@@ -52,7 +63,7 @@ class TaskStatus(BaseModel):
         return cls(
             task=task,
             state=ExecutionState.UNKNOWN,
-            span=(dt.datetime.now(), dt.datetime.now()),
+            span=Span(start=dt.datetime.now(), end=None),
             log=None,
         )
 
@@ -86,7 +97,7 @@ class Statuses(BaseModel):
             new_status = TaskStatus(
                 task=Task(name=name, cmd=str("UNKNOWN")),
                 state=ExecutionState.UNKNOWN,
-                span=(dt.datetime.now(), dt.datetime.now()),
+                span=Span(start=dt.datetime.now(), end=dt.datetime.now()),
                 log=None,
             )
             self.add(new_status)

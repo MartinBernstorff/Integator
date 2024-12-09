@@ -36,12 +36,13 @@ def init():
 
 @app.command("m")
 @app.command()
-def monitor():
+def monitor(debug: bool = False):
     settings = RootSettings()
 
     shell = Shell()
     while True:
-        # shell.clear()
+        if not debug:
+            shell.clear()
 
         logger.debug("--- Init'ing ---")
         git = Git(
@@ -54,6 +55,7 @@ def monitor():
             shell,
             git=git,
             status_repo=TaskStatusRepo(),
+            debug=debug,
         )
 
         logger.debug("--- Sleeping ---")
@@ -63,8 +65,8 @@ def monitor():
 
 @app.command("l")
 @app.command()
-def log():
-    log_impl()
+def log(debug: bool = False):
+    log_impl(debug)
 
 
 if __name__ == "__main__":

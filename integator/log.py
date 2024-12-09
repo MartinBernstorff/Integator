@@ -12,6 +12,7 @@ from integator.emojis import Emojis
 from integator.git import Git
 from integator.git_log import GitLog
 from integator.settings import RootSettings
+from integator.shell import Shell
 from integator.task_status import ExecutionState, Statuses
 from integator.task_status_repo import TaskStatusRepo
 
@@ -133,7 +134,6 @@ def _print_ready_status(ready: bool):
         print(Emojis.OK.value * line_length)
     else:
         print(Emojis.RED.value * line_length)
-    print("")
 
 
 def _print_log(
@@ -142,14 +142,16 @@ def _print_log(
     pairs = [(entry, status_repo.get(entry.hash)) for entry in entries]
 
     _print_ready_status(_ready_for_changes(pairs, set(task_names)))
+    print("")
     _print_table(task_names, pairs)
+    print("")
     _print_last_status_commit(pairs, set(task_names))
 
     # Print current time
     print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')}")
 
 
-def log_impl():
+def log_impl(debug: bool):
     settings = RootSettings()
 
     git = Git(
@@ -160,6 +162,8 @@ def log_impl():
     while True:
         settings = RootSettings()
         commits = git.log.get()
-        # Shell().clear()
+        if not debug:
+            Shell().clear()
+
         _print_log(commits, settings.cmd_names(), TaskStatusRepo())
         time.sleep(1)

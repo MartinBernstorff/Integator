@@ -11,6 +11,7 @@ from integator.settings import RootSettings
 from integator.shell import Shell
 from integator.task_status import (
     ExecutionState,
+    Span,
     Statuses,
     Task,
     TaskStatus,
@@ -25,7 +26,9 @@ class CommandRan(enum.Enum):
     NO = enum.auto()
 
 
-def monitor_impl(shell: Shell, git: Git, status_repo: TaskStatusRepo) -> CommandRan:
+def monitor_impl(
+    shell: Shell, git: Git, status_repo: TaskStatusRepo, debug: bool
+) -> CommandRan:
     # Starting setup
     l.debug("Getting settings")
     settings = RootSettings()
@@ -92,6 +95,9 @@ def monitor_impl(shell: Shell, git: Git, status_repo: TaskStatusRepo) -> Command
         ):
             print(f"Running {cmd.name}")
             latest_statuses.get(cmd.name).state = ExecutionState.IN_PROGRESS
+            latest_statuses.get(cmd.name).span = Span(
+                start=datetime.datetime.now(), end=None
+            )
             status_repo.update(latest.hash, latest_statuses)
 
             result = shell.run(
@@ -102,7 +108,7 @@ def monitor_impl(shell: Shell, git: Git, status_repo: TaskStatusRepo) -> Command
             latest_statuses.get(cmd.name).state = ExecutionState.from_exit_code(
                 result.exit
             )
-
+            latest_statuses.get(cmd.name).span.end = datetime.datetime.now()
             latest_statuses.get(cmd.name).log = output_file
             status_repo.update(latest.hash, latest_statuses)
 
@@ -122,7 +128,9 @@ def monitor_impl(shell: Shell, git: Git, status_repo: TaskStatusRepo) -> Command
                 TaskStatus(
                     task=Task(name="Push", cmd="Push"),
                     state=ExecutionState.SUCCESS,
-                    span=(datetime.datetime.now(), datetime.datetime.now()),
+                    span=Span(
+                        start=datetime.datetime.now(), end=datetime.datetime.now()
+                    ),
                     log=None,
                 )
             )
@@ -132,7 +140,6 @@ def monitor_impl(shell: Shell, git: Git, status_repo: TaskStatusRepo) -> Command
             shell.run_interactively(settings.integator.command_on_success)
 
     l.info("Finished monitoring")
-    # shell.clear()
 
     return command_ran
 
@@ -150,7 +157,7 @@ def _is_stale(
     )
 
     time_since_success = (
-        datetime.datetime.now() - successes[0].span[1]
+        datetime.datetime.now() - successes[0].span.start
         if successes
         else datetime.timedelta(days=30)
     )
