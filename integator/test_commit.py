@@ -10,4 +10,4 @@ def test_parse_commit_str():
     assert parsed.timestamp == dt.datetime(2024, 12, 8, 18, 7, 4)
     assert parsed.author == "Martin Bernstorff"
     assert parsed.notes == '{"values": []}'
-    assert 1 == 2
+    # assert 1 == 2
