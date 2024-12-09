@@ -8,3 +8,4 @@ class Emojis(Enum):
     IN_PROGRESS = "⏳"
     SKIPPED = "⏭️"
     FAIL = "❌"
+    RED = "🔴"

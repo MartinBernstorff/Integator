@@ -1,4 +1,5 @@
 import datetime
+import logging
 import time
 
 import humanize
@@ -15,6 +16,8 @@ from integator.shell import Shell
 from integator.task_status import ExecutionState, Statuses
 from integator.task_status_repo import TaskStatusRepo
 
+log = logging.getLogger(__name__)
+
 
 def _progress_bar(filled: int, total: int) -> str:
     if filled >= total:
@@ -24,8 +27,9 @@ def _progress_bar(filled: int, total: int) -> str:
     return f"{''.join(['█' for _ in range(filled)])}{''.join(['░' for _ in range(empty_length)])}"
 
 
-def _print_status_line(pairs: list[tuple[Commit, Statuses]], task_names: set[str]):
-    print("\n")
+def _print_last_status_commit(
+    pairs: list[tuple[Commit, Statuses]], task_names: set[str]
+):
     with_failures = Arr(pairs).filter(lambda i: i[1].has_failed())
     if with_failures.count() > 0:
         print(f"{Emojis.FAIL.value} Latest failed: {with_failures[0][0].hash[0:4]}")
@@ -43,19 +47,13 @@ def _print_status_line(pairs: list[tuple[Commit, Statuses]], task_names: set[str
         print("No commit has passing tests yet")
 
 
-def print_log(
-    entries: list[Commit], task_names: list[str], status_repo: TaskStatusRepo
-):
-    Shell().clear()
-
+def _print_table(task_names: list[str], pairs: list[tuple[Commit, Statuses]]):
     table = Table(box=None)
     table.add_column("")
     table.add_column("".join([n[0:2] for n in task_names]), justify="center")
     table.add_column("")
     table.add_column("")
     table.add_column("")
-
-    pairs = [(entry, status_repo.get(entry.hash)) for entry in entries]
 
     for idx, (entry, statuses) in enumerate(pairs):
         state_emojis = [statuses.get(cmd).state.__str__() for cmd in task_names]
@@ -83,7 +81,70 @@ def print_log(
         )
     Console().print(table)
 
-    _print_status_line(pairs, set(task_names))
+
+def _is_ready_for_changes(
+    pairs: list[tuple[Commit, Statuses]], task_names: set[str]
+) -> bool:
+    maybe_latest_passing_commit = (
+        Arr(pairs).filter(lambda i: not i[1].has_failed()).map(lambda it: it[0])
+    )
+
+    if maybe_latest_passing_commit.count() == 0:
+        log.info("No commit has passing tests yet")
+        return False
+
+    latest_passing_commit = maybe_latest_passing_commit.to_list()[0]
+
+    if latest_passing_commit.hash == pairs[0][0].hash:
+        log.info("No commit has failed yet")
+        return True
+
+    latest_passing_commit_index = None
+    for idx, pair in enumerate(pairs):
+        if pair[1].all_passed(task_names):
+            latest_passing_commit_index = idx
+            break
+
+    latest_failing_commit_index = None
+    for idx, pair in enumerate(pairs):
+        if pair[1].has_failed():
+            latest_failing_commit_index = idx
+            break
+
+    if latest_failing_commit_index is None or latest_passing_commit_index is None:
+        log.info("Either no failure or no success yet")
+        return False
+
+    if (
+        datetime.datetime.now() - latest_passing_commit.timestamp
+        < datetime.timedelta(minutes=15)
+        and not latest_failing_commit_index > latest_passing_commit_index
+    ):
+        log.info("No failures for the last 15 minutes")
+        return True
+
+    return False
+
+
+def _print_ready_status(ready: bool):
+    line_length = 21
+    if ready:
+        print(Emojis.OK.value * line_length)
+    else:
+        print(Emojis.RED.value * line_length)
+    print("")
+
+
+def print_log(
+    entries: list[Commit], task_names: list[str], status_repo: TaskStatusRepo
+):
+    Shell().clear()
+
+    pairs = [(entry, status_repo.get(entry.hash)) for entry in entries]
+
+    _print_ready_status(_is_ready_for_changes(pairs, set(task_names)))
+    _print_table(task_names, pairs)
+    _print_last_status_commit(pairs, set(task_names))
 
     # Print current time
     print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')}")
