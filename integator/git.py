@@ -1,4 +1,5 @@
 import pathlib
+import re
 from dataclasses import dataclass
 
 from integator.git_log import GitLog
@@ -6,9 +7,34 @@ from integator.shell import Shell
 
 
 @dataclass
+class ChangeCount:
+    files: int
+    insertions: int
+    deletions: int
+
+
+@dataclass
 class Git:
     source_dir: pathlib.Path
     log: GitLog
+
+    def change_count(self, hash: str) -> ChangeCount:
+        maybeResult = Shell().run_quietly(
+            f"git -C {self.source_dir} show --shortstat {hash}"
+        )
+        if not maybeResult:
+            raise RuntimeError("No commit found")
+
+        changes = maybeResult[-1]
+        regex = r"(\d+).+(\d+).+(\d+)"
+        matches = re.search(regex, changes)
+        if not matches:
+            raise RuntimeError("Could not parse changes")
+        return ChangeCount(
+            int(matches.group(1)),
+            int(matches.group(2)),
+            int(matches.group(3)),
+        )
 
     def diff_against(self, reference: str) -> list[str]:
         result = Shell().run_quietly(f"git diff origin/{reference}")

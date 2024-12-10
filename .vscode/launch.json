@@ -25,6 +25,17 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": true
+        },
+        {
+            "name": "Debug line-count",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "integator",
+            "args": [
+                "line-count"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
         }
     ]
 }

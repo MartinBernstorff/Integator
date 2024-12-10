@@ -69,5 +69,10 @@ def log(debug: bool = False):
     log_impl(debug)
 
 
+@app.command()
+def line_count():
+    print(Git(pathlib.Path.cwd(), GitLog()).change_count("HEAD"))
+
+
 if __name__ == "__main__":
     app()
