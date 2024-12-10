@@ -93,11 +93,11 @@ def monitor_impl(
             cmd.max_staleness_seconds,
             cmd.name,
         ):
+            start_time = datetime.datetime.now()
             print(f"Running {cmd.name}")
+
             latest_statuses.get(cmd.name).state = ExecutionState.IN_PROGRESS
-            latest_statuses.get(cmd.name).span = Span(
-                start=datetime.datetime.now(), end=None
-            )
+            latest_statuses.get(cmd.name).span = Span(start=start_time, end=None)
             status_repo.update(latest.hash, latest_statuses)
 
             result = shell.run(
@@ -108,7 +108,9 @@ def monitor_impl(
             latest_statuses.get(cmd.name).state = ExecutionState.from_exit_code(
                 result.exit
             )
-            latest_statuses.get(cmd.name).span.end = datetime.datetime.now()
+            latest_statuses.get(cmd.name).span = Span(
+                start=start_time, end=datetime.datetime.now()
+            )
             latest_statuses.get(cmd.name).log = output_file
             status_repo.update(latest.hash, latest_statuses)
 
