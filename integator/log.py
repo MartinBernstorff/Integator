@@ -53,40 +53,38 @@ def _print_table(task_names: list[str], pairs: list[tuple[Commit, Statuses]], gi
     table.add_column("")
     table.add_column("".join([n[0:2] for n in task_names]), justify="center")
     table.add_column("")
-    table.add_column("Change age")
-    table.add_column("∆L")
-    table.add_column("∆F")
+    # table.add_column("Change age")
+    table.add_column("🤡")
     table.add_column("Task ⌛")
     table.add_column("")
 
     for idx, (entry, statuses) in enumerate(pairs):
         state_emojis = [statuses.get(cmd).state.__str__() for cmd in task_names]
 
-        n_blocks_since_last_commit = 0
-        if idx < len(pairs) - 1:
-            current = pairs[idx][0].timestamp
-            prior = pairs[idx + 1][0].timestamp
-            time_since_last_commit = current - prior
+        # n_blocks_since_last_commit = 0
+        # if idx < len(pairs) - 1:
+        #     current = pairs[idx][0].timestamp
+        #     prior = pairs[idx + 1][0].timestamp
+        #     time_since_last_commit = current - prior
 
-            if time_since_last_commit.total_seconds() > 5 * 60 * 60:
-                # Above threshold, probably didn't work on it in this interval
-                n_blocks_since_last_commit = 0
-            else:
-                minutes_per_block = 5
-                n_blocks_since_last_commit = int(
-                    time_since_last_commit.total_seconds() / 60 / minutes_per_block
-                )
+        #     if time_since_last_commit.total_seconds() > 5 * 60 * 60:
+        #         # Above threshold, probably didn't work on it in this interval
+        #         n_blocks_since_last_commit = 0
+        #     else:
+        #         minutes_per_block = 5
+        #         n_blocks_since_last_commit = int(
+        #             time_since_last_commit.total_seconds() / 60 / minutes_per_block
+        #         )
 
         change_count = git.change_count(entry.hash)
         total_count = change_count.insertions + change_count.deletions
+        change_complexity = total_count + 1 * change_count.files
 
         table.add_row(
             f"{entry.hash[0:4]}",
             "".join(state_emojis),
             f"{humanize.naturaldelta(entry.age())} ago",
-            _progress_bar(n_blocks_since_last_commit, 10),
-            str(total_count),
-            str(change_count.files),
+            _progress_bar(int(change_complexity / 10), 5),
             f"{humanize.naturaldelta(statuses.duration())}",
             "🌥️" if statuses.get("Push").state == ExecutionState.SUCCESS else "️",
         )
