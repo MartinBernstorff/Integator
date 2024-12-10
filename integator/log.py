@@ -52,7 +52,8 @@ def _print_table(task_names: list[str], pairs: list[tuple[Commit, Statuses]]):
     table.add_column("")
     table.add_column("".join([n[0:2] for n in task_names]), justify="center")
     table.add_column("")
-    table.add_column("")
+    table.add_column("Change age")
+    table.add_column("Task ⌛")
     table.add_column("")
 
     for idx, (entry, statuses) in enumerate(pairs):
@@ -77,6 +78,7 @@ def _print_table(task_names: list[str], pairs: list[tuple[Commit, Statuses]]):
             "".join(state_emojis),
             f"{humanize.naturaldelta(entry.age())} ago",
             _progress_bar(n_blocks_since_last_commit, 10),
+            f"{humanize.naturaldelta(statuses.duration())}",
             "🌥️" if statuses.get("Push").state == ExecutionState.SUCCESS else "️",
         )
     Console().print(table)
@@ -129,7 +131,7 @@ def _ready_for_changes(
 
 
 def _print_ready_status(ready: bool):
-    line_length = 21
+    line_length = 28
     if ready:
         print(Emojis.OK.value * line_length)
     else:

@@ -1,6 +1,7 @@
 import datetime as dt
 import pathlib
 from enum import Enum, auto
+from functools import reduce
 from typing import Set
 
 from pydantic import Field
@@ -104,6 +105,9 @@ class Statuses(BaseModel):
             return new_status
 
         return matching[0]
+
+    def duration(self) -> dt.timedelta:
+        return reduce(lambda x, y: x + y, [s.span.duration() for s in self.values])
 
     def add(self, task_status: TaskStatus):
         self.values.append(task_status)
