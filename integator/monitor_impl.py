@@ -122,7 +122,7 @@ def monitor_impl(
     latest = git.log.latest()
     latest_statuses = status_repo.get(latest.hash)
 
-    if latest_statuses.all(set(settings.cmd_names()), ExecutionState.SUCCESS):
+    if latest_statuses.all(set(settings.task_names()), ExecutionState.SUCCESS):
         if settings.integator.push_on_success and not latest_statuses.is_pushed():
             l.debug("Pushing!")
             git.push_head()

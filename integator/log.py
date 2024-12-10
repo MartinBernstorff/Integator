@@ -47,12 +47,15 @@ def _print_last_status_commit(
         print("No commit has passing tests yet")
 
 
-def _print_table(task_names: list[str], pairs: list[tuple[Commit, Statuses]]):
+# XXX: This function could take a list of columns instead.
+def _print_table(task_names: list[str], pairs: list[tuple[Commit, Statuses]], git: Git):
     table = Table(box=None)
     table.add_column("")
     table.add_column("".join([n[0:2] for n in task_names]), justify="center")
     table.add_column("")
     table.add_column("Change age")
+    table.add_column("∆L")
+    table.add_column("∆F")
     table.add_column("Task ⌛")
     table.add_column("")
 
@@ -73,11 +76,17 @@ def _print_table(task_names: list[str], pairs: list[tuple[Commit, Statuses]]):
                 n_blocks_since_last_commit = int(
                     time_since_last_commit.total_seconds() / 60 / minutes_per_block
                 )
+
+        change_count = git.change_count(entry.hash)
+        total_count = change_count.insertions + change_count.deletions
+
         table.add_row(
             f"{entry.hash[0:4]}",
             "".join(state_emojis),
             f"{humanize.naturaldelta(entry.age())} ago",
             _progress_bar(n_blocks_since_last_commit, 10),
+            str(total_count),
+            str(change_count.files),
             f"{humanize.naturaldelta(statuses.duration())}",
             "🌥️" if statuses.get("Push").state == ExecutionState.SUCCESS else "️",
         )
@@ -138,21 +147,6 @@ def _print_ready_status(ready: bool):
         print(Emojis.RED.value * line_length)
 
 
-def _print_log(
-    entries: list[Commit], task_names: list[str], status_repo: TaskStatusRepo
-):
-    pairs = [(entry, status_repo.get(entry.hash)) for entry in entries]
-
-    _print_ready_status(_ready_for_changes(pairs, set(task_names)))
-    print("")
-    _print_table(task_names, pairs)
-    print("")
-    _print_last_status_commit(pairs, set(task_names))
-
-    # Print current time
-    print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')}")
-
-
 def log_impl(debug: bool):
     settings = RootSettings()
 
@@ -167,5 +161,15 @@ def log_impl(debug: bool):
         if not debug:
             Shell().clear()
 
-        _print_log(commits, settings.cmd_names(), TaskStatusRepo())
+        pairs = [(entry, TaskStatusRepo().get(entry.hash)) for entry in commits]
+
+        _print_ready_status(_ready_for_changes(pairs, set(settings.task_names())))
+        print("")
+        _print_table(settings.task_names(), pairs, git)
+        print("")
+        _print_last_status_commit(pairs, set(settings.task_names()))
+
+        # Print current time
+        print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')}")
+
         time.sleep(1)

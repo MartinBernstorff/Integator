@@ -1,3 +1,4 @@
+import functools
 import pathlib
 import re
 from dataclasses import dataclass
@@ -13,28 +14,40 @@ class ChangeCount:
     deletions: int
 
 
+@functools.cache
+def _get_change_count(source_dir: pathlib.Path, hash: str) -> ChangeCount:
+    maybeResult = Shell().run_quietly(f"git -C {source_dir} show --shortstat {hash}")
+    if not maybeResult:
+        raise RuntimeError("No commit found")
+
+    patterns = {
+        "files": r"(\d+) fil.+",
+        "insertions": r"^.+(\d+) ins.+",
+        "deletions": r"^.+(\d+) del.+",
+    }
+
+    values: dict[str, int] = {}
+    for pattern_name, regex in patterns.items():
+        match = re.search(regex, maybeResult[-1])
+        if match is None:
+            values[pattern_name] = 0
+        else:
+            values[pattern_name] = int(match.group(1))
+
+    return ChangeCount(
+        values["files"],
+        values["insertions"],
+        values["deletions"],
+    )
+
+
 @dataclass
 class Git:
     source_dir: pathlib.Path
     log: GitLog
 
     def change_count(self, hash: str) -> ChangeCount:
-        maybeResult = Shell().run_quietly(
-            f"git -C {self.source_dir} show --shortstat {hash}"
-        )
-        if not maybeResult:
-            raise RuntimeError("No commit found")
-
-        changes = maybeResult[-1]
-        regex = r"(\d+).+(\d+).+(\d+)"
-        matches = re.search(regex, changes)
-        if not matches:
-            raise RuntimeError("Could not parse changes")
-        return ChangeCount(
-            int(matches.group(1)),
-            int(matches.group(2)),
-            int(matches.group(3)),
-        )
+        return _get_change_count(self.source_dir, hash)
 
     def diff_against(self, reference: str) -> list[str]:
         result = Shell().run_quietly(f"git diff origin/{reference}")
