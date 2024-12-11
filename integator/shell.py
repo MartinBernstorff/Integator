@@ -128,7 +128,7 @@ class Shell:
             return result
         except subprocess.CalledProcessError as e:
             raise RuntimeError(
-                f"""{command} failed.
+                f"""{command} execution failed.
     Exit code: {e.returncode}
     Output: {e.stdout.decode('utf-8').strip()}"""
             ) from e

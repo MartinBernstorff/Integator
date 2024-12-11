@@ -1,6 +1,6 @@
 [integator]
 push_on_success = true
-source_dir = "/Users/mabe/Desktop/Git/Integator"
+source_dir = "/Users/mabe/Git/integator"
 
 [[integator.commands]]
 name = "Unit tests"

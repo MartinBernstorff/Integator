@@ -4,7 +4,7 @@ from typing import Tuple, Type
 
 import pydantic_settings
 import toml
-from pydantic import Field
+from pydantic import DirectoryPath, Field, field_validator
 
 from integator.basemodel import BaseModel
 
@@ -53,11 +53,22 @@ class IntegatorSettings(BaseModel):
     commands: list[TaskSpecification] = Field(default_factory=default_command)
     command_on_success: str = Field(default="echo 'Success!'")
     fail_fast: bool = Field(default=True)
-    log_dir: pathlib.Path = Field(default=pathlib.Path.cwd() / ".logs")
     push_on_success: bool = Field(default=False)
-    source_dir: pathlib.Path = Field(default=pathlib.Path.cwd())
+    source_dir: DirectoryPath = Field(default=pathlib.Path.cwd())
     skip_if_no_diff_against_trunk: bool = Field(default=False)
     trunk: str = Field(default="main")
+
+    @field_validator("source_dir")
+    @classmethod
+    def validate_log_dir(cls, v: pathlib.Path) -> pathlib.Path:
+        if not v.parent.exists():
+            raise ValueError(f"integator.log_dir does not exist: {v.parent}")
+        v.mkdir(parents=True, exist_ok=True)
+        return v
+
+    @property
+    def log_dir(self) -> pathlib.Path:
+        return self.source_dir / ".logs"
 
 
 class RootSettings(Settings):
