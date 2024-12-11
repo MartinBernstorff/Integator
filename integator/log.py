@@ -35,24 +35,26 @@ def _progress_bar(filled: int, total: int, threshold: int | None = None) -> str:
     return "".join(elements)
 
 
-def _print_last_status_commit(
+def _last_status_commit(
     pairs: list[tuple[Commit, Statuses]], task_names: set[str]
-):
+) -> str:
     with_failures = Arr(pairs).filter(lambda i: i[1].has_failed())
     if with_failures.count() > 0:
-        print(f"{Emojis.FAIL.value} Latest failed: {with_failures[0][0].hash[0:4]}")
+        fail_line = (
+            f"{Emojis.FAIL.value} Latest failed: {with_failures[0][0].hash[0:4]}"
+        )
         latest_failure = with_failures[0][1].get_failures()[0]
-        print(f"\t{latest_failure.log}")
-        return
+        log_line = f"\t{latest_failure.log}"
+        return f"{fail_line}\n{log_line}"
 
     ok_entries = Arr(pairs).filter(
         lambda i: i[1].all(task_names, ExecutionState.SUCCESS)
     )
     if ok_entries.count() > 0:
         ok_entry = ok_entries[0]
-        print(f"{Emojis.OK.value} Latest success: {ok_entry[0].hash[0:4]}")
+        return f"{Emojis.OK.value} Latest success: {ok_entry[0].hash[0:4]}"
     else:
-        print("No commit has passing tests yet")
+        return "No commit has passing tests yet"
 
 
 # XXX: This function could take a list of columns instead.
@@ -166,19 +168,15 @@ def log_impl(debug: bool):
 
     while True:
         settings = RootSettings()
-        commits = git.log.get()
+        commits = git.log.get(8)
         if not debug:
             Shell().clear()
 
         pairs = [(entry, TaskStatusRepo().get(entry.hash)) for entry in commits]
 
         _print_ready_status(_ready_for_changes(pairs, set(settings.task_names())))
-        print("")
         _print_table(settings.task_names(), pairs, git, settings.integator)
-        print("")
-        _print_last_status_commit(pairs, set(settings.task_names()))
-
-        # Print current time
-        print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')}")
+        now = f"\n{datetime.datetime.now().strftime('%H:%M:%S')}"
+        print(f"{now} | {_last_status_commit(pairs, set(settings.task_names()))}")
 
         time.sleep(0.3)

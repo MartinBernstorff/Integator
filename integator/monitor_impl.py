@@ -83,7 +83,7 @@ def monitor_impl(
         )
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
-        commits = git.log.get()
+        commits = git.log.get(20)
         if _is_stale(
             [(commit, status_repo.get(commit.hash)) for commit in commits],
             cmd.max_staleness_seconds,
