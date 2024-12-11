@@ -11,7 +11,7 @@ from integator.commit import Commit
 from integator.emojis import Emojis
 from integator.git import Git
 from integator.git_log import GitLog
-from integator.settings import RootSettings
+from integator.settings import IntegatorSettings, RootSettings
 from integator.shell import Shell
 from integator.task_status import ExecutionState, Statuses
 from integator.task_status_repo import TaskStatusRepo
@@ -56,7 +56,12 @@ def _print_last_status_commit(
 
 
 # XXX: This function could take a list of columns instead.
-def _print_table(task_names: list[str], pairs: list[tuple[Commit, Statuses]], git: Git):
+def _print_table(
+    task_names: list[str],
+    pairs: list[tuple[Commit, Statuses]],
+    git: Git,
+    settings: IntegatorSettings,
+):
     table = Table(box=None)
     table.add_column("")
     table.add_column("".join([n[0:2] for n in task_names]), justify="center")
@@ -78,7 +83,16 @@ def _print_table(task_names: list[str], pairs: list[tuple[Commit, Statuses]], gi
             f"{entry.hash[0:4]}",
             "".join(state_emojis),
             f"{humanize.naturaldelta(entry.age())} ago",
-            _progress_bar(filled=int(change_complexity / 5), total=10, threshold=2),
+            _progress_bar(
+                filled=int(change_complexity / settings.complexity_changes_per_block),
+                total=int(
+                    settings.complexity_bar_max / settings.complexity_changes_per_block
+                ),
+                threshold=int(
+                    settings.complexity_threshold
+                    / settings.complexity_changes_per_block
+                ),
+            ),
             str(change_complexity),
             f"{humanize.naturaldelta(statuses.duration())}",
             "🌥️" if statuses.get("Push").state == ExecutionState.SUCCESS else "️",
@@ -158,7 +172,7 @@ def log_impl(debug: bool):
 
         _print_ready_status(_ready_for_changes(pairs, set(settings.task_names())))
         print("")
-        _print_table(settings.task_names(), pairs, git)
+        _print_table(settings.task_names(), pairs, git, settings.integator)
         print("")
         _print_last_status_commit(pairs, set(settings.task_names()))
 
