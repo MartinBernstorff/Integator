@@ -81,9 +81,7 @@ def monitor_impl(
         current_date = now.strftime("%Y-%m-%d")
         output_file = (
             settings.integator.log_dir
-            / current_date
-            / cmd.name.replace(" ", "-")
-            / f"{now.strftime('%H-%M-%S')}-{latest.hash}-{cmd.name.replace(' ', '-')}.log"
+            / f"{now.strftime('%Y%m%d-%H%M%S')}-{latest.hash}-{cmd.name.replace(' ', '-')}.log"
         )
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
