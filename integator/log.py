@@ -19,12 +19,20 @@ from integator.task_status_repo import TaskStatusRepo
 log = logging.getLogger(__name__)
 
 
-def _progress_bar(filled: int, total: int) -> str:
+def _progress_bar(filled: int, total: int, threshold: int | None = None) -> str:
     if filled >= total:
         return "█" * total
 
     empty_length = total - filled
-    return f"{''.join(['█' for _ in range(filled)])}{''.join(['░' for _ in range(empty_length)])}"
+    elements = []
+
+    elements.extend(["█" for _ in range(filled)])
+    elements.extend(["░" for _ in range(empty_length)])
+
+    if threshold is not None:
+        elements.insert(threshold, "|")
+
+    return "".join(elements)
 
 
 def _print_last_status_commit(
@@ -55,6 +63,7 @@ def _print_table(task_names: list[str], pairs: list[tuple[Commit, Statuses]], gi
     table.add_column("")
     # table.add_column("Change age")
     table.add_column("🤡")
+    table.add_column("∆C")
     table.add_column("Task ⌛")
     table.add_column("")
 
@@ -78,13 +87,14 @@ def _print_table(task_names: list[str], pairs: list[tuple[Commit, Statuses]], gi
 
         change_count = git.change_count(entry.hash)
         total_count = change_count.insertions + change_count.deletions
-        change_complexity = total_count + 1 * change_count.files
+        change_complexity = total_count + change_count.files
 
         table.add_row(
             f"{entry.hash[0:4]}",
             "".join(state_emojis),
             f"{humanize.naturaldelta(entry.age())} ago",
-            _progress_bar(int(change_complexity / 10), 5),
+            _progress_bar(filled=int(change_complexity / 5), total=10, threshold=2),
+            str(change_complexity),
             f"{humanize.naturaldelta(statuses.duration())}",
             "🌥️" if statuses.get("Push").state == ExecutionState.SUCCESS else "️",
         )
