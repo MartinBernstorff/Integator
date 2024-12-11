@@ -1,12 +1,15 @@
 import datetime
 import logging
 import time
+from dataclasses import dataclass
+from typing import Callable
 
 import humanize
 from iterpy import Arr
 from rich.console import Console
 from rich.table import Table
 
+from integator.columns import status
 from integator.commit import Commit
 from integator.emojis import Emojis
 from integator.git import Git
@@ -55,6 +58,32 @@ def _last_status_commit(
         return f"{Emojis.OK.value} Latest success: {ok_entry[0].hash[0:4]}"
     else:
         return "No commit has passing tests yet"
+
+
+@dataclass
+class TableColumn:
+    label: str
+    title: str
+    func: Callable[[list[tuple[Commit, Statuses]]], list[str]]
+
+    def apply(self, pairs: list[tuple[Commit, Statuses]]) -> list[str]:
+        return self.func(pairs)
+
+
+def _print_table2(cols: list[TableColumn], pairs: list[tuple[Commit, Statuses]]):
+    table = Table(box=None)
+
+    col_values = [col.apply(pairs) for col in cols]
+    for col in cols:
+        table.add_column(col.title, justify="center")
+
+    # Transpose the col_values
+    rows = list(zip(*col_values))
+
+    for row in rows:
+        table.add_row(*row)
+
+    Console().print(table)
 
 
 # XXX: This function could take a list of columns instead.
@@ -175,7 +204,18 @@ def log_impl(debug: bool):
         pairs = [(entry, TaskStatusRepo().get(entry.hash)) for entry in commits]
 
         _print_ready_status(_ready_for_changes(pairs, set(settings.task_names())))
-        _print_table(settings.task_names(), pairs, git, settings.integator)
+        _print_table2(
+            [
+                TableColumn("Hash", "", lambda pairs: [r[0].hash[0:4] for r in pairs]),
+                TableColumn(
+                    "Statuses",
+                    "".join([n[0:2] for n in settings.task_names()]),
+                    lambda pairs: status(pairs, set(settings.task_names())),
+                ),
+            ],
+            pairs,
+        )
+        # _print_table(settings.task_names(), pairs, git, settings.integator)
         now = f"\n{datetime.datetime.now().strftime('%H:%M:%S')}"
         print(f"{now} | {_last_status_commit(pairs, set(settings.task_names()))}")
 
