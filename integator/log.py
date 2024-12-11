@@ -87,7 +87,7 @@ def _print_table2(cols: list[TableColumn], pairs: list[tuple[Commit, Statuses]])
 
 
 # XXX: This function could take a list of columns instead.
-def _print_table(
+def _print_table(  # type: ignore
     task_names: list[str],
     pairs: list[tuple[Commit, Statuses]],
     git: Git,
