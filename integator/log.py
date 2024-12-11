@@ -179,4 +179,4 @@ def log_impl(debug: bool):
         # Print current time
         print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')}")
 
-        time.sleep(0.5)
+        time.sleep(0.3)
