@@ -30,3 +30,5 @@ integator = "integator.__main__:app"
 
 [tool.pyright]
 exclude = ["**/node_modules", "**/__pycache__", "**/.*", "build"]
+typeCheckingMode = "off"
+strict = ["**/*.py"]

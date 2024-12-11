@@ -18,7 +18,7 @@ from integator.task_status import (
 )
 from integator.task_status_repo import TaskStatusRepo
 
-l = logging.getLogger(__name__)
+l = logging.getLogger(__name__)  # noqa: E741
 
 
 class CommandRan(enum.Enum):

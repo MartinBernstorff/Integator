@@ -24,7 +24,7 @@ def _progress_bar(filled: int, total: int, threshold: int | None = None) -> str:
         return "█" * total
 
     empty_length = total - filled
-    elements = []
+    elements: list[str] = []
 
     elements.extend(["█" for _ in range(filled)])
     elements.extend(["░" for _ in range(empty_length)])
@@ -67,23 +67,8 @@ def _print_table(task_names: list[str], pairs: list[tuple[Commit, Statuses]], gi
     table.add_column("Task ⌛")
     table.add_column("")
 
-    for idx, (entry, statuses) in enumerate(pairs):
+    for entry, statuses in pairs:
         state_emojis = [statuses.get(cmd).state.__str__() for cmd in task_names]
-
-        # n_blocks_since_last_commit = 0
-        # if idx < len(pairs) - 1:
-        #     current = pairs[idx][0].timestamp
-        #     prior = pairs[idx + 1][0].timestamp
-        #     time_since_last_commit = current - prior
-
-        #     if time_since_last_commit.total_seconds() > 5 * 60 * 60:
-        #         # Above threshold, probably didn't work on it in this interval
-        #         n_blocks_since_last_commit = 0
-        #     else:
-        #         minutes_per_block = 5
-        #         n_blocks_since_last_commit = int(
-        #             time_since_last_commit.total_seconds() / 60 / minutes_per_block
-        #         )
 
         change_count = git.change_count(entry.hash)
         total_count = change_count.insertions + change_count.deletions
