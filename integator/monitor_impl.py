@@ -78,10 +78,9 @@ def monitor_impl(
                 log.info(f"{cmd.name} has not been run yet, executing")
 
         now = datetime.datetime.now()
-        current_date = now.strftime("%Y-%m-%d")
         output_file = (
             settings.integator.log_dir
-            / f"{now.strftime('%Y%m%d-%H%M%S')}-{latest.hash}-{cmd.name.replace(' ', '-')}.log"
+            / f"{now.strftime('%y%m%d-%H%M%S')}-{latest.hash}-{cmd.name.replace(' ', '-')}.log"
         )
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
