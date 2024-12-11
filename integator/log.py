@@ -82,7 +82,9 @@ def _print_table(
         table.add_row(
             f"{entry.hash[0:4]}",
             "".join(state_emojis),
-            f"{humanize.naturaldelta(entry.age())} ago",
+            f"{humanize.naturaldelta(entry.age())} ago"
+            if entry.age() > datetime.timedelta(minutes=1)
+            else "< 1 min ago",
             _progress_bar(
                 filled=int(change_complexity / settings.complexity_changes_per_block),
                 total=int(
