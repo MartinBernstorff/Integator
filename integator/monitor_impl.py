@@ -77,10 +77,12 @@ def monitor_impl(
             case ExecutionState.UNKNOWN:
                 log.info(f"{cmd.name} has not been run yet, executing")
 
+        time_until_2100 = datetime.datetime.strptime("2100-01-01", "%Y-%m-%d") - now
+
         now = datetime.datetime.now()
         output_file = (
             settings.integator.log_dir
-            / f"{now.strftime('%y%m%d%H%M%S')}-{latest.hash[0:4]}-{cmd.name.replace(' ', '-')}.log"
+            / f"{time_until_2100.total_seconds()}-{latest.hash[0:4]}-{cmd.name.replace(' ', '-')}.log"
         )
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
