@@ -47,6 +47,10 @@ def progress_bar(filled: int, total: int, threshold: int | None = None) -> str:
     return "".join(elements)
 
 
+def duration(pair: tuple[Commit, Statuses]) -> str:
+    return humanize.naturaldelta(pair[1].duration())
+
+
 def complexity(
     pair: tuple[Commit, Statuses], git: Git, settings: IntegatorSettings
 ) -> str:

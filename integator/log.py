@@ -9,7 +9,7 @@ from iterpy import Arr
 from rich.console import Console
 from rich.table import Table
 
-from integator.columns import age, complexity, progress_bar, status
+from integator.columns import age, complexity, duration, progress_bar, status
 from integator.commit import Commit
 from integator.emojis import Emojis
 from integator.git import Git
@@ -45,7 +45,7 @@ def _last_status_commit(
 
 
 @dataclass
-class TableColumn:
+class Column:
     label: str
     title: str
     func: Callable[[list[tuple[Commit, Statuses]]], list[str]]
@@ -54,7 +54,7 @@ class TableColumn:
         return self.func(pairs)
 
 
-def _print_table2(cols: list[TableColumn], pairs: list[tuple[Commit, Statuses]]):
+def _print_table2(cols: list[Column], pairs: list[tuple[Commit, Statuses]]):
     table = Table(box=None)
 
     col_values = [col.apply(pairs) for col in cols]
@@ -190,23 +190,28 @@ def log_impl(debug: bool):
         _print_ready_status(_ready_for_changes(pairs, set(settings.task_names())))
         _print_table2(
             [
-                TableColumn("Hash", "", lambda pairs: [r[0].hash[0:4] for r in pairs]),
-                TableColumn(
+                Column("Hash", "", lambda pairs: [r[0].hash[0:4] for r in pairs]),
+                Column(
                     "Statuses",
                     "".join([n[0:2] for n in settings.task_names()]),
                     lambda pairs: status(pairs, settings.task_names()),
                 ),
-                TableColumn(
+                Column(
                     label="Age",
                     title="",
                     func=lambda pairs: [age(p) for p in pairs],
                 ),
-                TableColumn(
+                Column(
                     label="🤡",
                     title="",
                     func=lambda pairs: [
                         complexity(p, git, settings.integator) for p in pairs
                     ],
+                ),
+                Column(
+                    label="🕒",
+                    title="",
+                    func=lambda pairs: [duration(p) for p in pairs],
                 ),
             ],
             pairs,
