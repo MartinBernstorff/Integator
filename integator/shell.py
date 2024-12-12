@@ -64,6 +64,8 @@ class Shell:
                 shell=True,
             )
             lines = []
+            if output_file:
+                output_file.write_text(f"Running {command}\n")
 
             while True:
                 output = process.stdout.readline()  # type: ignore

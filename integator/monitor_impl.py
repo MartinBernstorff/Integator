@@ -90,7 +90,6 @@ def monitor_impl(
             cmd.name,
         ):
             start_time = datetime.datetime.now()
-            print(f"Running {cmd.name}: {cmd.cmd}")
 
             latest_statuses.get(cmd.name).state = ExecutionState.IN_PROGRESS
             latest_statuses.get(cmd.name).span = Span(start=start_time, end=None)
