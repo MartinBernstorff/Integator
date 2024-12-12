@@ -209,8 +209,8 @@ def log_impl(debug: bool):
                     ],
                 ),
                 Column(
-                    label="🕒",
-                    title="",
+                    label="Duration",
+                    title="🕒",
                     func=lambda pairs: [duration(p) for p in pairs],
                 ),
             ],

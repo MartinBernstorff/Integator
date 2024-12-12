@@ -12,13 +12,9 @@ from integator.settings import FILE_NAME, RootSettings, settings_file_exists
 from integator.shell import Shell
 from integator.task_status_repo import TaskStatusRepo
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s \t%(levelname)s \t%(name)s \t%(message)s",
-    datefmt="%H:%M:%S",
-)
-
 logger = logging.getLogger(__name__)
+format = "%(asctime)s \t%(levelname)s \t%(name)s \t%(message)s"
+date_fmt = "%H:%M:%S"
 
 app = typer.Typer()
 
@@ -37,6 +33,13 @@ def init():
 @app.command("m")
 @app.command()
 def monitor(debug: bool = False):
+    if debug:
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=format,
+            datefmt=date_fmt,
+        )
+
     settings = RootSettings()
 
     shell = Shell()
@@ -66,12 +69,13 @@ def monitor(debug: bool = False):
 @app.command("l")
 @app.command()
 def log(debug: bool = False):
+    if debug:
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=format,
+            datefmt=date_fmt,
+        )
     log_impl(debug)
-
-
-@app.command()
-def line_count():
-    print(Git(pathlib.Path.cwd(), GitLog()).change_count("HEAD"))
 
 
 if __name__ == "__main__":
