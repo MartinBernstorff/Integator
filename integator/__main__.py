@@ -33,12 +33,11 @@ def init():
 @app.command("m")
 @app.command()
 def monitor(debug: bool = False):
-    if debug:
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format=format,
-            datefmt=date_fmt,
-        )
+    logging.basicConfig(
+        level=logging.DEBUG if debug else logging.INFO,
+        format=format,
+        datefmt=date_fmt,
+    )
 
     settings = RootSettings()
 
