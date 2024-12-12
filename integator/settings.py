@@ -31,7 +31,7 @@ class Settings(pydantic_settings.BaseSettings):
 class TaskSpecification(BaseModel):
     name: str
     cmd: str
-    max_staleness_seconds: int
+    max_staleness_seconds: int = 0
 
 
 def default_command() -> list[TaskSpecification]:

@@ -210,7 +210,7 @@ def log_impl(debug: bool):
                 TableColumn(
                     "Statuses",
                     "".join([n[0:2] for n in settings.task_names()]),
-                    lambda pairs: status(pairs, set(settings.task_names())),
+                    lambda pairs: status(pairs, settings.task_names()),
                 ),
             ],
             pairs,
