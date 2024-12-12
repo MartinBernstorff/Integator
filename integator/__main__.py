@@ -53,7 +53,7 @@ def monitor(debug: bool = False):
         )
 
         logger.debug("Running")
-        print(f"Monitoring {settings.integator.source_dir} for commit changes")
+        print(f"Monitoring {settings.integator.source_dir} for new commits")
         status = monitor_impl(
             shell,
             git=git,
