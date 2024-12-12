@@ -212,6 +212,14 @@ def log_impl(debug: bool):
                     "".join([n[0:2] for n in settings.task_names()]),
                     lambda pairs: status(pairs, settings.task_names()),
                 ),
+                TableColumn(
+                    "Age",
+                    "",
+                    lambda pairs: [
+                        f"{humanize.naturaldelta(entry[0].age())} ago"
+                        for entry in pairs
+                    ],
+                ),
             ],
             pairs,
         )
