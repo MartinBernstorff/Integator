@@ -4,17 +4,16 @@ import time
 from dataclasses import dataclass
 from typing import Callable
 
-import humanize
 from iterpy import Arr
 from rich.console import Console
 from rich.table import Table
 
-from integator.columns import age, complexity, duration, progress_bar, status
+from integator.columns import age, complexity, duration, status
 from integator.commit import Commit
 from integator.emojis import Emojis
 from integator.git import Git
 from integator.git_log import GitLog
-from integator.settings import IntegatorSettings, RootSettings
+from integator.settings import RootSettings
 from integator.shell import Shell
 from integator.task_status import ExecutionState, Statuses
 from integator.task_status_repo import TaskStatusRepo
@@ -67,53 +66,6 @@ def _print_table2(cols: list[Column], pairs: list[tuple[Commit, Statuses]]):
     for row in rows:
         table.add_row(*row)
 
-    Console().print(table)
-
-
-# XXX: This function could take a list of columns instead.
-def _print_table(  # type: ignore
-    task_names: list[str],
-    pairs: list[tuple[Commit, Statuses]],
-    git: Git,
-    settings: IntegatorSettings,
-):
-    table = Table(box=None)
-    table.add_column("")
-    table.add_column("".join([n[0:2] for n in task_names]), justify="center")
-    table.add_column("")
-    # table.add_column("Change age")
-    table.add_column("🤡")
-    table.add_column("∆C")
-    table.add_column("Task ⌛")
-    table.add_column("")
-
-    for entry, statuses in pairs:
-        state_emojis = [statuses.get(cmd).state.__str__() for cmd in task_names]
-
-        change_count = git.change_count(entry.hash)
-        total_count = change_count.insertions + change_count.deletions
-        change_complexity = total_count + change_count.files
-
-        table.add_row(
-            f"{entry.hash[0:4]}",
-            "".join(state_emojis),
-            f"{humanize.naturaldelta(entry.age())} ago"
-            if entry.age() > datetime.timedelta(minutes=1)
-            else "< 1 min ago",
-            progress_bar(
-                filled=int(change_complexity / settings.complexity_changes_per_block),
-                total=int(
-                    settings.complexity_bar_max / settings.complexity_changes_per_block
-                ),
-                threshold=int(
-                    settings.complexity_threshold
-                    / settings.complexity_changes_per_block
-                ),
-            ),
-            str(change_complexity),
-            f"{humanize.naturaldelta(statuses.duration())}",
-            "🌥️" if statuses.get("Push").state == ExecutionState.SUCCESS else "️",
-        )
     Console().print(table)
 
 
@@ -190,7 +142,7 @@ def log_impl(debug: bool):
         _print_ready_status(_ready_for_changes(pairs, set(settings.task_names())))
         _print_table2(
             [
-                Column("Hash", "", lambda pairs: [r[0].hash[0:4] for r in pairs]),
+                Column("Hash", "", lambda pairs: [r[0].hash[0:5] for r in pairs]),
                 Column(
                     "Statuses",
                     "".join([n[0:2] for n in settings.task_names()]),
