@@ -51,7 +51,7 @@ def default_command() -> list[TaskSpecification]:
 
 class IntegatorSettings(BaseModel):
     commands: list[TaskSpecification] = Field(default_factory=default_command)
-    command_on_success: str = Field(default="echo 'Success!'")
+    command_on_success: str = Field(default="")
     complexity_threshold: int = Field(default=5)
     complexity_changes_per_block: int = Field(default=10)
     complexity_bar_max: int = Field(default=100)
