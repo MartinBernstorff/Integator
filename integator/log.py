@@ -9,7 +9,7 @@ from iterpy import Arr
 from rich.console import Console
 from rich.table import Table
 
-from integator.columns import status
+from integator.columns import age, complexity, progress_bar, status
 from integator.commit import Commit
 from integator.emojis import Emojis
 from integator.git import Git
@@ -20,22 +20,6 @@ from integator.task_status import ExecutionState, Statuses
 from integator.task_status_repo import TaskStatusRepo
 
 log = logging.getLogger(__name__)
-
-
-def _progress_bar(filled: int, total: int, threshold: int | None = None) -> str:
-    if filled >= total:
-        return "█" * total
-
-    empty_length = total - filled
-    elements: list[str] = []
-
-    elements.extend(["█" for _ in range(filled)])
-    elements.extend(["░" for _ in range(empty_length)])
-
-    if threshold is not None:
-        elements.insert(threshold, "|")
-
-    return "".join(elements)
 
 
 def _last_status_commit(
@@ -75,7 +59,7 @@ def _print_table2(cols: list[TableColumn], pairs: list[tuple[Commit, Statuses]])
 
     col_values = [col.apply(pairs) for col in cols]
     for col in cols:
-        table.add_column(col.title, justify="center")
+        table.add_column(col.title)
 
     # Transpose the col_values
     rows = list(zip(*col_values))
@@ -116,7 +100,7 @@ def _print_table(  # type: ignore
             f"{humanize.naturaldelta(entry.age())} ago"
             if entry.age() > datetime.timedelta(minutes=1)
             else "< 1 min ago",
-            _progress_bar(
+            progress_bar(
                 filled=int(change_complexity / settings.complexity_changes_per_block),
                 total=int(
                     settings.complexity_bar_max / settings.complexity_changes_per_block
@@ -213,11 +197,15 @@ def log_impl(debug: bool):
                     lambda pairs: status(pairs, settings.task_names()),
                 ),
                 TableColumn(
-                    "Age",
-                    "",
-                    lambda pairs: [
-                        f"{humanize.naturaldelta(entry[0].age())} ago"
-                        for entry in pairs
+                    label="Age",
+                    title="",
+                    func=lambda pairs: [age(p) for p in pairs],
+                ),
+                TableColumn(
+                    label="🤡",
+                    title="",
+                    func=lambda pairs: [
+                        complexity(p, git, settings.integator) for p in pairs
                     ],
                 ),
             ],
