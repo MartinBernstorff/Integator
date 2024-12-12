@@ -34,7 +34,7 @@ def init():
 @app.command()
 def monitor(debug: bool = False):
     logging.basicConfig(
-        level=logging.DEBUG if debug else logging.INFO,
+        level=logging.DEBUG if debug else logging.ERROR,
         format=format,
         datefmt=date_fmt,
     )
@@ -53,7 +53,7 @@ def monitor(debug: bool = False):
         )
 
         logger.debug("Running")
-        logger.info(f"Monitoring {settings.integator.source_dir} for commit changes")
+        print(f"Monitoring {settings.integator.source_dir} for commit changes")
         status = monitor_impl(
             shell,
             git=git,
