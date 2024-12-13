@@ -62,7 +62,7 @@ class IntegatorSettings(BaseModel):
     trunk: str = Field(default="main")
 
     @classmethod
-    @field_validator("source_dirs")
+    @field_validator("source_dir")
     def validate_log_dir(cls, v: pathlib.Path) -> pathlib.Path:
         if not v.parent.exists():
             raise ValueError(f"integator.log_dir does not exist: {v.parent}")
