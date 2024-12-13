@@ -61,8 +61,8 @@ class IntegatorSettings(BaseModel):
     skip_if_no_diff_against_trunk: bool = Field(default=False)
     trunk: str = Field(default="main")
 
-    @field_validator("source_dir")
     @classmethod
+    @field_validator("source_dir")
     def validate_log_dir(cls, v: pathlib.Path) -> pathlib.Path:
         if not v.parent.exists():
             raise ValueError(f"integator.log_dir does not exist: {v.parent}")
@@ -86,7 +86,7 @@ class RootSettings(Settings):
 
 
 def settings_file_exists() -> bool:
-    for dir in pathlib.Path.cwd().parents:
-        if (dir / FILE_NAME).exists():
+    for d in pathlib.Path.cwd().parents:
+        if (d / FILE_NAME).exists():
             return True
     return False
