@@ -59,7 +59,7 @@ class IntegatorSettings(BaseModel):
     push_on_success: bool = Field(default=False)
     source_dir: DirectoryPath = Field(default=pathlib.Path.cwd())
     skip_if_no_diff_against_trunk: bool = Field(default=False)
-    trunk: str = Field(default="main")
+    trunk: str = Field(default="main")s
 
     @classmethod
     @field_validator("source_dir")
