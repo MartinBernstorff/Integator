@@ -26,7 +26,7 @@ def run_task(
     statuses.get(task.name).span = Span(start=start_time, end=None)
     status_repo.update(hash, statuses)
 
-    task_dir = Path(tempfile.gettempdir()) / f"integator-{task.name}"
+    task_dir = Path(tempfile.gettempdir()) / f"integator-{hash}-{task.name}"
     worktree = source.init_worktree(task_dir, hash)
 
     log.debug(f"Running {task.name} in {worktree}")
