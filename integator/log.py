@@ -78,7 +78,7 @@ def _ready_for_changes(
         .map(lambda it: it[0])
     )
 
-    if maybe_latest_passing_commit.count() == 0:
+    if maybe_latest_passing_commit.len() == 0:
         log.info("No commit has passing tests yet")
         return False
 
