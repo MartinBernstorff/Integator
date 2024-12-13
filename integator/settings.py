@@ -82,7 +82,7 @@ class RootSettings(Settings):
         toml.dump(values, open(path, "w"))
 
     def task_names(self) -> list[str]:
-        return [cmd.name for cmd in self.integator.commands]
+        return self.commands
 
 
 def settings_file_exists() -> bool:
