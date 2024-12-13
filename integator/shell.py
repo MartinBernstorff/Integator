@@ -23,6 +23,9 @@ class RunResult:
     exit: ExitCode
     output: str | None
 
+    def failed(self) -> bool:
+        return self.exit != ExitCode.OK
+
 
 class Stream(enum.Enum):
     YES = True
@@ -42,6 +45,7 @@ class Shell:
         command: str,
         output_file: Path | None = None,
         stream: Stream = Stream.YES,
+        cwd: Path | None = None,
     ) -> RunResult:
         """
         Runs a shell script and streams the output to a file, optionally displaying in terminal.
@@ -61,6 +65,7 @@ class Shell:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 universal_newlines=True,
+                cwd=cwd,
                 shell=True,
             )
             lines = []

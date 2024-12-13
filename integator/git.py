@@ -78,3 +78,23 @@ class Git:
     def checkout_head(self):
         latest_commit = self._latest_commit()
         Shell().run_quietly(f"git checkout {latest_commit}")
+
+    def checkout(self, commit: str):
+        Shell().run_quietly(f"git checkout {commit}")
+
+
+@dataclass
+class SourceGit:
+    # The git representation for the location of the source files. E.g. used for monitoring, finding commits etc.
+    # XXX: Split this? Or have it contain a Git repository itself?
+    git: Git
+
+    def init_worktree(self, path: pathlib.Path, hash: str):
+        Shell().run_quietly(f"git worktree add -d {path} {hash}")
+        return path
+
+
+@dataclass
+class TaskGit:
+    # The git representation for the location with the task code. Used for running commands.
+    git: Git
