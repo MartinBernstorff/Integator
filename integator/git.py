@@ -78,3 +78,16 @@ class Git:
     def checkout_head(self):
         latest_commit = self._latest_commit()
         Shell().run_quietly(f"git checkout {latest_commit}")
+
+    def checkout(self, commit: str):
+        Shell().run_quietly(f"git checkout {commit}")
+
+
+@dataclass
+class SourceGit:
+    # The git representation for the location of the source files. E.g. used for monitoring, finding commits etc.
+    git: Git
+
+    def init_worktree(self, path: pathlib.Path, hash: str):
+        Shell().run_quietly(f"git worktree add -d '{path}' {hash}")
+        return path

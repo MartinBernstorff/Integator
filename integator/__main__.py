@@ -47,6 +47,7 @@ def monitor(debug: bool = False):
             shell.clear()
 
         logger.debug("--- Init'ing ---")
+        # XXX: Create the worktree in a temporary dir
         git = Git(
             source_dir=settings.integator.source_dir,
             log=GitLog(),
@@ -56,9 +57,8 @@ def monitor(debug: bool = False):
         print(f"Monitoring {settings.integator.source_dir} for new commits")
         status = monitor_impl(
             shell,
-            git=git,
+            source_git=git,
             status_repo=TaskStatusRepo(),
-            debug=debug,
         )
 
         logger.debug("--- Sleeping ---")

@@ -1,12 +1,12 @@
 import datetime
 import enum
 import logging
-import pathlib
 
 from iterpy import Arr
 
 from integator.commit import Commit
-from integator.git import Git
+from integator.git import Git, SourceGit
+from integator.run_task import run_task
 from integator.settings import RootSettings
 from integator.shell import Shell
 from integator.task_status import (
@@ -27,18 +27,14 @@ class CommandRan(enum.Enum):
 
 
 def monitor_impl(
-    shell: Shell, git: Git, status_repo: TaskStatusRepo, debug: bool
+    shell: Shell, source_git: Git, status_repo: TaskStatusRepo
 ) -> CommandRan:
     # Starting setup
     l.debug("Getting settings")
     settings = RootSettings()
 
-    l.debug("Checking out latest commit")
-    if pathlib.Path.cwd() != settings.integator.source_dir:
-        git.checkout_head()
-
     l.debug("Updating")
-    latest = git.log.latest()
+    latest = source_git.log.latest()
     latest_statuses = status_repo.get(latest.hash)
     if settings.integator.fail_fast and latest_statuses.has_failed():
         print(f"Latest commit {latest.hash} failed")
@@ -48,7 +44,7 @@ def monitor_impl(
 
     l.debug("Diffing againt trunk")
     if (
-        not git.diff_against(settings.integator.trunk)
+        not source_git.diff_against(settings.integator.trunk)
         and settings.integator.skip_if_no_diff_against_trunk
     ):
         print(
@@ -59,68 +55,50 @@ def monitor_impl(
 
     command_ran = CommandRan.NO
     # Run commands
-    for cmd in settings.integator.commands:
-        log = logging.getLogger(f"{__name__}.{cmd.name}")
-        log.debug(f"Processing {cmd.name}")
-        latest_cmd_status = latest_statuses.get(cmd.name).state
+    for task in settings.integator.commands:
+        log = logging.getLogger(f"{__name__}.{task.name}")
+        log.debug(f"Processing {task.name}")
+        latest_cmd_status = latest_statuses.get(task.name).state
         log.debug(f"Latest status: {latest_cmd_status}")
 
         match latest_cmd_status:
             case ExecutionState.SUCCESS:
-                log.info(f"{cmd.name} succeeded on the last run, continuing")
+                log.info(f"{task.name} succeeded on the last run, continuing")
                 continue
             case ExecutionState.FAILURE:
-                log.info(f"{cmd.name} failed on the last run, continuing")
+                log.info(f"{task.name} failed on the last run, continuing")
                 continue
             case ExecutionState.IN_PROGRESS:
-                log.info(f"{cmd.name} crashed while running, executing again")
+                log.info(f"{task.name} crashed while running, executing again")
             case ExecutionState.UNKNOWN:
-                log.info(f"{cmd.name} has not been run yet, executing")
+                log.info(f"{task.name} has not been run yet, executing")
 
-        output_file = (
+        log_file = (
             settings.integator.log_dir
-            / f"{datetime.datetime.now().strftime('%y%m%d%H%M%S')}-{latest.hash[0:4]}-{cmd.name.replace(' ', '-')}.log"
+            / f"{datetime.datetime.now().strftime('%y%m%d%H%M%S')}-{latest.hash[0:4]}-{task.name.replace(' ', '-')}.log"
         )
-        output_file.parent.mkdir(parents=True, exist_ok=True)
+        log_file.parent.mkdir(parents=True, exist_ok=True)
 
-        commits = git.log.get(20)
+        commits = source_git.log.get(20)
         if _is_stale(
             [(commit, status_repo.get(commit.hash)) for commit in commits],
-            cmd.max_staleness_seconds,
-            cmd.name,
+            task.max_staleness_seconds,
+            task.name,
         ):
-            start_time = datetime.datetime.now()
-
-            latest_statuses.get(cmd.name).state = ExecutionState.IN_PROGRESS
-            latest_statuses.get(cmd.name).span = Span(start=start_time, end=None)
-            status_repo.update(latest.hash, latest_statuses)
-
-            result = shell.run(
-                cmd.cmd,
-                output_file=output_file,
+            result = run_task(
+                task, latest.hash, SourceGit(source_git), status_repo, log_file
             )
-
-            latest_statuses.get(cmd.name).state = ExecutionState.from_exit_code(
-                result.exit
-            )
-            latest_statuses.get(cmd.name).span = Span(
-                start=start_time, end=datetime.datetime.now()
-            )
-            latest_statuses.get(cmd.name).log = output_file
-            status_repo.update(latest.hash, latest_statuses)
-
             command_ran = CommandRan.YES
-            if settings.integator.fail_fast:
+            if settings.integator.fail_fast and result.failed():
                 break
-        l.debug(f"Finished checking for {cmd.name}")
 
-    latest = git.log.latest()
+    latest = source_git.log.latest()
     latest_statuses = status_repo.get(latest.hash)
 
     if latest_statuses.all(set(settings.task_names()), ExecutionState.SUCCESS):
         if settings.integator.push_on_success and not latest_statuses.is_pushed():
             l.debug("Pushing!")
-            git.push_head()
+            source_git.push_head()
             latest_statuses.replace(
                 TaskStatus(
                     task=Task(name="Push", cmd="Push"),
