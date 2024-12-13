@@ -6,7 +6,7 @@ from iterpy import Arr
 
 from integator.commit import Commit
 from integator.git import Git, SourceGit
-from integator.run_task import run_task
+from integator.run_task import run_in_worktree
 from integator.settings import RootSettings
 from integator.shell import Shell
 from integator.task_status import (
@@ -85,7 +85,7 @@ def monitor_impl(
             task.max_staleness_seconds,
             task.name,
         ):
-            result = run_task(
+            result = run_in_worktree(
                 task, latest.hash, SourceGit(source_git), status_repo, log_file
             )
             command_ran = CommandRan.YES

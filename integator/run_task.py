@@ -10,7 +10,7 @@ from integator.task_status import ExecutionState, Span
 from integator.task_status_repo import TaskStatusRepo
 
 
-def run_task(
+def run_in_worktree(
     task: TaskSpecification,
     hash: str,
     source: SourceGit,
