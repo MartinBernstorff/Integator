@@ -172,4 +172,4 @@ def log_impl(debug: bool):
         now = f"\n{datetime.datetime.now().strftime('%H:%M:%S')}"
         print(f"{now} | {_last_status_commit(pairs, set(settings.task_names()))}")
 
-        time.sleep(0.3)
+        time.sleep(0.25)
