@@ -27,7 +27,10 @@ def run_in_worktree(
     status_repo.update(hash, statuses)
 
     task_dir = Path(tempfile.gettempdir()) / f"integator-{hash}"
-    worktree = source.init_worktree(task_dir, hash)
+    if task_dir.exists():
+        worktree = task_dir
+    else:
+        worktree = source.init_worktree(task_dir, hash)
 
     log.debug(f"Running {task.name} in {worktree}")
     result = Shell().run(
