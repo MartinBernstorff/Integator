@@ -1,7 +1,6 @@
 import datetime
 import logging
 import tempfile
-import uuid
 from pathlib import Path
 
 from integator.git import SourceGit
@@ -27,9 +26,7 @@ def run_in_worktree(
     statuses.get(task.name).span = Span(start=start_time, end=None)
     status_repo.update(hash, statuses)
 
-    task_dir = (
-        Path(tempfile.gettempdir()) / f"integator-{uuid.uuid4()}-{hash}-{task.name}"
-    )
+    task_dir = Path(tempfile.gettempdir()) / f"integator-{hash}"
     worktree = source.init_worktree(task_dir, hash)
 
     log.debug(f"Running {task.name} in {worktree}")
