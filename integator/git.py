@@ -88,6 +88,6 @@ class SourceGit:
     # The git representation for the location of the source files. E.g. used for monitoring, finding commits etc.
     git: Git
 
-    def init_worktree(self, path: pathlib.Path, hash: str):
+    def init_worktree(self, path: pathlib.Path, hash: str) -> pathlib.Path:
         Shell().run_quietly(f"git worktree add -d '{path}' {hash}")
         return path
