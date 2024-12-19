@@ -43,7 +43,7 @@ def default_command() -> list[TaskSpecification]:
         ),
         TaskSpecification(
             name=" X",
-            cmd="! rg -g '!integator.toml' XXX: .",
+            cmd="! rg -g '!integator.toml' XXX .",
             max_staleness_seconds=0,
         ),
     ]
