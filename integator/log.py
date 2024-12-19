@@ -25,7 +25,7 @@ def _last_status_commit(
     pairs: list[tuple[Commit, Statuses]], task_names: set[str]
 ) -> str:
     with_failures = Arr(pairs).filter(lambda i: i[1].has_failed())
-    if with_failures.count() > 0:
+    if with_failures.len() > 0:
         fail_line = (
             f"{Emojis.FAIL.value} Latest failed: {with_failures[0][0].hash[0:4]}"
         )
@@ -36,7 +36,7 @@ def _last_status_commit(
     ok_entries = Arr(pairs).filter(
         lambda i: i[1].all(task_names, ExecutionState.SUCCESS)
     )
-    if ok_entries.count() > 0:
+    if ok_entries.len() > 0:
         ok_entry = ok_entries[0]
         return f"{Emojis.OK.value} Latest success: {ok_entry[0].hash[0:4]}"
     else:
@@ -78,7 +78,7 @@ def _ready_for_changes(
         .map(lambda it: it[0])
     )
 
-    if maybe_latest_passing_commit.count() == 0:
+    if maybe_latest_passing_commit.len() == 0:
         log.info("No commit has passing tests yet")
         return False
 
