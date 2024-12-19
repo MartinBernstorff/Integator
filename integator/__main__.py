@@ -8,7 +8,7 @@ from integator.git import Git
 from integator.git_log import GitLog
 from integator.log import log_impl
 from integator.monitor_impl import CommandRan, monitor_impl
-from integator.settings import FILE_NAME, RootSettings, settings_file_exists
+from integator.settings import RootSettings, find_settings_file
 from integator.shell import Shell
 from integator.task_status_repo import TaskStatusRepo
 
@@ -24,10 +24,13 @@ app = typer.Typer()
 def init():
     settings = RootSettings()
 
-    if not settings_file_exists():
-        settings.write_toml(pathlib.Path.cwd() / FILE_NAME)
-
-    print("Settings file created")
+    destination_dir = find_settings_file()
+    match destination_dir:
+        case pathlib.Path():
+            settings.write_toml(destination_dir)
+            print(f"Settings file created at: {destination_dir}")
+        case None:
+            print(f"Settings file already exists at: {destination_dir}")
 
 
 @app.command("m")
@@ -47,7 +50,6 @@ def monitor(debug: bool = False):
             shell.clear()
 
         logger.debug("--- Init'ing ---")
-        # XXX: Create the worktree in a temporary dir
         git = Git(
             source_dir=settings.integator.source_dir,
             log=GitLog(),

@@ -42,9 +42,9 @@ def default_command() -> list[TaskSpecification]:
             max_staleness_seconds=10,
         ),
         TaskSpecification(
-            name=str("Command 2"),
-            cmd=str("echo 'test 2'"),
-            max_staleness_seconds=10,
+            name=" X",
+            cmd="! rg -g '!integator.toml' XXX: .",
+            max_staleness_seconds=0,
         ),
     ]
 
@@ -85,8 +85,8 @@ class RootSettings(Settings):
         return [cmd.name for cmd in self.integator.commands]
 
 
-def settings_file_exists() -> bool:
+def find_settings_file() -> pathlib.Path | None:
     for d in pathlib.Path.cwd().parents:
         if (d / FILE_NAME).exists():
-            return True
-    return False
+            return d / FILE_NAME
+    return None
