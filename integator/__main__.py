@@ -32,6 +32,20 @@ def init():
         case None:
             print(f"Settings file already exists at: {destination_dir}")
 
+    gitignore_path = pathlib.Path.cwd() / ".gitignore"
+    match gitignore_path.exists():
+        case True:
+            update_gitignore(gitignore_path)
+            print("Added ignores to .gitignore")
+        case False:
+            pass
+
+
+def update_gitignore(gitignore_path: pathlib.Path):
+    if "integator.toml" not in gitignore_path.read_text().strip():
+        with open(gitignore_path, "a") as f:
+            f.write("\n.logs/")
+
 
 @app.command("m")
 @app.command()
