@@ -86,7 +86,9 @@ class RootSettings(Settings):
 
 
 def find_settings_file() -> pathlib.Path | None:
-    for d in pathlib.Path.cwd().parents:
+    paths = list(pathlib.Path.cwd().parents) + [pathlib.Path.cwd()]
+
+    for d in paths:
         if (d / FILE_NAME).exists():
             return d / FILE_NAME
     return None

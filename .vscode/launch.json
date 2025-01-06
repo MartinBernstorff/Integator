@@ -5,12 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug monitor",
+            "name": "Debug watch",
             "type": "debugpy",
             "request": "launch",
             "program": "integator",
             "args": [
-                "monitor"
+                "watch"
             ],
             "console": "integratedTerminal",
             "justMyCode": true

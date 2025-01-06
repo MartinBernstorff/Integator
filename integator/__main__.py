@@ -7,10 +7,10 @@ import typer
 from integator.git import Git
 from integator.git_log import GitLog
 from integator.log import log_impl
-from integator.monitor_impl import CommandRan, monitor_impl
-from integator.settings import RootSettings, find_settings_file
+from integator.settings import FILE_NAME, RootSettings, find_settings_file
 from integator.shell import Shell
 from integator.task_status_repo import TaskStatusRepo
+from integator.watch_impl import CommandRan, watch_impl
 
 logger = logging.getLogger(__name__)
 format = "%(asctime)s \t%(levelname)s \t%(name)s \t%(message)s"
@@ -27,29 +27,30 @@ def init():
     destination_dir = find_settings_file()
     match destination_dir:
         case pathlib.Path():
-            settings.write_toml(destination_dir)
-            print(f"Settings file created at: {destination_dir}")
-        case None:
             print(f"Settings file already exists at: {destination_dir}")
+        case None:
+            new_path = pathlib.Path.cwd() / FILE_NAME
+            settings.write_toml(new_path)
+            print(f"Settings file created at: {new_path}")
 
     gitignore_path = pathlib.Path.cwd() / ".gitignore"
     match gitignore_path.exists():
         case True:
             update_gitignore(gitignore_path)
-            print("Added ignores to .gitignore")
         case False:
             pass
 
 
 def update_gitignore(gitignore_path: pathlib.Path):
-    if "integator.toml" not in gitignore_path.read_text().strip():
+    if ".logs/" not in gitignore_path.read_text().strip():
         with open(gitignore_path, "a") as f:
             f.write("\n.logs/")
+            print("Added .logs to .gitignore")
 
 
-@app.command("m")
+@app.command("w")
 @app.command()
-def monitor(debug: bool = False):
+def watch(debug: bool = False):
     logging.basicConfig(
         level=logging.DEBUG if debug else logging.ERROR,
         format=format,
@@ -70,8 +71,8 @@ def monitor(debug: bool = False):
         )
 
         logger.debug("Running")
-        print(f"Monitoring {settings.integator.source_dir} for new commits")
-        status = monitor_impl(
+        print(f"Watching {settings.integator.source_dir} for new commits")
+        status = watch_impl(
             shell,
             source_git=git,
             status_repo=TaskStatusRepo(),

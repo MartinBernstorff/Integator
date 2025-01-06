@@ -26,7 +26,7 @@ class CommandRan(enum.Enum):
     NO = enum.auto()
 
 
-def monitor_impl(
+def watch_impl(
     shell: Shell, source_git: Git, status_repo: TaskStatusRepo
 ) -> CommandRan:
     # Starting setup
@@ -114,7 +114,7 @@ def monitor_impl(
         if settings.integator.command_on_success:
             shell.run_interactively(settings.integator.command_on_success)
 
-    l.info("Finished monitoring")
+    l.info("Finished watching")
 
     return command_ran
 
