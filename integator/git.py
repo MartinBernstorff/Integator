@@ -89,5 +89,8 @@ class SourceGit:
     git: Git
 
     def init_worktree(self, path: pathlib.Path, hash: str):
-        Shell().run_quietly(f"git worktree add -d '{path}' {hash}")
+        if path.exists():
+            print("Worktree already exists, continuing")
+        else:
+            Shell().run_quietly(f"git worktree add -d '{path}' {hash}")
         return path
