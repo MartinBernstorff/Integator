@@ -139,6 +139,7 @@ def log_impl(debug: bool):
 
         pairs = [(entry, TaskStatusRepo().get(entry.hash)) for entry in commits]
 
+        print(f"Integator {settings.version()}")
         _print_ready_status(_ready_for_changes(pairs, set(settings.task_names())))
         _print_table2(
             [

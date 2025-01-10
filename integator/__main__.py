@@ -71,7 +71,9 @@ def watch(debug: bool = False):
         )
 
         logger.debug("Running")
-        print(f"Watching {settings.integator.source_dir} for new commits")
+        print(
+            f"Integator {settings.version()}: Watching {settings.integator.source_dir} for new commits"
+        )
         status = watch_impl(
             shell,
             source_git=git,

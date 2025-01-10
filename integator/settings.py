@@ -1,3 +1,5 @@
+import importlib
+import importlib.metadata
 import json
 import pathlib
 from typing import Tuple, Type
@@ -83,6 +85,9 @@ class RootSettings(Settings):
 
     def task_names(self) -> list[str]:
         return [cmd.name for cmd in self.integator.commands]
+
+    def version(self) -> str:
+        return importlib.metadata.version("integator")
 
 
 def find_settings_file() -> pathlib.Path | None:

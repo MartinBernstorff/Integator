@@ -29,7 +29,7 @@ def run_task(
     task_dir = Path(tempfile.gettempdir()) / f"integator-{hash}-{task.name}"
     worktree = source.init_worktree(task_dir, hash)
 
-    log.debug(f"Running {task.name} in {worktree}")
+    print(f"Running {task.name} in {worktree}")
     result = Shell().run(
         task.cmd,
         output_file=output_file,
