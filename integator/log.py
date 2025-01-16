@@ -30,8 +30,25 @@ def _last_status_commit(
             f"{Emojis.FAIL.value} Latest failed: {with_failures[0][0].hash[0:4]}"
         )
         latest_failure = with_failures[0][1].get_failures()[0]
-        log_line = f"\t{latest_failure.log}"
-        return f"{fail_line}\n{log_line}"
+
+        if latest_failure.log is not None:
+            log_line = f"{latest_failure.log}"
+            log_lines = latest_failure.log.read_text().split("\n")
+
+            lines_in_log = len(log_lines)
+
+            n_lines = 10
+            excerpted_lines = (
+                log_lines[-n_lines] if lines_in_log >= n_lines else log_lines[-n_lines:]
+            )
+
+            excerpt = "\n\t".join(excerpted_lines)
+
+            return f"""{fail_line}
+        {log_line}
+
+Excerpt:
+{excerpt}"""
 
     ok_entries = Arr(pairs).filter(
         lambda i: i[1].all(task_names, ExecutionState.SUCCESS)
