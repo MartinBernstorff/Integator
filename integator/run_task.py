@@ -1,5 +1,4 @@
 import datetime
-import logging
 import tempfile
 from pathlib import Path
 
@@ -17,7 +16,7 @@ def run_task(
     status_repo: TaskStatusRepo,
     output_file: Path,
 ) -> RunResult:
-    log = logging.getLogger(f"{__name__}.{task.name}")
+    # log = logging.getLogger(f"{__name__}.{task.name}")
     # Create the directory
     statuses = status_repo.get(hash)
     start_time = datetime.datetime.now()
