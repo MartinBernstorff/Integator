@@ -35,11 +35,12 @@ def _last_status_commit(
             log_line = f"{latest_failure.log}"
             log_lines = latest_failure.log.read_text().split("\n")
 
-            lines_in_log = len(log_lines)
-
             n_lines = 10
+            lines_in_log = len(log_lines)
             excerpted_lines = (
-                log_lines[-n_lines] if lines_in_log >= n_lines else log_lines[-n_lines:]
+                log_lines[-n_lines:]
+                if lines_in_log >= n_lines
+                else log_lines[-lines_in_log:]
             )
 
             excerpt = "\n\t".join(excerpted_lines)
