@@ -85,6 +85,22 @@ def watch(debug: bool = False):
             time.sleep(1)
 
 
+@app.command("t")
+@app.command()
+def tui(debug: bool = False):
+    from integator.tui import IntegatorTUI
+
+    if debug:
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=format,
+            datefmt=date_fmt,
+        )
+
+    app = IntegatorTUI()
+    app.run()
+
+
 @app.command("l")
 @app.command()
 def log(debug: bool = False):
