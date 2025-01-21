@@ -66,7 +66,7 @@ class CommitList(Widget):
         return commit.hash
 
     def _add_row(self, pair: tuple[Commit, Statuses]) -> None:
-        table: DataTable[dt.datetime | ExecutionState] = self.query_one(DataTable)
+        table: DataTable[AgedTimestamp | ExecutionState] = self.query_one(DataTable)
         statuses = pair[1]
         values = [
             AgedTimestamp(pair[0].timestamp),
@@ -79,7 +79,7 @@ class CommitList(Widget):
         )
 
     def _update_row(self, row: tuple[Commit, Statuses]) -> None:
-        table: DataTable[ExecutionState] = self.query_one(DataTable)
+        table: DataTable[AgedTimestamp | ExecutionState] = self.query_one(DataTable)
         for column_name in Arr(self.columns):
             if column_name == "Time":
                 value = AgedTimestamp(row[0].timestamp)
