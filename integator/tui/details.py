@@ -13,6 +13,12 @@ class Details(Label):
 
     hash: reactive[str] = reactive("", recompose=True)
     statuses: reactive[Statuses]
+    CSS = """
+Screen {
+    layout: horizontal;
+    overflow-x: auto;
+}
+"""
 
     def __init__(self, hash: str, classes: str) -> None:
         super().__init__(classes=classes)
@@ -28,7 +34,7 @@ class Details(Label):
         base = f"{status.state} {status.task.name} ({status.span}): {status.log}"
         if status.state != ExecutionState.FAILURE:
             return base
-        return f"{base}\n {status.tail(10)}" + 10
+        return f"{base}\n {status.tail(10)}"
 
     def compose(self) -> ComposeResult:
         self._update()
@@ -37,14 +43,6 @@ class Details(Label):
         if self.hash == "":
             yield Label("No highlighted item")
         else:
-            lines = [
-                f"{status.task.name} ({status.span})\n{status.state}: {status.log}\n"
-                for status in self.statuses.values if status.state != ExecutionState.FAILURE else 
-            ]
             yield Label(
-                "\n".join(
-                    Arr(self.statuses.values).map(
-                        lambda it: f"{it.task.name} ({it.span})\n{it.state}: {it.log}\n"
-                    )
-                ),
+                "\n".join(Arr(self.statuses.values).map(self._status_line)),
             )
