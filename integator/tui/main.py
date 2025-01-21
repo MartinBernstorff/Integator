@@ -3,7 +3,6 @@ from textual.reactive import reactive
 from textual.widgets import DataTable, Footer
 
 from integator.settings import RootSettings
-from integator.shell import Shell
 from integator.tui.commit_list import CommitList
 from integator.tui.details import Details
 
@@ -52,6 +51,5 @@ Screen {
 # - Info pane based on selected item and width of window
 
 if __name__ == "__main__":
-    Shell().run("integator watch", output_file="watcher.log")
     app = IntegatorTUI()
     app.run()
