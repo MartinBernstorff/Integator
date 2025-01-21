@@ -70,15 +70,17 @@ class CommitList(Widget):
         for row in self.rows:
             if row[0].hash not in row_keys:
                 self._add_row(row)
+                self.post_message(
+                    DataTable.RowHighlighted(
+                        data_table=table,
+                        cursor_row=0,
+                        row_key=RowKey(self.selected_hash),
+                    )
+                )
                 continue
             self._update_row(row)
 
         table.sort("Time", reverse=True)
-        self.post_message(
-            DataTable.RowHighlighted(
-                data_table=table, cursor_row=0, row_key=RowKey(self.selected_hash)
-            )
-        )
 
     def _row_key(self, commit: Commit) -> str:
         return commit.hash
