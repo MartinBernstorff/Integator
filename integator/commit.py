@@ -40,6 +40,8 @@ class Commit(BaseModel):
     timestamp: dt.datetime
     author: str
 
+    model_config = {"frozen": True}
+
     @staticmethod
     def from_str(line: str) -> "Commit":
         dto = parse_commit_str(line)
