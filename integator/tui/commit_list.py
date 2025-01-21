@@ -8,6 +8,7 @@ from textual.app import ComposeResult
 from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import DataTable
+from textual.widgets._data_table import RowKey
 
 from integator.commit import Commit
 from integator.git import Git
@@ -22,14 +23,21 @@ class CommitList(Widget):
     last_update: dt.datetime = dt.datetime.now()
     rows: list[tuple[Commit, Statuses]] = []
 
-    def __init__(self, settings: RootSettings):
-        super().__init__()
+    CSS = """
+.box {
+    width: 1fr;
+}
+"""
+
+    def __init__(self, settings: RootSettings, classes: str = "") -> None:
+        super().__init__(classes=classes)
         self.settings = settings
         self.git = Git(source_dir=self.settings.integator.source_dir, log=GitLog())
         self.columns = ["Time", *self.settings.task_names()]
 
     def compose(self) -> ComposeResult:
-        yield DataTable(cursor_type="row")
+        table = DataTable(cursor_type="row")  # type: ignore
+        yield table
 
     def on_mount(self) -> None:
         table: DataTable[ExecutionState] = self.query_one(DataTable)
@@ -45,6 +53,11 @@ class CommitList(Widget):
 
         self._update()
         self.timer = self.set_interval(0.3, self._update)
+        self.post_message(
+            DataTable.RowHighlighted(
+                data_table=table, cursor_row=0, row_key=RowKey(commits[0].hash)
+            )
+        )
 
     @work(exclusive=True, thread=True)
     def _update(self) -> None:

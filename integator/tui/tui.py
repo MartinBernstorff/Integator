@@ -1,6 +1,6 @@
+from textual import events
 from textual.app import App, ComposeResult
 from textual.reactive import reactive
-from textual.widgets import DataTable
 
 from integator.settings import RootSettings
 from integator.tui.commit_list import CommitList
@@ -10,38 +10,22 @@ from integator.tui.details import Details
 class IntegatorTUI(App[None]):
     """A Textual app to manage stopwatches."""
 
-    CSS = """
-Screen {
-    layout: horizontal;
-    overflow-x: auto;
-}
-
-.box {
-    height: 100%;
-    width: 1fr;
-    border: solid green;
-}"""
-
     settings: reactive[RootSettings] = reactive(RootSettings())
-    commit_list: reactive[CommitList]
-    details: Details
+    commit_list: CommitList
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
-        self.commit_list = CommitList(self.settings, classes="box")
+        self.commit_list = CommitList(self.settings)
         yield self.commit_list
 
-        self.details = Details(self.commit_list.selected_hash, classes="box")
-        yield self.details
-
-    def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
-        row_key = event.row_key.value
-        if row_key is None:
-            raise ValueError("No row key selected")
-        self.details.hash = row_key
+    def on_key(self, event: events.Key) -> None:
+        if event.key == "enter" and self.commit_list.selected_hash:
+            screen = Details(self.commit_list.selected_hash)
+            self.push_screen(screen)
 
 
 # TODO:
+# - Auto-update the list based on status changes
 # - Status bar color based on last status
 # - Info pane based on selected item and width of window
 
