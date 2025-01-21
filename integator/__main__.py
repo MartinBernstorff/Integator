@@ -1,3 +1,4 @@
+import atexit
 import logging
 import pathlib
 import subprocess
@@ -91,12 +92,14 @@ def watch(debug: bool = False):
 def tui(debug: bool = False):
     from integator.tui.main import IntegatorTUI
 
-    subprocess.Popen(
+    p = subprocess.Popen(
         "integator watch",
         shell=True,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
+
+    atexit.register(p.kill)
 
     if debug:
         logging.basicConfig(
