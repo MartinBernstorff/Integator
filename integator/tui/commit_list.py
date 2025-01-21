@@ -74,6 +74,11 @@ class CommitList(Widget):
             self._update_row(row)
 
         table.sort("Time", reverse=True)
+        self.post_message(
+            DataTable.RowHighlighted(
+                data_table=table, cursor_row=0, row_key=RowKey(self.selected_hash)
+            )
+        )
 
     def _row_key(self, commit: Commit) -> str:
         return commit.hash
