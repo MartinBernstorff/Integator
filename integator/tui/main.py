@@ -40,6 +40,9 @@ Screen {
             raise ValueError("No row key selected")
         self.details.hash = row_key
 
+    def on_data_table_cell_highlighted(self, event: DataTable.CellHighlighted) -> None:
+        self.details.hash = self.commit_list.selected_hash
+
 
 # TODO:
 # - Status bar color based on last status
