@@ -1,6 +1,9 @@
+from iterpy import Arr
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Label
+from textual.widgets import Static
+
+from integator.task_status_repo import TaskStatusRepo
 
 
 class DetailScreen(Screen[None]):
@@ -13,4 +16,12 @@ class DetailScreen(Screen[None]):
         self.hash = hash
 
     def compose(self) -> ComposeResult:
-        yield Label(f"ON screen for {self.hash}!")
+        statuses = TaskStatusRepo.get(self.hash)
+
+        yield Static(
+            "\n".join(
+                Arr(statuses.values).map(
+                    lambda it: f"{it.task.name}\n{it.state}: {it.log}\n"
+                )
+            ),
+        )

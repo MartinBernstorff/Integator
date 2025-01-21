@@ -1,6 +1,6 @@
-from textual import events
 from textual.app import App, ComposeResult
 from textual.reactive import reactive
+from textual.widgets import DataTable
 
 from integator.settings import RootSettings
 from integator.tui.commit_list import CommitList
@@ -18,10 +18,11 @@ class IntegatorTUI(App[None]):
         self.commit_list = CommitList(self.settings)
         yield self.commit_list
 
-    def on_key(self, event: events.Key) -> None:
-        if event.key == "enter" and self.commit_list.selected_hash:
-            screen = DetailScreen(self.commit_list.selected_hash)
-            self.push_screen(screen)
+    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        row_key = event.row_key.value
+        if row_key is None:
+            raise ValueError("No row key selected")
+        self.push_screen(DetailScreen(row_key))
 
 
 # TODO:
