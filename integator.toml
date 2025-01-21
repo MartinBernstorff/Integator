@@ -5,15 +5,15 @@ complexity_changes_per_block = 10
 complexity_threshold = 20
 
 [[integator.commands]]
-name = "Unit tests"
+name = "U"
 cmd = "uv run pytest"
 max_staleness_seconds = 1
 
 [[integator.commands]]
-name = "Types"
+name = "T"
 cmd = "uv run pyright"
 max_staleness_seconds = 1
 
 [[integator.commands]]
-name = " X"
+name = "X"
 cmd = "! rg -g '!integator.toml' XXX: ."

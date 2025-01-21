@@ -19,13 +19,13 @@ class Details(Label):
         self.hash = hash
         self.statuses = Statuses()
 
-    @work(thread=True)
+    @work(thread=True, exclusive=True)
     def _update(self) -> None:
         self.statuses = TaskStatusRepo.get(self.hash)
 
     def compose(self) -> ComposeResult:
         self._update()
-        self.set_timer(1 / 30, self.recompose)
+        self.set_timer(1 / 3, self.recompose)
 
         if self.hash == "":
             yield Label("No highlighted item")
