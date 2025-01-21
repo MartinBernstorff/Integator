@@ -59,7 +59,9 @@ class CommitList(Widget):
             table.add_column(column, key=column)
 
         commits = self.git.log.get(8)
-        pairs = [(entry, TaskStatusRepo().get(entry.hash)) for entry in commits]
+        pairs = [
+            (entry, TaskStatusRepo().get(entry.hash)) for entry in reversed(commits)
+        ]
         for pair in pairs:
             self._add_row(pair)
 
@@ -70,8 +72,14 @@ class CommitList(Widget):
     def update(self) -> None:
         commits = self.git.log.get(8)
         self.rows = [(entry, TaskStatusRepo().get(entry.hash)) for entry in commits]
+
+        table: DataTable[ExecutionState] = self.query_one(DataTable)
+        row_keys = {v.key.value for v in table.rows.values()}
         for row in self.rows:
-            self._update_row(row[0], row[1])
+            if row[0].hash not in row_keys:
+                self._add_row(row)
+                continue
+            self._update_row(row)
 
     def _row_key(self, commit: Commit) -> str:
         return commit.hash
@@ -88,16 +96,11 @@ class CommitList(Widget):
     def _get_values_for_columns(self, statuses: Statuses) -> list[ExecutionState]:
         return [statuses.get(name).state for name in self.columns]
 
-    def _update_row(self, commit: Commit, statuses: Statuses) -> None:
+    def _update_row(self, row: tuple[Commit, Statuses]) -> None:
         table: DataTable[ExecutionState] = self.query_one(DataTable)
-        row_keys = {v.key.value for v in table.rows.values()}
-        if commit.hash not in row_keys:
-            self._add_row((commit, statuses))
-            return
-
         for column_name in self.columns:
-            value = statuses.get(column_name).state
-            table.update_cell(self._row_key(commit), column_name, value)
+            value = row[1].get(column_name).state
+            table.update_cell(self._row_key(row[0]), column_name, value)
 
 
 class IntegatorTUI(App[None]):
