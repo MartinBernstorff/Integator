@@ -93,8 +93,10 @@ class CommitList(Widget):
         )
 
         if table.cursor_row == 0:
+            # If at the top of the list, stay there
             self.selected_hash = pair[0].hash
         else:
+            # Otherwise, keep the same element selected
             table.move_cursor(row=table.cursor_row + 1)
 
         self.post_message(
