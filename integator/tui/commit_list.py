@@ -92,14 +92,16 @@ class CommitList(Widget):
             key=self._row_key(pair[0]),
         )
 
-        selected_hash = self.selected_hash
-        table.move_cursor(row=table.cursor_row + 1)
+        if table.cursor_row == 0:
+            self.selected_hash = pair[0].hash
+        else:
+            table.move_cursor(row=table.cursor_row + 1)
 
         self.post_message(
             DataTable.RowHighlighted(
                 data_table=table,
                 cursor_row=table.cursor_row,
-                row_key=RowKey(selected_hash),
+                row_key=RowKey(self.selected_hash),
             )
         )
 
