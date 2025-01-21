@@ -1,5 +1,4 @@
 import datetime as dt
-from typing import Sequence
 
 from textual import events, work
 from textual.app import App, ComposeResult
@@ -72,10 +71,10 @@ class CommitList(Widget):
         commits = self.git.log.get(8)
         self.rows = [(entry, TaskStatusRepo().get(entry.hash)) for entry in commits]
         for row in self.rows:
-            self._update_row(row[0], tuple(self._get_values_for_columns(row[1])))
+            self._update_row(row[0], row[1])
 
     def _row_key(self, commit: Commit) -> str:
-        return commit.hash[0:4]
+        return commit.hash
 
     def _add_row(self, pair: tuple[Commit, Statuses]) -> None:
         table: DataTable[ExecutionState] = self.query_one(DataTable)
@@ -89,18 +88,16 @@ class CommitList(Widget):
     def _get_values_for_columns(self, statuses: Statuses) -> list[ExecutionState]:
         return [statuses.get(name).state for name in self.columns]
 
-    def _update_row(
-        self,
-        commit: Commit,
-        statuses: Sequence[ExecutionState],
-    ) -> None:
+    def _update_row(self, commit: Commit, statuses: Statuses) -> None:
         table: DataTable[ExecutionState] = self.query_one(DataTable)
-        for column_name, status in zip(self.columns, statuses):
-            table.update_cell(
-                self._row_key(commit),
-                column_name,
-                status,
-            )
+        row_keys = {v.key.value for v in table.rows.values()}
+        if commit.hash not in row_keys:
+            self._add_row((commit, statuses))
+            return
+
+        for column_name in self.columns:
+            value = statuses.get(column_name).state
+            table.update_cell(self._row_key(commit), column_name, value)
 
 
 class IntegatorTUI(App[None]):
