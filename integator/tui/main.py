@@ -1,6 +1,6 @@
 from textual.app import App, ComposeResult
 from textual.reactive import reactive
-from textual.widgets import DataTable, Footer
+from textual.widgets import DataTable
 
 from integator.settings import RootSettings
 from integator.tui.commit_list import CommitList
@@ -33,8 +33,6 @@ Screen {
 
         self.details = Details(self.commit_list.selected_hash, classes="box")
         yield self.details
-
-        yield Footer()
 
     def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
         row_key = event.row_key.value
