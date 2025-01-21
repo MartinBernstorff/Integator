@@ -18,7 +18,7 @@ class Details(Label):
     def compose(self) -> ComposeResult:
         statuses = TaskStatusRepo.get(self.hash)
 
-        self.set_timer(1, self.recompose)
+        self.set_timer(1 / 30, self.recompose)
 
         if self.hash == "":
             yield Label("No highlighted item")
