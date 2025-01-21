@@ -74,7 +74,7 @@ class CommitList(Widget):
                     DataTable.RowHighlighted(
                         data_table=table,
                         cursor_row=0,
-                        row_key=RowKey(self.selected_hash),
+                        row_key=RowKey(row[0].hash),
                     )
                 )
                 continue
