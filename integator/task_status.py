@@ -75,6 +75,17 @@ class TaskStatus(BaseModel):
     def __repr__(self) -> str:
         return f"{self.task.name}: {self.state}"
 
+    def tail(self, n_lines: int) -> str:
+        if self.log is None:
+            return ""
+
+        log_lines = self.log.read_text().split("\n")
+        lines_in_log = len(log_lines)
+
+        excess_lines = lines_in_log >= n_lines
+        excerpted_lines = log_lines[-n_lines:] if excess_lines else log_lines
+        return "\n".join(excerpted_lines)
+
 
 class Statuses(BaseModel):
     values: list[TaskStatus] = Field(default_factory=list)

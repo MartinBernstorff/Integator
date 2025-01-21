@@ -4,7 +4,7 @@ from textual.app import ComposeResult
 from textual.reactive import reactive
 from textual.widgets import Label
 
-from integator.task_status import Statuses
+from integator.task_status import ExecutionState, Statuses, TaskStatus
 from integator.task_status_repo import TaskStatusRepo
 
 
@@ -23,6 +23,13 @@ class Details(Label):
     def _update(self) -> None:
         self.statuses = TaskStatusRepo.get(self.hash)
 
+    @staticmethod
+    def _status_line(status: TaskStatus) -> str:
+        base = f"{status.state} {status.task.name} ({status.span}): {status.log}"
+        if status.state != ExecutionState.FAILURE:
+            return base
+        return f"{base}\n {status.tail(10)}" + 10
+
     def compose(self) -> ComposeResult:
         self._update()
         self.set_timer(1 / 3, self.recompose)
@@ -30,6 +37,10 @@ class Details(Label):
         if self.hash == "":
             yield Label("No highlighted item")
         else:
+            lines = [
+                f"{status.task.name} ({status.span})\n{status.state}: {status.log}\n"
+                for status in self.statuses.values if status.state != ExecutionState.FAILURE else 
+            ]
             yield Label(
                 "\n".join(
                     Arr(self.statuses.values).map(
