@@ -30,7 +30,7 @@ class Details(Label):
             return base
         return f"""{base}
 
-Log excerpt:
+=== Log excerpt ===
 {status.tail(20)}
 """
 

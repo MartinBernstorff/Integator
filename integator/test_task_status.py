@@ -27,4 +27,3 @@ def test_init_taskstati():
     input = dummy_status().model_dump_json()
     val = Statuses().from_str(input)
     assert len(val.values) == 1
-    assert False
