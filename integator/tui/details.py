@@ -13,12 +13,6 @@ class Details(Label):
 
     hash: reactive[str] = reactive("", recompose=True)
     statuses: reactive[Statuses]
-    CSS = """
-Screen {
-    layout: horizontal;
-    overflow-x: auto;
-}
-"""
 
     def __init__(self, hash: str, classes: str) -> None:
         super().__init__(classes=classes)
@@ -34,7 +28,11 @@ Screen {
         base = f"{status.state} {status.task.name} ({status.span}): {status.log}"
         if status.state != ExecutionState.FAILURE:
             return base
-        return f"{base}\n {status.tail(20)}"
+        return f"""{base}
+
+Log excerpt:
+{status.tail(20)}
+"""
 
     def compose(self) -> ComposeResult:
         self._update()

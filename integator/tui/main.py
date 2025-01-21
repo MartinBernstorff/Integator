@@ -20,6 +20,8 @@ Screen {
     height: 100%;
     width: 1fr;
     border: solid black;
+    overflow-x: auto;
+    overflow-y: auto;
 }"""
 
     settings: reactive[RootSettings] = reactive(RootSettings())
