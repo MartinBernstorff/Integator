@@ -1,5 +1,7 @@
 import datetime as dt
+from dataclasses import dataclass
 
+import humanize
 from iterpy import Arr
 from textual import work
 from textual.app import ComposeResult
@@ -66,7 +68,10 @@ class CommitList(Widget):
     def _add_row(self, pair: tuple[Commit, Statuses]) -> None:
         table: DataTable[dt.datetime | ExecutionState] = self.query_one(DataTable)
         statuses = pair[1]
-        values = [pair[0].timestamp, *self._get_values_for_columns(statuses)]
+        values = [
+            AgedTimestamp(pair[0].timestamp),
+            *self._get_values_for_columns(statuses),
+        ]
         table.add_row(
             *values,
             label=pair[0].hash,
@@ -75,8 +80,12 @@ class CommitList(Widget):
 
     def _update_row(self, row: tuple[Commit, Statuses]) -> None:
         table: DataTable[ExecutionState] = self.query_one(DataTable)
-        for column_name in Arr(self.columns).filter(lambda it: it != "Time"):
-            value = row[1].get(column_name).state
+        for column_name in Arr(self.columns):
+            if column_name == "Time":
+                value = AgedTimestamp(row[0].timestamp)
+            else:
+                value = row[1].get(column_name).state
+
             table.update_cell(self._row_key(row[0]), column_name, value)
 
     def _get_values_for_columns(self, statuses: Statuses) -> list[ExecutionState]:
@@ -86,3 +95,19 @@ class CommitList(Widget):
         key = event.row_key.value
         if key is not None:
             self.selected_hash = key
+
+
+@dataclass
+class AgedTimestamp:
+    timestamp: dt.datetime
+
+    def __gt__(self, other: "AgedTimestamp") -> bool:
+        return self.timestamp > other.timestamp
+
+    def __str__(self) -> str:
+        age = dt.datetime.now() - self.timestamp
+        return (
+            f"{humanize.naturaldelta(age)} ago"
+            if age > dt.timedelta(minutes=1)
+            else "< 1 minute"
+        )

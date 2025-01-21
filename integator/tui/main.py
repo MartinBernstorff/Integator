@@ -1,6 +1,6 @@
 from textual.app import App, ComposeResult
 from textual.reactive import reactive
-from textual.widgets import DataTable
+from textual.widgets import DataTable, Footer
 
 from integator.settings import RootSettings
 from integator.tui.commit_list import CommitList
@@ -17,6 +17,7 @@ class IntegatorTUI(App[None]):
         """Create child widgets for the app."""
         self.commit_list = CommitList(self.settings)
         yield self.commit_list
+        yield Footer()
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         row_key = event.row_key.value
