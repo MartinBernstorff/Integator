@@ -88,7 +88,7 @@ def watch(debug: bool = False):
 @app.command("t")
 @app.command()
 def tui(debug: bool = False):
-    from integator.tui import IntegatorTUI
+    from integator.tui.main import IntegatorTUI
 
     if debug:
         logging.basicConfig(
