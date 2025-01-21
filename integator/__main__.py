@@ -90,6 +90,8 @@ def watch(debug: bool = False):
 def tui(debug: bool = False):
     from integator.tui.main import IntegatorTUI
 
+    Shell().run("integator watch")
+
     if debug:
         logging.basicConfig(
             level=logging.DEBUG,

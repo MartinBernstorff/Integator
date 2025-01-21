@@ -52,6 +52,6 @@ Screen {
 # - Info pane based on selected item and width of window
 
 if __name__ == "__main__":
-    Shell().run("integator watch")
+    Shell().run("integator watch", output_file="watcher.log")
     app = IntegatorTUI()
     app.run()
