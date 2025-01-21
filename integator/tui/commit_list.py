@@ -33,7 +33,7 @@ class CommitList(Widget):
         super().__init__(classes=classes)
         self.settings = settings
         self.git = Git(source_dir=self.settings.integator.source_dir, log=GitLog())
-        self.columns = ["Time", *self.settings.task_names()]
+        self.columns = ["Age", *self.settings.task_names()]
 
     def compose(self) -> ComposeResult:
         table = DataTable(cursor_type="row")  # type: ignore
@@ -73,7 +73,7 @@ class CommitList(Widget):
                 continue
             self._update_row(row)
 
-        table.sort("Time", reverse=True)
+        table.sort("Age", reverse=True)
 
     def _row_key(self, commit: Commit) -> str:
         return commit.hash
@@ -110,7 +110,7 @@ class CommitList(Widget):
     def _update_row(self, row: tuple[Commit, Statuses]) -> None:
         table: DataTable[AgedTimestamp | ExecutionState] = self.query_one(DataTable)
         for column_name in Arr(self.columns):
-            if column_name == "Time":
+            if column_name == "Age":
                 value = AgedTimestamp(row[0].timestamp)
             else:
                 value = row[1].get(column_name).state
@@ -118,7 +118,7 @@ class CommitList(Widget):
             table.update_cell(self._row_key(row[0]), column_name, value)
 
     def _get_values_for_columns(self, statuses: Statuses) -> list[ExecutionState]:
-        return [statuses.get(name).state for name in self.columns if name != "Time"]
+        return [statuses.get(name).state for name in self.columns if name != "Age"]
 
     def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
         key = event.row_key.value
