@@ -26,7 +26,7 @@ class Details(Label):
             yield Label(
                 "\n".join(
                     Arr(statuses.values).map(
-                        lambda it: f"{it.task.name}\n{it.state}: {it.log}\n"
+                        lambda it: f"{it.task.name} ({it.span})\n{it.state}: {it.log}\n"
                     )
                 ),
             )

@@ -4,6 +4,7 @@ from enum import Enum, auto
 from functools import reduce
 from typing import Set
 
+import humanize
 from pydantic import Field
 
 from integator.basemodel import BaseModel
@@ -51,6 +52,9 @@ class Span(BaseModel):
             return dt.timedelta()
 
         return self.end - self.start
+
+    def __str__(self):
+        return f"{humanize.naturaldelta(self.duration())}"
 
 
 class TaskStatus(BaseModel):
