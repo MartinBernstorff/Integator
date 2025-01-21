@@ -34,7 +34,7 @@ Screen {
         base = f"{status.state} {status.task.name} ({status.span}): {status.log}"
         if status.state != ExecutionState.FAILURE:
             return base
-        return f"{base}\n {status.tail(10)}"
+        return f"{base}\n {status.tail(20)}"
 
     def compose(self) -> ComposeResult:
         self._update()
