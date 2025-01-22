@@ -23,6 +23,7 @@ def run_task(
 
     statuses.get(task.name).state = ExecutionState.IN_PROGRESS
     statuses.get(task.name).span = Span(start=start_time, end=None)
+    statuses.get(task.name).log = output_file
     status_repo.update(hash, statuses)
 
     task_dir = Path(tempfile.gettempdir()) / f"integator-{hash}-{task.name}"
