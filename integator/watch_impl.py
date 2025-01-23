@@ -37,9 +37,9 @@ def watch_impl(
     latest = source_git.log.latest()
     latest_statuses = status_repo.get(latest.hash)
     if settings.integator.fail_fast and latest_statuses.has_failed():
-        print(f"Latest commit {latest.hash} failed")
+        l.info(f"Latest commit {latest.hash} failed")
         for failure in latest_statuses.get_failures():
-            print(f"{failure.task.name} failed. Logs: '{failure.log}'")
+            l.warning(f"{failure.task.name} failed. Logs: '{failure.log}'")
         return CommandRan.NO
 
     l.debug("Diffing againt trunk")
@@ -47,7 +47,7 @@ def watch_impl(
         not source_git.diff_against(settings.integator.trunk)
         and settings.integator.skip_if_no_diff_against_trunk
     ):
-        print(
+        l.info(
             f"{latest}: No changes compared to trunk at {settings.integator.trunk}, waiting"
         )
 

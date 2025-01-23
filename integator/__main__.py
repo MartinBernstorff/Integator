@@ -51,7 +51,7 @@ def update_gitignore(gitignore_path: pathlib.Path):
 @app.command("w")
 @app.command()
 def watch(debug: bool = False, quiet: bool = False):
-    log_level = None if quiet else logging.DEBUG if debug else logging.INFO
+    log_level = logging.ERROR if quiet else logging.DEBUG if debug else logging.INFO
     logging.basicConfig(
         level=log_level,
         format=format,
