@@ -69,7 +69,7 @@ class Shell:
                 cwd=cwd,
                 shell=True,
             )
-            lines = []
+            lines = [""]
             if output_file:
                 output_file.write_text(f"Running {command}\n")
 
