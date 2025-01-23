@@ -1,10 +1,13 @@
 import functools
+import logging
 import pathlib
 import re
 from dataclasses import dataclass
 
 from integator.git_log import GitLog
 from integator.shell import Shell
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -90,7 +93,7 @@ class SourceGit:
 
     def init_worktree(self, path: pathlib.Path, hash: str):
         if path.exists():
-            print("Worktree already exists, continuing")
+            log.info("Worktree already exists, continuing")
         else:
             Shell().run_quietly(f"git worktree add -f -d '{path}' {hash}")
         return path
