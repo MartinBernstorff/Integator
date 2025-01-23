@@ -27,7 +27,7 @@ class CommandRan(enum.Enum):
 
 
 def watch_impl(
-    shell: Shell, source_git: Git, status_repo: TaskStatusRepo
+    shell: Shell, source_git: Git, status_repo: TaskStatusRepo, quiet: bool
 ) -> CommandRan:
     # Starting setup
     l.debug("Getting settings")
@@ -86,7 +86,7 @@ def watch_impl(
             task.name,
         ):
             result = run_task(
-                task, latest.hash, SourceGit(source_git), status_repo, log_file
+                task, latest.hash, SourceGit(source_git), status_repo, log_file, quiet
             )
             command_ran = CommandRan.YES
             if settings.integator.fail_fast and result.failed():

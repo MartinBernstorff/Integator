@@ -15,6 +15,7 @@ def run_task(
     source: SourceGit,
     status_repo: TaskStatusRepo,
     output_file: Path,
+    quiet: bool,
 ) -> RunResult:
     # log = logging.getLogger(f"{__name__}.{task.name}")
     # Create the directory
@@ -34,6 +35,7 @@ def run_task(
         task.cmd,
         output_file=output_file,
         cwd=worktree,
+        quiet=quiet,
     )
 
     statuses.get(task.name).state = ExecutionState.from_exit_code(result.exit)

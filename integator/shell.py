@@ -43,6 +43,7 @@ class Shell:
     def run(
         self,
         command: str,
+        quiet: bool,
         output_file: Path | None = None,
         stream: Stream = Stream.YES,
         cwd: Path | None = None,
@@ -62,8 +63,8 @@ class Shell:
         try:
             process = subprocess.Popen(
                 command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stdout=subprocess.PIPE if not quiet else None,
+                stderr=subprocess.STDOUT if not quiet else None,
                 universal_newlines=True,
                 cwd=cwd,
                 shell=True,
@@ -137,5 +138,5 @@ class Shell:
             raise RuntimeError(
                 f"""{command} execution failed.
     Exit code: {e.returncode}
-    Output: {e.stdout.decode('utf-8').strip()}"""
+    Output: {e.stdout.decode("utf-8").strip()}"""
             ) from e

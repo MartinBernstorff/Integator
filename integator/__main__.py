@@ -81,6 +81,7 @@ def watch(debug: bool = False, quiet: bool = False):
             shell,
             source_git=git,
             status_repo=TaskStatusRepo(),
+            quiet=False,
         )
 
         logger.debug("--- Sleeping ---")
