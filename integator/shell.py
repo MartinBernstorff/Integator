@@ -108,6 +108,21 @@ class Shell:
                 output=str(e),
             )
 
+    def run_interactively(self, command: str) -> None:
+        try:
+            subprocess.run(command, shell=True, stderr=subprocess.STDOUT, check=True)
+        except subprocess.CalledProcessError as e:
+            if not e.stdout:
+                return
+
+            error_message = f"""{command} failed.
+\tExit code: {e.returncode}"""
+
+            if e.stdout:
+                error_message += f"\n\tOutput: {e.stdout.decode('utf-8').strip()}"
+
+            raise RuntimeError(error_message) from e
+
     def run_quietly(self, command: str) -> list[str]:
         try:
             result = (

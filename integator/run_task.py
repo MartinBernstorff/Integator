@@ -29,7 +29,7 @@ def run_task(
     statuses.get(task.name).log = output_file
     status_repo.update(hash, statuses)
 
-    task_dir = Path(tempfile.gettempdir()) / f"integator-{hash}-"
+    task_dir = Path(tempfile.gettempdir()) / f"integator-{hash}"
     worktree = source.init_worktree(task_dir, hash)
 
     log.info(f"Running {task.name} in {worktree}")
