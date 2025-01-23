@@ -1,6 +1,8 @@
 import logging
 import pathlib
 import time
+from functools import partial
+from multiprocessing import Process
 
 import typer
 
@@ -92,8 +94,8 @@ def watch(debug: bool = False, quiet: bool = False):
 def tui(debug: bool = False):
     from integator.tui.main import IntegatorTUI
 
-    # side_process = Process(target=partial(watch, debug, quiet=True), daemon=True)
-    # side_process.start()
+    side_process = Process(target=partial(watch, debug, quiet=True), daemon=True)
+    side_process.start()
 
     if debug:
         logging.basicConfig(
