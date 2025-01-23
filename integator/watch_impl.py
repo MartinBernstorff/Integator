@@ -112,7 +112,7 @@ def watch_impl(
             status_repo.update(latest.hash, latest_statuses)
 
         if settings.integator.command_on_success:
-            shell.run_interactively(settings.integator.command_on_success)
+            shell.run(settings.integator.command_on_success, quiet)
 
     l.info("Finished watching")
 
