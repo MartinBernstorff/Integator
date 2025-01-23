@@ -92,5 +92,5 @@ class SourceGit:
         if path.exists():
             print("Worktree already exists, continuing")
         else:
-            Shell().run_quietly(f"git worktree add -d '{path}' {hash}")
+            Shell().run_quietly(f"git worktree add -f -d '{path}' {hash}")
         return path

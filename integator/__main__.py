@@ -1,6 +1,8 @@
 import logging
 import pathlib
 import time
+from functools import partial
+from multiprocessing import Process
 
 import typer
 
@@ -50,9 +52,10 @@ def update_gitignore(gitignore_path: pathlib.Path):
 
 @app.command("w")
 @app.command()
-def watch(debug: bool = False):
+def watch(debug: bool = False, quiet: bool = False):
+    log_level = None if quiet else logging.DEBUG if debug else logging.INFO
     logging.basicConfig(
-        level=logging.DEBUG if debug else logging.ERROR,
+        level=log_level,
         format=format,
         datefmt=date_fmt,
     )
@@ -71,7 +74,7 @@ def watch(debug: bool = False):
         )
 
         logger.debug("Running")
-        print(
+        logger.info(
             f"Integator {settings.version()}: Watching {settings.integator.source_dir} for new commits"
         )
         status = watch_impl(
@@ -90,14 +93,8 @@ def watch(debug: bool = False):
 def tui(debug: bool = False):
     from integator.tui.main import IntegatorTUI
 
-    # p = subprocess.Popen(
-    #     "integator watch",
-    #     shell=True,
-    #     stdout=subprocess.DEVNULL,
-    #     stderr=subprocess.DEVNULL,
-    # )
-
-    # atexit.register(p.kill)
+    side_process = Process(target=partial(watch, debug, quiet=True), daemon=True)
+    side_process.start()
 
     if debug:
         logging.basicConfig(
