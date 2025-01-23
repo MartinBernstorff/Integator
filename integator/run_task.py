@@ -1,4 +1,5 @@
 import datetime
+import logging
 import tempfile
 from pathlib import Path
 
@@ -17,7 +18,8 @@ def run_task(
     output_file: Path,
     quiet: bool,
 ) -> RunResult:
-    # log = logging.getLogger(f"{__name__}.{task.name}")
+    log = logging.getLogger(f"{__name__}.{task.name}")
+
     # Create the directory
     statuses = status_repo.get(hash)
     start_time = datetime.datetime.now()
@@ -30,7 +32,7 @@ def run_task(
     task_dir = Path(tempfile.gettempdir()) / f"integator-{hash}-{task.name}"
     worktree = source.init_worktree(task_dir, hash)
 
-    print(f"Running {task.name} in {worktree}")
+    log.info(f"Running {task.name} in {worktree}")
     result = Shell().run(
         task.cmd,
         output_file=output_file,
