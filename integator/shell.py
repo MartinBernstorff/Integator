@@ -63,8 +63,8 @@ class Shell:
         try:
             process = subprocess.Popen(
                 command,
-                stdout=subprocess.PIPE if not quiet else None,
-                stderr=subprocess.STDOUT if not quiet else None,
+                stdout=subprocess.PIPE if not quiet else subprocess.DEVNULL,
+                stderr=subprocess.STDOUT if not quiet else subprocess.DEVNULL,
                 universal_newlines=True,
                 cwd=cwd,
                 shell=True,
