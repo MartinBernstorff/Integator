@@ -43,7 +43,6 @@ class Shell:
     def run(
         self,
         command: str,
-        quiet: bool,
         output_file: Path | None = None,
         stream: Stream = Stream.YES,
         cwd: Path | None = None,
@@ -63,15 +62,15 @@ class Shell:
         try:
             process = subprocess.Popen(
                 command,
-                stdout=subprocess.PIPE if not quiet else subprocess.DEVNULL,
-                stderr=subprocess.STDOUT if not quiet else subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
                 universal_newlines=True,
                 cwd=cwd,
                 shell=True,
             )
             lines = [""]
             if output_file:
-                output_file.write_text(f"Running {command}\n")
+                output_file.write_text(f"Running {command}\n in {cwd}\n")
 
             while True:
                 output = process.stdout.readline()  # type: ignore

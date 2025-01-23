@@ -5,7 +5,7 @@ from pathlib import Path
 
 from integator.git import SourceGit
 from integator.settings import TaskSpecification
-from integator.shell import RunResult, Shell
+from integator.shell import RunResult, Shell, Stream
 from integator.task_status import ExecutionState, Span
 from integator.task_status_repo import TaskStatusRepo
 
@@ -37,7 +37,7 @@ def run_task(
         task.cmd,
         output_file=output_file,
         cwd=worktree,
-        quiet=quiet,
+        stream=Stream.NO if quiet else Stream.YES,
     )
 
     statuses.get(task.name).state = ExecutionState.from_exit_code(result.exit)
