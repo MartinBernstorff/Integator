@@ -4,6 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 # feat: rename to WarpGate/NovaGate
+# - Find and replace
+# - Add releasing to pypi (can we use uv for now?)
+
 name = "integator"
 version = "0.1.3"
 description = "Add your description here"

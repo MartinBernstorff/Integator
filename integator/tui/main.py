@@ -46,10 +46,6 @@ Screen {
         self.details.hash = self.commit_list.selected_hash
 
 
-# TODO:
-# - Status bar color based on last status
-# - Info pane based on selected item and width of window
-
 if __name__ == "__main__":
     app = IntegatorTUI()
     app.run()
