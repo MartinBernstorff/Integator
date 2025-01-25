@@ -31,10 +31,20 @@ class Settings(pydantic_settings.BaseSettings):
 
 
 class TaskSpecification(BaseModel):
+    # refactor: A task specification defines a 'task'; a step that is run during validation of a given commit.
+    # These steps are run in sequence by default so, perhaps a "step" is a better name than "task".
+    #
+    # We might also want this naming to align as closely as possible with other CI/CD tools, e.g. GitHub Actions or Azure Pipelines.
+    # In GitHub actions:
+    # * Workflow; a collection of (jobs?)
+    # * Job; a collection of (steps?)
+    # * Step; a single operation, e.g. `git clone`
+
     name: str
     cmd: str
-    # feat: templating of commands. Allows us to standardise all operations, e.g. `git push` if we can replace e.g. {hash} with the latest hash.
-    # Probably want this to be filled in as early as possible, to validate that it works.
+    # feat: templating/placeholders of commands. Allows us to standardise all operations, e.g. `git push` if we can replace e.g. {hash} with the latest hash.
+    # Probably want this to be filled in as early as possible during program execution, to validate that it works.
+    # feat: as an example, there is also "approving" a commit in GitHub actions.
 
     max_staleness_seconds: int = 0
 
@@ -55,6 +65,9 @@ def default_command() -> list[TaskSpecification]:
 
 
 class IntegatorSettings(BaseModel):
+    # refactor: We definitely want to clean this up. Much of the experimental
+    # logging and complexity functionality could be removed.
+
     commands: list[TaskSpecification] = Field(default_factory=default_command)
     command_on_success: str = Field(default="")
     complexity_threshold: int = Field(default=5)
@@ -64,7 +77,14 @@ class IntegatorSettings(BaseModel):
     push_on_success: bool = Field(default=False)
     source_dir: DirectoryPath = Field(default=pathlib.Path.cwd())
     skip_if_no_diff_against_trunk: bool = Field(default=False)
+
+    # feat: Would be _awesome_ if we can specify default settings in ~/.config/integator/default.toml, and these could be merged.
+    # Or would it? Isn't it quite project specific exactly what I'd want?
+
+    # feat: infer trunk from github CLI? Or at least allow it to be so, e.g. by specifying a command (prefix with $?)
     trunk: str = Field(default="main")
+
+    # feat: add pyproject.toml support. Should be super easy, given docs here: https://docs.pydantic.dev/latest/concepts/pydantic_settings/#other-settings-source
 
     @classmethod
     @field_validator("source_dir")

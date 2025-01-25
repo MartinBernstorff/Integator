@@ -12,7 +12,6 @@ from integator.columns import age, complexity, duration, status
 from integator.commit import Commit
 from integator.emojis import Emojis
 from integator.git import Git
-from integator.git_log import GitLog
 from integator.settings import RootSettings
 from integator.shell import Shell
 from integator.task_status import ExecutionState, Statuses
@@ -144,10 +143,7 @@ def _print_ready_status(ready: bool):
 def log_impl(debug: bool):
     settings = RootSettings()
 
-    git = Git(
-        source_dir=settings.integator.source_dir,
-        log=GitLog(),
-    )
+    git = Git(source_dir=settings.integator.source_dir)
 
     while True:
         settings = RootSettings()

@@ -76,6 +76,12 @@ class TaskStatus(BaseModel):
         return f"{self.task.name}: {self.state}"
 
     def tail(self, n_lines: int) -> str:
+        # feat: We could replace the paths mentioned in the printed logs (which point to the worktree) with the path to the
+        # "origin directory", e.g. the directory where the code under test is copied from.
+        # On the one hand, this means that we won't command-click our way into a file that is only in a temporary directory.
+        # On the other hand, it means that the paths are not actually pointing towards the file that they are mentioning, so if
+        #   we have something that is particular to the copied file, we are in trouble, and we have abstracted away that consideration
+        #   from the user. Perhaps we can print both? Or in some way indicate that it is replaced?
         if self.log is None:
             return ""
 

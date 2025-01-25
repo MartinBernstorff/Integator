@@ -19,5 +19,6 @@
         "**/CHANGELOG*": true,
         "build/": false
     },
-    "explorerExclude.backup": {}
+    "explorerExclude.backup": {},
+    "github.copilot.inlineSuggest.enable": true
 }

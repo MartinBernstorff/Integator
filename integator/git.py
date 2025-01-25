@@ -2,7 +2,7 @@ import functools
 import logging
 import pathlib
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from integator.git_log import GitLog
 from integator.shell import Shell
@@ -47,7 +47,9 @@ def _get_change_count(source_dir: pathlib.Path, hash: str) -> ChangeCount:
 @dataclass
 class Git:
     source_dir: pathlib.Path
-    log: GitLog
+
+    # Only one implementation of GitLog exists, so it's mostly to compose out some of the logic.
+    log: GitLog = field(default_factory=GitLog)
 
     def change_count(self, hash: str) -> ChangeCount:
         return _get_change_count(self.source_dir, hash)

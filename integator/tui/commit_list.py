@@ -12,7 +12,6 @@ from textual.widgets._data_table import RowKey
 
 from integator.commit import Commit
 from integator.git import Git
-from integator.git_log import GitLog
 from integator.settings import RootSettings
 from integator.task_status import ExecutionState, Statuses
 from integator.task_status_repo import TaskStatusRepo
@@ -32,7 +31,7 @@ class CommitList(Widget):
     def __init__(self, settings: RootSettings, classes: str = "") -> None:
         super().__init__(classes=classes)
         self.settings = settings
-        self.git = Git(source_dir=self.settings.integator.source_dir, log=GitLog())
+        self.git = Git(source_dir=self.settings.integator.source_dir)
         self.columns = ["Age", *self.settings.task_names()]
 
     def compose(self) -> ComposeResult:
