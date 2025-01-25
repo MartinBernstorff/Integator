@@ -33,6 +33,9 @@ class Settings(pydantic_settings.BaseSettings):
 class TaskSpecification(BaseModel):
     name: str
     cmd: str
+    # feat: templating of commands. Allows us to standardise all operations, e.g. `git push` if we can replace e.g. {hash} with the latest hash.
+    # Probably want this to be filled in as early as possible, to validate that it works.
+
     max_staleness_seconds: int = 0
 
 
