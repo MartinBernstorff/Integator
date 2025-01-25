@@ -45,7 +45,7 @@ def check(
     hash: str = typer.Option(None, "--hash", help="Commit hash to check"),
     step: str = typer.Option(None, "--step", help="Step to check"),
 ):
-    settings = RootSettings()
+    settings = RootSettings()  # type: ignore
 
 
 #
