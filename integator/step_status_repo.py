@@ -25,9 +25,12 @@ class StepStatusRepo:
             else:
                 raise e
 
+    # refactor: instead of a hash, should we take a commit, to be even more type-safe?
+    # OTOH, it is less flexible, and sets an artificially high requirement set.
     @staticmethod
     def get(hash: str) -> Statuses:
         log.debug(f"Getting notes for {hash}")
+
         log_str = Shell().run_quietly(f"git log -1 {hash} {StepStatusRepo.FORMAT_STR}")
 
         if len(log_str) > 1:

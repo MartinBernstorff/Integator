@@ -6,10 +6,11 @@ from multiprocessing import Process
 
 import typer
 
+from integator.commit import Commit
 from integator.git import Git, RootWorktree
 from integator.log import log_impl
 from integator.run_step import run_step
-from integator.settings import FILE_NAME, RootSettings, find_settings_file
+from integator.settings import FILE_NAME, RootSettings, StepSpec, find_settings_file
 from integator.shell import ExitCode, RunResult, Shell
 from integator.step_status_repo import StepStatusRepo
 from integator.watch_impl import CommandRan, watch_impl
@@ -48,17 +49,7 @@ def run(
     init_log(debug, quiet)
     settings = RootSettings()
     git = Git(source_dir=settings.integator.source_dir)
-    match hash:
-        case str():
-            commit = git.log.get_by_hash(hash)
-        case None:
-            commit = git.log.latest()
-
-    match step:
-        case None:
-            step_specs = settings.integator.steps
-        case str():
-            step_specs = [settings.get_step(step)]
+    commit = commit_match_or_latest(hash, git)
 
     # Existing statuses are wiped when calling run.
     # Downside is repeat work. Upside is that `run` always runs, which is what we expect.
@@ -66,7 +57,7 @@ def run(
     StepStatusRepo.clear(commit)
 
     results: list[RunResult] = []
-    for step_spec in step_specs:
+    for step_spec in step_match_or_all(step, settings):
         # Also updates the statuses.
         result = run_step(
             step=step_spec,
@@ -88,11 +79,32 @@ def run(
 
         results.append(result)
 
-    if all(result.succeeded() for result in results):
+    statuses = StepStatusRepo().get(commit.hash)
+
+    # XXX: Handle if only one step is specified. Do I even need to check here? Yes, after fail_fast
+    if statuses.all_succeeded(set(settings.step_names())):
         logger.info("All steps succeeded")
     else:  # At least one failed
         logger.error("At least one step failed")
         raise typer.Exit(code=ExitCode.ERROR.value)
+
+
+def commit_match_or_latest(hash: str | None, git: Git) -> Commit:
+    match hash:
+        case str():
+            commit = git.log.get_by_hash(hash)
+        case None:
+            commit = git.log.latest()
+    return commit
+
+
+def step_match_or_all(step: str | None, settings: RootSettings) -> list[StepSpec]:
+    match step:
+        case None:
+            step_specs = settings.integator.steps
+        case str():
+            step_specs = [settings.get_step(step)]
+    return step_specs
 
 
 # feat: A `check` command, which checks the combined status of all (default) or one (--step), for latest or a given commit (--hash)
@@ -108,9 +120,15 @@ def check(
     init_log(debug, quiet)
     settings = RootSettings()  # type: ignore # noqa: F841
 
-    # If hash is specified, do fuzzy matching to get a given commit. Otherwise, just get the latest one.
+    commit = commit_match_or_latest(hash, Git(settings.integator.source_dir))
+    steps = step_match_or_all(step, settings)
+    statuses = StepStatusRepo().get(commit.hash)
 
-    # If step is specified, only check that one, otherwise, check all.
+    if statuses.all_succeeded({step.name for step in steps}):
+        logger.info("All steps succeeded")
+    else:
+        logger.error("At least one step failed")
+        raise typer.Exit(code=ExitCode.ERROR.value)
 
 
 #
