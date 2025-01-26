@@ -48,7 +48,11 @@ def run(
 ):
     # Runs all steps for the current commit (default), or for a given commit (--hash argument), or for a given step (--step).
     init_log(debug, quiet)
-    settings = RootSettings()
+
+    # XXX: Clean this up
+    settings = RootSettings.from_template("Python.toml")
+    # XXX: Clean this up
+
     git = Git(source_dir=settings.integator.root_worktree_dir)
     commit = commit_match_or_latest(hash, git)
     steps = step_match_or_all(step, settings)

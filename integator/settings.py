@@ -1,6 +1,7 @@
 import importlib
 import importlib.metadata
 import json
+import logging
 import pathlib
 from typing import Tuple, Type
 
@@ -12,10 +13,12 @@ from integator.basemodel import BaseModel
 
 FILE_NAME = "integator.toml"
 
+log = logging.getLogger(__name__)
+
 
 class Settings(pydantic_settings.BaseSettings):
     model_config = pydantic_settings.SettingsConfigDict(
-        toml_file=FILE_NAME, pyproject_toml_depth=100
+        toml_file=FILE_NAME, pyproject_toml_depth=100, extra="forbid"
     )
 
     @classmethod
@@ -66,14 +69,11 @@ def default_command() -> list[StepSpec]:
 
 
 class IntegatorSettings(BaseModel):
+    model_config = pydantic_settings.SettingsConfigDict(extra="forbid")
     # refactor: We definitely want to clean this up. Much of the experimental
     # logging and complexity functionality could be removed.
 
     # feat: !!! we need to error if a settings file exists, but it is not parsed correctly
-
-    # feat: Would be _awesome_ if we can specify default settings in ~/.config/integator/templates/X.toml
-    # Make it an argument (e.g. --template) for many of the commands
-    # * This requires something like "from_toml"
 
     steps: list[StepSpec] = Field(default_factory=default_command)
     fail_fast: bool = Field(default=True)
@@ -100,8 +100,41 @@ class IntegatorSettings(BaseModel):
 
 class RootSettings(Settings):
     # refactor: is this composition essential? I think it might be based on pydantic-settings, but worth investigating.
+    # * Seems to only be important because I want to "integator" super-section
     # Could remove a layer of indirection.
     integator: IntegatorSettings = IntegatorSettings()
+
+    # feat XXX: Would be _awesome_ if we can specify default settings in ~/.config/integator/templates/X.toml
+    # Make it an argument (e.g. --template) for many of the commands
+    # * This requires something like "from_toml"
+    # * Also, handling in each of the commands. They should take a config-name, and, if that is passed, we get the matching template from integator templates
+    #
+    @classmethod
+    def from_toml(cls, path: pathlib.Path) -> "RootSettings":
+        full_path = path.absolute()
+        log.info(f"Loading config from {full_path}")
+        with open(path, "r") as f:
+            data = toml.load(f)
+        return cls(**data)
+
+    @classmethod
+    def from_template(cls, template_name: str) -> "RootSettings":
+        app_templates_dir = pathlib.Path.home() / ".config" / "integator" / "templates"
+        app_templates_dir.mkdir(exist_ok=True, parents=True)
+
+        files = list(app_templates_dir.glob("*.toml"))
+        matching_config = [f for f in files if template_name.lower() in f.name.lower()]
+
+        if not matching_config:
+            raise ValueError(
+                f"No configuration in {app_templates_dir} matches {template_name}. Available: {files}"
+            )
+
+        if len(matching_config) > 1:
+            raise ValueError(f"Two matching configs, {matching_config}")
+
+        # There should never be more than one matching config
+        return RootSettings.from_toml(matching_config[0])
 
     # feat: Log some info when init'ing here
 

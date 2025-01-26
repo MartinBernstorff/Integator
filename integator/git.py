@@ -96,7 +96,8 @@ class RootWorktree:
 
     def init(self, path: pathlib.Path, hash: str):
         if path.exists():
-            log.info("Worktree already exists, continuing")
+            log.debug("Worktree already exists, continuing")
         else:
+            log.info(f"Creating worktree at {path}")
             Shell().run_quietly(f"git worktree add -f -d '{path}' {hash}")
         return path

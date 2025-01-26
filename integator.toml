@@ -1,8 +1,5 @@
 [integator]
 push_on_success = true
-complexity_bar_max = 100
-complexity_changes_per_block = 10
-complexity_threshold = 20
 
 [[integator.steps]]
 name = "U"
@@ -16,4 +13,4 @@ max_staleness_seconds = 1
 
 [[integator.steps]]
 name = "X"
-cmd = "! rg -g '!integator.toml' XXX: ."
+cmd = "! rg -g '!integator.toml' XXX: || exit 1"
