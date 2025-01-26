@@ -35,8 +35,6 @@ app = typer.Typer()
 # Just importing the app object causes circular imports. Similar problem with routes in
 # This would also remove the watch/watch_impl separation, which duplicates a lot of logic.
 
-# I have a few commands I would like to add here.
-
 
 @app.command("r")
 @app.command()
