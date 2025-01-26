@@ -2,12 +2,17 @@ import re
 
 import pydantic
 
+from integator.commit import Commit
 from integator.shell import Shell
 from integator.step_status import Statuses
 
 
 class StepStatusRepo:
     FORMAT_STR = '--pretty=format:"C|%h| T|%ar| A|%aN| N|%N%-C()|%-C()"'
+
+    @staticmethod
+    def clear(commit: Commit):
+        Shell().run_quietly(f"git notes remove {commit.hash}")
 
     @staticmethod
     def get(hash: str) -> Statuses:

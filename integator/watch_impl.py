@@ -5,7 +5,7 @@ import logging
 from iterpy import Arr
 
 from integator.commit import Commit
-from integator.git import Git, SourceGit
+from integator.git import Git, RootWorktree
 from integator.run_step import run_step
 from integator.settings import RootSettings
 from integator.shell import Shell
@@ -27,14 +27,14 @@ class CommandRan(enum.Enum):
 
 
 def watch_impl(
-    shell: Shell, source_git: Git, status_repo: StepStatusRepo, quiet: bool
+    shell: Shell, root_git: Git, status_repo: StepStatusRepo, quiet: bool
 ) -> CommandRan:
     # Starting setup
     l.debug("Getting settings")
     settings = RootSettings()
 
     l.debug("Updating")
-    latest = source_git.log.latest()
+    latest = root_git.log.latest()
     latest_statuses = status_repo.get(latest.hash)
     if settings.integator.fail_fast and latest_statuses.has_failed():
         l.info(f"Latest commit {latest.hash} failed")
@@ -44,7 +44,7 @@ def watch_impl(
 
     l.debug("Diffing againt trunk")
     if (
-        not source_git.diff_against(settings.integator.trunk)
+        not root_git.diff_against(settings.integator.trunk)
         and settings.integator.skip_if_no_diff_against_trunk
     ):
         l.info(
@@ -73,33 +73,31 @@ def watch_impl(
             case ExecutionState.UNKNOWN:
                 log.info(f"{step.name} has not been run yet, executing")
 
-        log_file = (
-            settings.integator.log_dir
-            / f"{datetime.datetime.now().strftime('%y%m%d%H%M%S')}-{latest.hash[0:4]}-{step.name.replace(' ', '-')}.log"
-        )
-        log_file.parent.mkdir(parents=True, exist_ok=True)
-
-        commits = source_git.log.get(20)
+        commits = root_git.log.get(20)
         if _is_stale(
             [(commit, status_repo.get(commit.hash)) for commit in commits],
             step.max_staleness_seconds,
             step.name,
         ):
-            # XXX: This is the function we want to use for running the steps.
             result = run_step(
-                step, latest.hash, SourceGit(source_git), status_repo, log_file, quiet
+                step,
+                latest,
+                RootWorktree(root_git),
+                status_repo,
+                settings.integator.log_dir,
+                quiet,
             )
             command_ran = CommandRan.YES
             if settings.integator.fail_fast and result.failed():
                 break
 
-    latest = source_git.log.latest()
+    latest = root_git.log.latest()
     latest_statuses = status_repo.get(latest.hash)
 
     if latest_statuses.all(set(settings.step_names()), ExecutionState.SUCCESS):
         if settings.integator.push_on_success and not latest_statuses.is_pushed():
             l.debug("Pushing!")
-            source_git.push_head()
+            root_git.push_head()
             latest_statuses.replace(
                 TaskStatus(
                     step=Task(name="Push", cmd="Push"),

@@ -6,10 +6,11 @@ from multiprocessing import Process
 
 import typer
 
-from integator.git import Git
+from integator.git import Git, RootWorktree
 from integator.log import log_impl
+from integator.run_step import run_step
 from integator.settings import FILE_NAME, RootSettings, find_settings_file
-from integator.shell import Shell
+from integator.shell import ExitCode, RunResult, Shell
 from integator.step_status_repo import StepStatusRepo
 from integator.watch_impl import CommandRan, watch_impl
 
@@ -56,21 +57,45 @@ def run(
         case None:
             commit = Git(source_dir=settings.integator.source_dir).log.latest()
 
-    if step is not None:
-        if step not in settings.step_names():
-            raise ValueError(
-                f"Step {step} not found in settings. Available steps: {settings.step_names()}"
-            )
+    match step:
+        case None:
+            step_specs = settings.integator.steps
+        case str():
+            step_specs = [settings.get_step(step)]
 
     # Existing statuses are wiped when calling run.
     # Downside is repeat work. Upside is that `run` always runs, which is what we expect.
     # To avoid repeat work, we can run `check` first.
+    StepStatusRepo.clear(commit)
 
-    # Should this perhaps share implementation with watch? I think so, very much!
+    results: list[RunResult] = []
+    for step_spec in step_specs:
+        # Also updates the statuses.
+        result = run_step(
+            step=step_spec,
+            commit=commit,
+            root_worktree=RootWorktree(git=Git(settings.integator.source_dir)),
+            status_repo=StepStatusRepo(),
+            output_dir=pathlib.Path(".logs"),
+            quiet=quiet,
+        )
+        match result.exit:
+            # Logs are output during run_step, so no need to print the logs
+            case ExitCode.OK:
+                logger.info(f"Step {step_spec.name} succeeded")
+            case ExitCode.ERROR:
+                logger.error(f"Step {step_spec.name} failed")
+                if settings.integator.fail_fast:
+                    logger.error("Fail fast enabled. Exiting.")
+                    break
 
-    # If hash is specified, do fuzzy matching to get a given commit. Otherwise, just get the latest one.
+        results.append(result)
 
-    # If step is specified, only run that one, otherwise, run all.
+    if all(result.succeeded() for result in results):
+        logger.info("All steps succeeded")
+    else:  # At least one failed
+        logger.error("At least one step failed")
+        raise typer.Exit(code=ExitCode.ERROR.value)
 
 
 # feat: A `check` command, which checks the combined status of all (default) or one (--step), for latest or a given commit (--hash)
@@ -152,7 +177,7 @@ def watch(debug: bool = False, quiet: bool = False):
         )
         status = watch_impl(
             shell,
-            source_git=git,
+            root_git=git,
             status_repo=StepStatusRepo(),
             quiet=quiet,
         )

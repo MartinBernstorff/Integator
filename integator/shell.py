@@ -23,6 +23,9 @@ class RunResult:
     exit: ExitCode
     output: str | None
 
+    def succeeded(self) -> bool:
+        return self.exit == ExitCode.OK
+
     def failed(self) -> bool:
         return self.exit != ExitCode.OK
 

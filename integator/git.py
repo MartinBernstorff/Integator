@@ -89,11 +89,12 @@ class Git:
 
 
 @dataclass
-class SourceGit:
+class RootWorktree:
+    # refactor: Might this be a redundant abstraction? Not sure yet.
     # The git representation for the location of the source files. E.g. used for monitoring, finding commits etc.
     git: Git
 
-    def init_worktree(self, path: pathlib.Path, hash: str):
+    def init(self, path: pathlib.Path, hash: str):
         if path.exists():
             log.info("Worktree already exists, continuing")
         else:

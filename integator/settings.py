@@ -101,6 +101,8 @@ class IntegatorSettings(BaseModel):
 
 
 class RootSettings(Settings):
+    # refactor: is this composition essential? I think it might be based on pydantic-settings, but worth investigating.
+    # Could remove a layer of indirection.
     integator: IntegatorSettings = IntegatorSettings()
 
     def write_toml(self, path: pathlib.Path):
@@ -109,6 +111,12 @@ class RootSettings(Settings):
 
     def step_names(self) -> list[str]:
         return [cmd.name for cmd in self.integator.steps]
+
+    def get_step(self, name: str) -> StepSpec:
+        for step in self.integator.steps:
+            if step.name == name:
+                return step
+        raise ValueError(f"No step with name {name}")
 
     def version(self) -> str:
         return importlib.metadata.version("integator")
