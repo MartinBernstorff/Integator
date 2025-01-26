@@ -3,15 +3,15 @@ import re
 import pydantic
 
 from integator.shell import Shell
-from integator.task_status import Statuses
+from integator.step_status import Statuses
 
 
-class TaskStatusRepo:
+class StepStatusRepo:
     FORMAT_STR = '--pretty=format:"C|%h| T|%ar| A|%aN| N|%N%-C()|%-C()"'
 
     @staticmethod
     def get(hash: str) -> Statuses:
-        log_str = Shell().run_quietly(f"git log -1 {hash} {TaskStatusRepo.FORMAT_STR}")
+        log_str = Shell().run_quietly(f"git log -1 {hash} {StepStatusRepo.FORMAT_STR}")
 
         if len(log_str) > 1:
             raise RuntimeError("More than one commit matches hash")

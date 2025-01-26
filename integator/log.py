@@ -14,14 +14,14 @@ from integator.emojis import Emojis
 from integator.git import Git
 from integator.settings import RootSettings
 from integator.shell import Shell
-from integator.task_status import ExecutionState, Statuses
-from integator.task_status_repo import TaskStatusRepo
+from integator.step_status import ExecutionState, Statuses
+from integator.step_status_repo import StepStatusRepo
 
 log = logging.getLogger(__name__)
 
 
 def _last_status_commit(
-    pairs: list[tuple[Commit, Statuses]], task_names: set[str]
+    pairs: list[tuple[Commit, Statuses]], step_names: set[str]
 ) -> str:
     with_failures = Arr(pairs).filter(lambda i: i[1].has_failed())
     if with_failures.len() > 0:
@@ -51,7 +51,7 @@ Excerpt:
 {excerpt}"""
 
     ok_entries = Arr(pairs).filter(
-        lambda i: i[1].all(task_names, ExecutionState.SUCCESS)
+        lambda i: i[1].all(step_names, ExecutionState.SUCCESS)
     )
     if ok_entries.len() > 0:
         ok_entry = ok_entries[0]
@@ -87,11 +87,11 @@ def _print_table2(cols: list[Column], pairs: list[tuple[Commit, Statuses]]):
 
 
 def _ready_for_changes(
-    pairs: list[tuple[Commit, Statuses]], task_names: set[str]
+    pairs: list[tuple[Commit, Statuses]], step_names: set[str]
 ) -> bool:
     maybe_latest_passing_commit = (
         Arr(pairs)
-        .filter(lambda i: i[1].all_succeeded(task_names))
+        .filter(lambda i: i[1].all_succeeded(step_names))
         .map(lambda it: it[0])
     )
 
@@ -107,7 +107,7 @@ def _ready_for_changes(
 
     latest_passing_commit_index = None
     for idx, pair in enumerate(pairs):
-        if pair[1].all_succeeded(task_names):
+        if pair[1].all_succeeded(step_names):
             latest_passing_commit_index = idx
             break
 
@@ -151,17 +151,17 @@ def log_impl(debug: bool):
         if not debug:
             Shell().clear()
 
-        pairs = [(entry, TaskStatusRepo().get(entry.hash)) for entry in commits]
+        pairs = [(entry, StepStatusRepo().get(entry.hash)) for entry in commits]
 
         print(f"Integator {settings.version()}")
-        _print_ready_status(_ready_for_changes(pairs, set(settings.task_names())))
+        _print_ready_status(_ready_for_changes(pairs, set(settings.step_names())))
         _print_table2(
             [
                 Column("Hash", "", lambda pairs: [r[0].hash[0:5] for r in pairs]),
                 Column(
                     "Statuses",
-                    "".join([n[0:2] for n in settings.task_names()]),
-                    lambda pairs: status(pairs, settings.task_names()),
+                    "".join([n[0:2] for n in settings.step_names()]),
+                    lambda pairs: status(pairs, settings.step_names()),
                 ),
                 Column(
                     label="Age",
@@ -183,8 +183,8 @@ def log_impl(debug: bool):
             ],
             pairs,
         )
-        # _print_table(settings.task_names(), pairs, git, settings.integator)
+        # _print_table(settings.step_names(), pairs, git, settings.integator)
         now = f"\n{datetime.datetime.now().strftime('%H:%M:%S')}"
-        print(f"{now} | {_last_status_commit(pairs, set(settings.task_names()))}")
+        print(f"{now} | {_last_status_commit(pairs, set(settings.step_names()))}")
 
         time.sleep(0.3)

@@ -13,8 +13,8 @@ from textual.widgets._data_table import RowKey
 from integator.commit import Commit
 from integator.git import Git
 from integator.settings import RootSettings
-from integator.task_status import ExecutionState, Statuses
-from integator.task_status_repo import TaskStatusRepo
+from integator.step_status import ExecutionState, Statuses
+from integator.step_status_repo import StepStatusRepo
 
 
 class CommitList(Widget):
@@ -32,7 +32,7 @@ class CommitList(Widget):
         super().__init__(classes=classes)
         self.settings = settings
         self.git = Git(source_dir=self.settings.integator.source_dir)
-        self.columns = ["Age", *self.settings.task_names()]
+        self.columns = ["Age", *self.settings.step_names()]
 
     def compose(self) -> ComposeResult:
         table = DataTable(cursor_type="row")  # type: ignore
@@ -45,7 +45,7 @@ class CommitList(Widget):
 
         commits = self.git.log.get(8)
         pairs = [
-            (entry, TaskStatusRepo().get(entry.hash)) for entry in reversed(commits)
+            (entry, StepStatusRepo().get(entry.hash)) for entry in reversed(commits)
         ]
         for pair in pairs:
             self._add_row(pair)
@@ -61,7 +61,7 @@ class CommitList(Widget):
     @work(exclusive=True, thread=True)
     def _update(self) -> None:
         commits = self.git.log.get(8)
-        self.rows = [(entry, TaskStatusRepo().get(entry.hash)) for entry in commits]
+        self.rows = [(entry, StepStatusRepo().get(entry.hash)) for entry in commits]
 
         table: DataTable[ExecutionState] = self.query_one(DataTable)
         row_keys = {v.key.value for v in table.rows.values()}

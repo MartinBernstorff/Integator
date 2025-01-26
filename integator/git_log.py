@@ -6,6 +6,18 @@ from integator.shell import Shell
 
 @dataclass
 class GitLog:
+    def get_by_hash(self, hash: str) -> Commit:
+        values = Shell().run_quietly(
+            f'git log -n 1 --pretty=format:"{FORMAT_STR}" {hash}'
+        )
+        # XXX: Handle the ambiguous hash case. Example is '5ead'
+
+        if not values:
+            raise RuntimeError("No values returned from git log")
+
+        entries = [Commit.from_str(value) for value in values]
+        return entries[0]
+
     def get(self, n: int) -> list[Commit]:
         values = Shell().run_quietly(f'git log -n {n} --pretty=format:"{FORMAT_STR}"')
 

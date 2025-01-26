@@ -107,7 +107,7 @@ class RootSettings(Settings):
         values = json.loads(self.model_dump_json())
         toml.dump(values, open(path, "w"))
 
-    def task_names(self) -> list[str]:
+    def step_names(self) -> list[str]:
         return [cmd.name for cmd in self.integator.steps]
 
     def version(self) -> str:

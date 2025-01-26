@@ -4,8 +4,8 @@ from textual.app import ComposeResult
 from textual.reactive import reactive
 from textual.widgets import Label
 
-from integator.task_status import ExecutionState, Statuses, TaskStatus
-from integator.task_status_repo import TaskStatusRepo
+from integator.step_status import ExecutionState, Statuses, TaskStatus
+from integator.step_status_repo import StepStatusRepo
 
 
 class Details(Label):
@@ -21,11 +21,11 @@ class Details(Label):
 
     @work(thread=True, exclusive=True)
     def _update(self) -> None:
-        self.statuses = TaskStatusRepo.get(self.hash)
+        self.statuses = StepStatusRepo.get(self.hash)
 
     @staticmethod
     def _status_line(status: TaskStatus) -> str:
-        base = f"{status.state} {status.task.name} ({status.span}): {status.log}"
+        base = f"{status.state} {status.step.name} ({status.span}): {status.log}"
         if status.state != ExecutionState.FAILURE:
             return base
         return f"""{base}

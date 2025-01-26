@@ -1,7 +1,7 @@
 import datetime as dt
 from pathlib import Path
 
-from integator.task_status import (
+from integator.step_status import (
     ExecutionState,
     Span,
     Statuses,
@@ -14,7 +14,7 @@ def dummy_status():
     return Statuses(
         values=[
             TaskStatus(
-                task=Task(name=str("Test 1"), cmd=str("echo")),
+                step=Task(name=str("Test 1"), cmd=str("echo")),
                 state=ExecutionState.IN_PROGRESS,
                 span=Span(start=dt.datetime.now(), end=dt.datetime.now()),
                 log=Path(),
@@ -23,7 +23,7 @@ def dummy_status():
     )
 
 
-def test_init_taskstati():
+def test_init_stepstati():
     input = dummy_status().model_dump_json()
     val = Statuses().from_str(input)
     assert len(val.values) == 1

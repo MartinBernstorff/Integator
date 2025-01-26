@@ -6,20 +6,24 @@ from iterpy import Arr
 from integator.commit import Commit
 from integator.git import Git
 from integator.settings import IntegatorSettings
-from integator.task_status import Statuses
+from integator.step_status import Statuses
+
+# refactor: do I want to remove logging completely? Or at least dramatically simplify it.
+# More akin to git log, to output something in e.g. CI. For fancy functionality, we want
+# to use the TUI.
 
 
-def status(pairs: list[tuple[Commit, Statuses]], task_names: list[str]) -> list[str]:
+def status(pairs: list[tuple[Commit, Statuses]], step_names: list[str]) -> list[str]:
     return (
         Arr(pairs)
-        .map(lambda pair: status_row(pair, task_names))
+        .map(lambda pair: status_row(pair, step_names))
         .map(lambda statuses: "".join(statuses))
         .to_list()
     )
 
 
-def status_row(pair: tuple[Commit, Statuses], task_names: list[str]) -> list[str]:
-    return [pair[1].get(cmd).state.__str__() for cmd in task_names]
+def status_row(pair: tuple[Commit, Statuses], step_names: list[str]) -> list[str]:
+    return [pair[1].get(cmd).state.__str__() for cmd in step_names]
 
 
 def age(pair: tuple[Commit, Statuses]) -> str:

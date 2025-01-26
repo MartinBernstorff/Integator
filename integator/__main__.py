@@ -10,7 +10,7 @@ from integator.git import Git
 from integator.log import log_impl
 from integator.settings import FILE_NAME, RootSettings, find_settings_file
 from integator.shell import Shell
-from integator.task_status_repo import TaskStatusRepo
+from integator.step_status_repo import StepStatusRepo
 from integator.watch_impl import CommandRan, watch_impl
 
 logger = logging.getLogger(__name__)
@@ -35,28 +35,36 @@ app = typer.Typer()
 # This would also remove the watch/watch_impl separation, which duplicates a lot of logic.
 
 # I have a few commands I would like to add here.
-# feat: A `check` command, which
+
+
+# feat XXX: A `run` command, which
 #   Returns the combined AND state; super useful e.g. in CI.
-
-
-@app.command("c")
+@app.command("r")
 @app.command()
-def check(
-    hash: str = typer.Option(None, "--hash", help="Commit hash to check"),
-    step: str = typer.Option(None, "--step", help="Step to check"),
+def run(
+    hash: str | None = typer.Option(None, "--hash", help="Commit hash to check"),
+    step: str | None = typer.Option(None, "--step", help="Step to check"),
     debug: bool = False,
     quiet: bool = False,
 ):
     # Runs all steps for the current commit (default), or for a given commit (--hash argument), or for a given step (--step).
     init_log(debug, quiet)
     settings = RootSettings()
+    match hash:
+        case str():
+            commit = Git(source_dir=settings.integator.source_dir).log.get_by_hash(hash)
+        case None:
+            commit = Git(source_dir=settings.integator.source_dir).log.latest()
 
-    # ?: How do we handle existing statuses? Just wipe them? Perhaps we want that as an --override option.
-    # This depends upon whether the statuses are pushed to remote, I think.
-    # By default:
-    # * Want to rerun, without modifying status? Then noone is confused by missing status.
-    # * Or skip, and output to logs that you can run `clear`?
-    # * Perhaps completely separate the implementation of "check" with "run"?
+    if step is not None:
+        if step not in settings.step_names():
+            raise ValueError(
+                f"Step {step} not found in settings. Available steps: {settings.step_names()}"
+            )
+
+    # Existing statuses are wiped when calling run.
+    # Downside is repeat work. Upside is that `run` always runs, which is what we expect.
+    # To avoid repeat work, we can run `check` first.
 
     # Should this perhaps share implementation with watch? I think so, very much!
 
@@ -66,11 +74,27 @@ def check(
 
 
 # feat: A `check` command, which checks the combined status of all (default) or one (--step), for latest or a given commit (--hash)
+# Does no modification of statuses.
+@app.command("c")
+@app.command()
+def check(
+    hash: str | None = typer.Option(None, "--hash", help="Commit hash to check"),
+    step: str | None = typer.Option(None, "--step", help="Step to check"),
+    debug: bool = False,
+    quiet: bool = False,
+):
+    init_log(debug, quiet)
+    settings = RootSettings()
+
+    # If hash is specified, do fuzzy matching to get a given commit. Otherwise, just get the latest one.
+
+    # If step is specified, only check that one, otherwise, check all.
+
 
 #
 # feat: A `clear` command, which removes all step states for a given commit. By default, removes for the latest commit.
 
-# ?: We do not want to use an existing DAG tool as the job-engine, because that makes it very hard to get task status,
+# ?: We do not want to use an existing DAG tool as the job-engine, because that makes it very hard to get step status,
 # and therefore how to present it nicely and log it to persistence.
 
 
@@ -129,7 +153,7 @@ def watch(debug: bool = False, quiet: bool = False):
         status = watch_impl(
             shell,
             source_git=git,
-            status_repo=TaskStatusRepo(),
+            status_repo=StepStatusRepo(),
             quiet=quiet,
         )
 

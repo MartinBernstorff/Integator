@@ -58,22 +58,22 @@ class Span(BaseModel):
 
 
 class TaskStatus(BaseModel):
-    task: Task
+    step: Task
     state: ExecutionState
     span: Span
     log: pathlib.Path | None
 
     @classmethod
-    def unknown(cls, task: Task) -> "TaskStatus":
+    def unknown(cls, step: Task) -> "TaskStatus":
         return cls(
-            task=task,
+            step=step,
             state=ExecutionState.UNKNOWN,
             span=Span(start=dt.datetime.now(), end=None),
             log=None,
         )
 
     def __repr__(self) -> str:
-        return f"{self.task.name}: {self.state}"
+        return f"{self.step.name}: {self.state}"
 
     def tail(self, n_lines: int) -> str:
         # feat: We could replace the paths mentioned in the printed logs (which point to the worktree) with the path to the
@@ -104,20 +104,20 @@ class Statuses(BaseModel):
         return cls.model_validate_json(line)
 
     def names(self) -> set[str]:
-        return {status.task.name for status in self.values}
+        return {status.step.name for status in self.values}
 
     def replace(self, new: TaskStatus):
         self.values = [
-            status for status in self.values if status.task.name != new.task.name
+            status for status in self.values if status.step.name != new.step.name
         ]
         self.add(new)
 
     def get(self, name: str) -> TaskStatus:
-        matching = [task for task in self.values if task.task.name == name]
+        matching = [step for step in self.values if step.step.name == name]
 
         if len(matching) == 0:
             new_status = TaskStatus(
-                task=Task(name=name, cmd=str("UNKNOWN")),
+                step=Task(name=name, cmd=str("UNKNOWN")),
                 state=ExecutionState.UNKNOWN,
                 span=Span(start=dt.datetime.now(), end=dt.datetime.now()),
                 log=None,
@@ -130,11 +130,11 @@ class Statuses(BaseModel):
     def duration(self) -> dt.timedelta:
         return reduce(lambda x, y: x + y, [s.span.duration() for s in self.values])
 
-    def add(self, task_status: TaskStatus):
-        self.values.append(task_status)
+    def add(self, step_status: TaskStatus):
+        self.values.append(step_status)
 
     def contains(self, status: ExecutionState) -> bool:
-        return any(task.state == status for task in self.values)
+        return any(step.state == status for step in self.values)
 
     def all_succeeded(self, names: Set[str]) -> bool:
         return self.all(names, ExecutionState.SUCCESS)
@@ -146,7 +146,7 @@ class Statuses(BaseModel):
         return True
 
     def get_failures(self) -> list[TaskStatus]:
-        return [task for task in self.values if task.state == ExecutionState.FAILURE]
+        return [step for step in self.values if step.state == ExecutionState.FAILURE]
 
     def has_failed(self) -> bool:
         return self.contains(ExecutionState.FAILURE)
