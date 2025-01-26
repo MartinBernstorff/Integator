@@ -1,3 +1,4 @@
+import logging
 import re
 
 import pydantic
@@ -6,12 +7,15 @@ from integator.commit import Commit
 from integator.shell import Shell
 from integator.step_status import Statuses
 
+log = logging.getLogger(__name__)
+
 
 class StepStatusRepo:
     FORMAT_STR = '--pretty=format:"C|%h| T|%ar| A|%aN| N|%N%-C()|%-C()"'
 
     @staticmethod
     def clear(commit: Commit):
+        log.debug(f"Clearing notes for {commit.hash}")
         try:
             Shell().run_quietly(f"git notes remove {commit.hash}")
         except RuntimeError as e:
@@ -23,6 +27,7 @@ class StepStatusRepo:
 
     @staticmethod
     def get(hash: str) -> Statuses:
+        log.debug(f"Getting notes for {hash}")
         log_str = Shell().run_quietly(f"git log -1 {hash} {StepStatusRepo.FORMAT_STR}")
 
         if len(log_str) > 1:
@@ -40,5 +45,6 @@ class StepStatusRepo:
 
     @staticmethod
     def update(hash: str, statuses: Statuses):
+        log.debug(f"Updating notes for {hash} with {statuses.names()}")
         notes = statuses.model_dump_json()
         Shell().run_quietly(f"git notes add -f -m '{notes}' {hash}")

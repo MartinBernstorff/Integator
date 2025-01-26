@@ -164,9 +164,6 @@ def watch(debug: bool = False, quiet: bool = False):
 
     shell = Shell()
     while True:
-        if not debug:
-            shell.clear()
-
         logger.debug("--- Init'ing ---")
         git = Git(source_dir=settings.integator.source_dir)
 
@@ -188,11 +185,11 @@ def watch(debug: bool = False, quiet: bool = False):
 
 @app.command("t")
 @app.command()
-def tui(debug: bool = False, quiet: bool = False):
+def tui(debug: bool = False, quiet: bool = True):
     init_log(debug, quiet)
     from integator.tui.main import IntegatorTUI
 
-    side_process = Process(target=partial(watch, debug, quiet=True), daemon=True)
+    side_process = Process(target=partial(watch, debug, quiet=quiet), daemon=True)
     side_process.start()
 
     app = IntegatorTUI()

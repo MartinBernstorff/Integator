@@ -5,15 +5,15 @@ from integator.step_status import (
     ExecutionState,
     Span,
     Statuses,
+    StepStatus,
     Task,
-    TaskStatus,
 )
 
 
 def dummy_status():
     return Statuses(
         values=[
-            TaskStatus(
+            StepStatus(
                 step=Task(name=str("Test 1"), cmd=str("echo")),
                 state=ExecutionState.IN_PROGRESS,
                 span=Span(start=dt.datetime.now(), end=dt.datetime.now()),

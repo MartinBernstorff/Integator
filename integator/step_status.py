@@ -57,14 +57,14 @@ class Span(BaseModel):
         return f"{humanize.naturaldelta(self.duration())}"
 
 
-class TaskStatus(BaseModel):
+class StepStatus(BaseModel):
     step: Task
     state: ExecutionState
     span: Span
     log: pathlib.Path | None
 
     @classmethod
-    def unknown(cls, step: Task) -> "TaskStatus":
+    def unknown(cls, step: Task) -> "StepStatus":
         return cls(
             step=step,
             state=ExecutionState.UNKNOWN,
@@ -94,7 +94,7 @@ class TaskStatus(BaseModel):
 
 
 class Statuses(BaseModel):
-    values: list[TaskStatus] = Field(default_factory=list)
+    values: list[StepStatus] = Field(default_factory=list)
 
     def __str__(self):
         return f"[{''.join(str(status.state) for status in self.values)}]"
@@ -106,17 +106,17 @@ class Statuses(BaseModel):
     def names(self) -> set[str]:
         return {status.step.name for status in self.values}
 
-    def replace(self, new: TaskStatus):
+    def replace(self, new: StepStatus):
         self.values = [
             status for status in self.values if status.step.name != new.step.name
         ]
         self.add(new)
 
-    def get(self, name: str) -> TaskStatus:
+    def get(self, name: str) -> StepStatus:
         matching = [step for step in self.values if step.step.name == name]
 
         if len(matching) == 0:
-            new_status = TaskStatus(
+            new_status = StepStatus(
                 step=Task(name=name, cmd=str("UNKNOWN")),
                 state=ExecutionState.UNKNOWN,
                 span=Span(start=dt.datetime.now(), end=dt.datetime.now()),
@@ -130,7 +130,7 @@ class Statuses(BaseModel):
     def duration(self) -> dt.timedelta:
         return reduce(lambda x, y: x + y, [s.span.duration() for s in self.values])
 
-    def add(self, step_status: TaskStatus):
+    def add(self, step_status: StepStatus):
         self.values.append(step_status)
 
     def contains(self, status: ExecutionState) -> bool:
@@ -145,7 +145,7 @@ class Statuses(BaseModel):
                 return False
         return True
 
-    def get_failures(self) -> list[TaskStatus]:
+    def get_failures(self) -> list[StepStatus]:
         return [step for step in self.values if step.state == ExecutionState.FAILURE]
 
     def has_failed(self) -> bool:

@@ -36,6 +36,18 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": true
+        },
+        {
+            "name": "Debug watch",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "integator",
+            "args": [
+                "w",
+                "--debug",
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
         }
     ]
 }

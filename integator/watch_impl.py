@@ -13,8 +13,8 @@ from integator.step_status import (
     ExecutionState,
     Span,
     Statuses,
+    StepStatus,
     Task,
-    TaskStatus,
 )
 from integator.step_status_repo import StepStatusRepo
 
@@ -99,7 +99,7 @@ def watch_impl(
             l.debug("Pushing!")
             root_git.push_head()
             latest_statuses.replace(
-                TaskStatus(
+                StepStatus(
                     step=Task(name="Push", cmd="Push"),
                     state=ExecutionState.SUCCESS,
                     span=Span(
