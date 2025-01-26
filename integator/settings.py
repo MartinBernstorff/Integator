@@ -107,7 +107,7 @@ class RootSettings(Settings):
     # Could remove a layer of indirection.
     integator: IntegatorSettings = IntegatorSettings()
 
-    # XXX: Log some info when init'ing here
+    # feat: Log some info when init'ing here
 
     def write_toml(self, path: pathlib.Path):
         values = json.loads(self.model_dump_json())
