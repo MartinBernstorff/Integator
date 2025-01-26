@@ -71,18 +71,14 @@ class IntegatorSettings(BaseModel):
 
     # feat: !!! we need to error if a settings file exists, but it is not parsed correctly
 
-    steps: list[StepSpec] = Field(default_factory=default_command)
-    command_on_success: str = Field(default="")
-    complexity_threshold: int = Field(default=5)
-    complexity_changes_per_block: int = Field(default=10)
-    complexity_bar_max: int = Field(default=100)
-    fail_fast: bool = Field(default=True)
-    push_on_success: bool = Field(default=False)
-    source_dir: DirectoryPath = Field(default=pathlib.Path.cwd())
-    skip_if_no_diff_against_trunk: bool = Field(default=False)
-
     # feat: Would be _awesome_ if we can specify default settings in ~/.config/integator/templates/X.toml
     # Make it an argument (e.g. --template) for many of the commands
+    # * This requires something like "from_toml"
+
+    steps: list[StepSpec] = Field(default_factory=default_command)
+    fail_fast: bool = Field(default=True)
+    push_on_success: bool = Field(default=False)
+    root_worktree_dir: DirectoryPath = Field(default=pathlib.Path.cwd())
 
     # feat: infer trunk from github CLI? Or at least allow it to be so, e.g. by specifying a command (prefix with $?)
     trunk: str = Field(default="main")
@@ -99,7 +95,7 @@ class IntegatorSettings(BaseModel):
 
     @property
     def log_dir(self) -> pathlib.Path:
-        return self.source_dir / ".logs"
+        return self.root_worktree_dir / ".logs"
 
 
 class RootSettings(Settings):

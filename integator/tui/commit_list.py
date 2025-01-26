@@ -31,7 +31,7 @@ class CommitList(Widget):
     def __init__(self, settings: RootSettings, classes: str = "") -> None:
         super().__init__(classes=classes)
         self.settings = settings
-        self.git = Git(source_dir=self.settings.integator.source_dir)
+        self.git = Git(source_dir=self.settings.integator.root_worktree_dir)
         self.columns = ["Age", *self.settings.step_names()]
 
     def compose(self) -> ComposeResult:

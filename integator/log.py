@@ -8,7 +8,7 @@ from iterpy import Arr
 from rich.console import Console
 from rich.table import Table
 
-from integator.columns import age, complexity, duration, status
+from integator.columns import age, duration, status
 from integator.commit import Commit
 from integator.emojis import Emojis
 from integator.git import Git
@@ -143,7 +143,7 @@ def _print_ready_status(ready: bool):
 def log_impl(debug: bool):
     settings = RootSettings()
 
-    git = Git(source_dir=settings.integator.source_dir)
+    git = Git(source_dir=settings.integator.root_worktree_dir)
 
     while True:
         settings = RootSettings()
@@ -167,13 +167,6 @@ def log_impl(debug: bool):
                     label="Age",
                     title="",
                     func=lambda pairs: [age(p) for p in pairs],
-                ),
-                Column(
-                    label="🤡",
-                    title="",
-                    func=lambda pairs: [
-                        complexity(p, git, settings.integator) for p in pairs
-                    ],
                 ),
                 Column(
                     label="Duration",

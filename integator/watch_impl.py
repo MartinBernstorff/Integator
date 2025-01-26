@@ -43,16 +43,6 @@ def watch_impl(
         return CommandRan.NO
 
     l.debug("Diffing againt trunk")
-    if (
-        not root_git.diff_against(settings.integator.trunk)
-        and settings.integator.skip_if_no_diff_against_trunk
-    ):
-        l.info(
-            f"{latest}: No changes compared to trunk at {settings.integator.trunk}, waiting"
-        )
-
-        return CommandRan.NO
-
     command_ran = CommandRan.NO
     # Run commands
     for step in settings.integator.steps:
@@ -109,9 +99,6 @@ def watch_impl(
                 )
             )
             status_repo.update(latest.hash, latest_statuses)
-
-        if settings.integator.command_on_success:
-            shell.run_interactively(settings.integator.command_on_success)
 
     l.info("Finished watching")
 

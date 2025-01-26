@@ -49,7 +49,7 @@ def run(
     # Runs all steps for the current commit (default), or for a given commit (--hash argument), or for a given step (--step).
     init_log(debug, quiet)
     settings = RootSettings()
-    git = Git(source_dir=settings.integator.source_dir)
+    git = Git(source_dir=settings.integator.root_worktree_dir)
     commit = commit_match_or_latest(hash, git)
     steps = step_match_or_all(step, settings)
 
@@ -64,7 +64,7 @@ def run(
         result = run_step(
             step=step_spec,
             commit=commit,
-            root_worktree=RootWorktree(git=Git(settings.integator.source_dir)),
+            root_worktree=RootWorktree(git=Git(settings.integator.root_worktree_dir)),
             status_repo=StepStatusRepo(),
             output_dir=pathlib.Path(".logs"),
             quiet=quiet,
@@ -123,7 +123,7 @@ def check(
     init_log(debug, quiet)
     settings = RootSettings()  # type: ignore # noqa: F841
 
-    commit = commit_match_or_latest(hash, Git(settings.integator.source_dir))
+    commit = commit_match_or_latest(hash, Git(settings.integator.root_worktree_dir))
 
     logger.info(f"Checking statuses for commit {commit.hash}")
 
@@ -188,11 +188,11 @@ def watch(debug: bool = False, quiet: bool = False):
     shell = Shell()
     while True:
         logger.debug("--- Init'ing ---")
-        git = Git(source_dir=settings.integator.source_dir)
+        git = Git(source_dir=settings.integator.root_worktree_dir)
 
         logger.debug("Running")
         logger.info(
-            f"Integator {settings.version()}: Watching {settings.integator.source_dir} for new commits"
+            f"Integator {settings.version()}: Watching {settings.integator.root_worktree_dir} for new commits"
         )
         status = watch_impl(
             shell,
