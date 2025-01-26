@@ -55,7 +55,7 @@ def run(
     # Existing statuses are wiped when calling run.
     # Downside is repeat work. Upside is that `run` always runs, which is what we expect.
     # To avoid repeat work, we can run `check` first.
-    StepStatusRepo.clear(commit)
+    StepStatusRepo.clear(commit, steps)
 
     results: list[RunResult] = []
     for step_spec in steps:

@@ -4,6 +4,7 @@ import re
 import pydantic
 
 from integator.commit import Commit
+from integator.settings import StepSpec
 from integator.shell import Shell
 from integator.step_status import Statuses
 
@@ -14,16 +15,13 @@ class StepStatusRepo:
     FORMAT_STR = '--pretty=format:"C|%h| T|%ar| A|%aN| N|%N%-C()|%-C()"'
 
     @staticmethod
-    def clear(commit: Commit):
+    def clear(commit: Commit, steps: list[StepSpec]):
         log.debug(f"Clearing notes for {commit.hash}")
-        try:
-            Shell().run_quietly(f"git notes remove {commit.hash}")
-        except RuntimeError as e:
-            # If no note exists, we don't need to error
-            if "has not note" not in str(e):
-                pass
-            else:
-                raise e
+
+        statuses = StepStatusRepo.get(commit.hash)
+
+        for step in steps:
+            statuses.remove(step.name)
 
     # refactor: instead of a hash, should we take a commit, to be even more type-safe?
     # OTOH, it is less flexible, and sets an artificially high requirement set.

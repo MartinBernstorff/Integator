@@ -106,6 +106,9 @@ class Statuses(BaseModel):
     def names(self) -> set[str]:
         return {status.step.name for status in self.values}
 
+    def remove(self, name: str):
+        self.values = [status for status in self.values if status.step.name != name]
+
     def replace(self, new: StepStatus):
         self.values = [
             status for status in self.values if status.step.name != new.step.name
