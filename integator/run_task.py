@@ -4,14 +4,14 @@ import tempfile
 from pathlib import Path
 
 from integator.git import SourceGit
-from integator.settings import TaskSpecification
+from integator.settings import StepSpec
 from integator.shell import RunResult, Shell, Stream
 from integator.task_status import ExecutionState, Span
 from integator.task_status_repo import TaskStatusRepo
 
 
 def run_task(
-    task: TaskSpecification,
+    task: StepSpec,
     hash: str,
     source: SourceGit,
     status_repo: TaskStatusRepo,

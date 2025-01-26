@@ -30,11 +30,12 @@ class Settings(pydantic_settings.BaseSettings):
         return (pydantic_settings.TomlConfigSettingsSource(settings_cls),)
 
 
-class TaskSpecification(BaseModel):
-    # refactor: A task specification defines a 'task'; a step that is run during validation of a given commit.
-    # These steps are run in sequence by default so, perhaps a "step" is a better name than "task".
+class StepSpec(BaseModel):
+    """A specification of a step that is run during validation of a given commit."""
+
+    # These steps are run in sequence by default.
     #
-    # We might also want this naming to align as closely as possible with other CI/CD tools, e.g. GitHub Actions or Azure Pipelines.
+    # refactor: We might also want this naming to align as closely as possible with other CI/CD tools, e.g. GitHub Actions or Azure Pipelines.
     # In GitHub actions:
     # * Workflow; a collection of (jobs?)
     # * Job; a collection of (steps?)
@@ -49,14 +50,14 @@ class TaskSpecification(BaseModel):
     max_staleness_seconds: int = 0
 
 
-def default_command() -> list[TaskSpecification]:
+def default_command() -> list[StepSpec]:
     return [
-        TaskSpecification(
+        StepSpec(
             name=str("Command 1"),
             cmd=str("echo 'test 1'"),
             max_staleness_seconds=10,
         ),
-        TaskSpecification(
+        StepSpec(
             name=" X",
             cmd="! rg -g '!integator.toml' XXX .",
             max_staleness_seconds=0,
@@ -68,7 +69,7 @@ class IntegatorSettings(BaseModel):
     # refactor: We definitely want to clean this up. Much of the experimental
     # logging and complexity functionality could be removed.
 
-    commands: list[TaskSpecification] = Field(default_factory=default_command)
+    steps: list[StepSpec] = Field(default_factory=default_command)
     command_on_success: str = Field(default="")
     complexity_threshold: int = Field(default=5)
     complexity_changes_per_block: int = Field(default=10)
@@ -78,8 +79,8 @@ class IntegatorSettings(BaseModel):
     source_dir: DirectoryPath = Field(default=pathlib.Path.cwd())
     skip_if_no_diff_against_trunk: bool = Field(default=False)
 
-    # feat: Would be _awesome_ if we can specify default settings in ~/.config/integator/default.toml, and these could be merged.
-    # Or would it? Isn't it quite project specific exactly what I'd want?
+    # feat: Would be _awesome_ if we can specify default settings in ~/.config/integator/templates/X.toml
+    # Make it an argument (e.g. --template) for many of the commands
 
     # feat: infer trunk from github CLI? Or at least allow it to be so, e.g. by specifying a command (prefix with $?)
     trunk: str = Field(default="main")
@@ -107,7 +108,7 @@ class RootSettings(Settings):
         toml.dump(values, open(path, "w"))
 
     def task_names(self) -> list[str]:
-        return [cmd.name for cmd in self.integator.commands]
+        return [cmd.name for cmd in self.integator.steps]
 
     def version(self) -> str:
         return importlib.metadata.version("integator")

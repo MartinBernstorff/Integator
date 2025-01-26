@@ -35,7 +35,7 @@ app = typer.Typer()
 # This would also remove the watch/watch_impl separation, which duplicates a lot of logic.
 
 # I have a few commands I would like to add here.
-# feat: A `check` command, which runs all steps for the current commit (default), or for a given commit (--hash argument), or for a given step (--step).
+# feat: A `check` command, which
 #   Returns the combined AND state; super useful e.g. in CI.
 
 
@@ -44,9 +44,28 @@ app = typer.Typer()
 def check(
     hash: str = typer.Option(None, "--hash", help="Commit hash to check"),
     step: str = typer.Option(None, "--step", help="Step to check"),
+    debug: bool = False,
+    quiet: bool = False,
 ):
-    settings = RootSettings()  # type: ignore
+    # Runs all steps for the current commit (default), or for a given commit (--hash argument), or for a given step (--step).
+    init_log(debug, quiet)
+    settings = RootSettings()
 
+    # ?: How do we handle existing statuses? Just wipe them? Perhaps we want that as an --override option.
+    # This depends upon whether the statuses are pushed to remote, I think.
+    # By default:
+    # * Want to rerun, without modifying status? Then noone is confused by missing status.
+    # * Or skip, and output to logs that you can run `clear`?
+    # * Perhaps completely separate the implementation of "check" with "run"?
+
+    # Should this perhaps share implementation with watch? I think so, very much!
+
+    # If hash is specified, do fuzzy matching to get a given commit. Otherwise, just get the latest one.
+
+    # If step is specified, only run that one, otherwise, run all.
+
+
+# feat: A `check` command, which checks the combined status of all (default) or one (--step), for latest or a given commit (--hash)
 
 #
 # feat: A `clear` command, which removes all step states for a given commit. By default, removes for the latest commit.

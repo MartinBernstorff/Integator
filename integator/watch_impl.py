@@ -55,7 +55,7 @@ def watch_impl(
 
     command_ran = CommandRan.NO
     # Run commands
-    for task in settings.integator.commands:
+    for task in settings.integator.steps:
         log = logging.getLogger(f"{__name__}.{task.name}")
         log.debug(f"Processing {task.name}")
         latest_cmd_status = latest_statuses.get(task.name).state
