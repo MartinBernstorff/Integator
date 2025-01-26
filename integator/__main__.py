@@ -32,7 +32,7 @@ def init_log(debug: bool, quiet: bool):
 
 app = typer.Typer()
 
-# refactor: It might make sense to convert these commands to their own files, as
+# refactor: It might make sense to refactor these commands into their own files, as
 # they seem to be growing. But I'm not sure how to do that with Typer.
 # Just importing the app object causes circular imports. Similar problem with routes in
 # This would also remove the watch/watch_impl separation, which duplicates a lot of logic.
