@@ -121,13 +121,16 @@ def check(
     settings = RootSettings()  # type: ignore # noqa: F841
 
     commit = commit_match_or_latest(hash, Git(settings.integator.source_dir))
+
+    logger.info(f"Checking statuses for commit {commit.hash}")
+
     steps = step_match_or_all(step, settings)
     statuses = StepStatusRepo().get(commit.hash)
 
     if statuses.all_succeeded({step.name for step in steps}):
         logger.info("All steps succeeded")
     else:
-        logger.error("At least one step failed")
+        logger.error(f"At least one step failed: {statuses.get_failures()}")
         raise typer.Exit(code=ExitCode.ERROR.value)
 
 
