@@ -50,6 +50,7 @@ def run(
     settings = RootSettings()
     git = Git(source_dir=settings.integator.source_dir)
     commit = commit_match_or_latest(hash, git)
+    steps = step_match_or_all(step, settings)
 
     # Existing statuses are wiped when calling run.
     # Downside is repeat work. Upside is that `run` always runs, which is what we expect.
@@ -57,7 +58,7 @@ def run(
     StepStatusRepo.clear(commit)
 
     results: list[RunResult] = []
-    for step_spec in step_match_or_all(step, settings):
+    for step_spec in steps:
         # Also updates the statuses.
         result = run_step(
             step=step_spec,
@@ -81,8 +82,7 @@ def run(
 
     statuses = StepStatusRepo().get(commit.hash)
 
-    # XXX: Handle if only one step is specified. Do I even need to check here? Yes, after fail_fast
-    if statuses.all_succeeded(set(settings.step_names())):
+    if statuses.all_succeeded({step.name for step in steps}):
         logger.info("All steps succeeded")
     else:  # At least one failed
         logger.error("At least one step failed")
