@@ -21,6 +21,7 @@ date_fmt = "%H:%M:%S"
 
 
 def init_log(debug: bool, quiet: bool):
+    # feat: get colored logging working
     log_level = logging.ERROR if quiet else logging.DEBUG if debug else logging.INFO
     logging.basicConfig(
         level=log_level,
@@ -89,6 +90,8 @@ def run(
         raise typer.Exit(code=ExitCode.ERROR.value)
 
 
+# refactor: where do these utility-methods belong? They are kind of setup-ish, basically command-line argument parsing
+# They could belong in a CLI-module.
 def commit_match_or_latest(hash: str | None, git: Git) -> Commit:
     match hash:
         case str():
@@ -127,8 +130,9 @@ def check(
     steps = step_match_or_all(step, settings)
     statuses = StepStatusRepo().get(commit.hash)
 
-    if statuses.all_succeeded({step.name for step in steps}):
-        logger.info("All steps succeeded")
+    step_names = {step.name for step in steps}
+    if statuses.all_succeeded(step_names):
+        logger.info(f"{step_names} succeeded")
     else:
         logger.error(f"At least one step failed: {statuses.get_failures()}")
         raise typer.Exit(code=ExitCode.ERROR.value)
