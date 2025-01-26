@@ -38,8 +38,6 @@ app = typer.Typer()
 # I have a few commands I would like to add here.
 
 
-# feat XXX: A `run` command, which
-#   Returns the combined AND state; super useful e.g. in CI.
 @app.command("r")
 @app.command()
 def run(

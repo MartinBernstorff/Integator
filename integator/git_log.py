@@ -10,7 +10,6 @@ class GitLog:
         values = Shell().run_quietly(
             f'git log -n 1 --pretty=format:"{FORMAT_STR}" {hash}'
         )
-        # XXX: Handle the ambiguous hash case. Example is '5ead'
 
         if not values:
             raise RuntimeError("No values returned from git log")

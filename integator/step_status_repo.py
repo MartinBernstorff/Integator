@@ -12,7 +12,14 @@ class StepStatusRepo:
 
     @staticmethod
     def clear(commit: Commit):
-        Shell().run_quietly(f"git notes remove {commit.hash}")
+        try:
+            Shell().run_quietly(f"git notes remove {commit.hash}")
+        except RuntimeError as e:
+            # If no note exists, we don't need to error
+            if "has not note" not in str(e):
+                pass
+            else:
+                raise e
 
     @staticmethod
     def get(hash: str) -> Statuses:
