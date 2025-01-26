@@ -4,16 +4,16 @@ complexity_bar_max = 100
 complexity_changes_per_block = 10
 complexity_threshold = 20
 
-[[integator.commands]]
+[[integator.steps]]
 name = "U"
 cmd = "uv run pytest"
 max_staleness_seconds = 1
 
-[[integator.commands]]
+[[integator.steps]]
 name = "T"
 cmd = "uv run pyright"
 max_staleness_seconds = 1
 
-[[integator.commands]]
+[[integator.steps]]
 name = "X"
 cmd = "! rg -g '!integator.toml' XXX: ."

@@ -51,11 +51,12 @@ def run(
     # Runs all steps for the current commit (default), or for a given commit (--hash argument), or for a given step (--step).
     init_log(debug, quiet)
     settings = RootSettings()
+    git = Git(source_dir=settings.integator.source_dir)
     match hash:
         case str():
-            commit = Git(source_dir=settings.integator.source_dir).log.get_by_hash(hash)
+            commit = git.log.get_by_hash(hash)
         case None:
-            commit = Git(source_dir=settings.integator.source_dir).log.latest()
+            commit = git.log.latest()
 
     match step:
         case None:
@@ -109,7 +110,7 @@ def check(
     quiet: bool = False,
 ):
     init_log(debug, quiet)
-    settings = RootSettings()
+    settings = RootSettings()  # type: ignore # noqa: F841
 
     # If hash is specified, do fuzzy matching to get a given commit. Otherwise, just get the latest one.
 

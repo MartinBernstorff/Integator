@@ -27,13 +27,12 @@
             "justMyCode": true
         },
         {
-            "name": "Debug quiet watch",
+            "name": "Debug run",
             "type": "debugpy",
             "request": "launch",
             "program": "integator",
             "args": [
-                "w",
-                "--quiet"
+                "r",
             ],
             "console": "integratedTerminal",
             "justMyCode": true

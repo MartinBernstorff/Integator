@@ -69,6 +69,8 @@ class IntegatorSettings(BaseModel):
     # refactor: We definitely want to clean this up. Much of the experimental
     # logging and complexity functionality could be removed.
 
+    # feat: !!! we need to error if a settings file exists, but it is not parsed correctly
+
     steps: list[StepSpec] = Field(default_factory=default_command)
     command_on_success: str = Field(default="")
     complexity_threshold: int = Field(default=5)
