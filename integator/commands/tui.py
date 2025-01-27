@@ -3,7 +3,7 @@ from multiprocessing import Process
 
 import typer
 
-from integator.commands.argument_parsing import template_defaults
+from integator.commands.argument_parsing import get_settings, template_defaults
 from integator.commands.watch import watch
 from integator.logging import init_log
 
@@ -26,5 +26,5 @@ def tui(
     )
     side_process.start()
 
-    app = IntegatorTUI()
+    app = IntegatorTUI(settings=get_settings(template_name))
     app.run()

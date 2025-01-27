@@ -38,13 +38,14 @@
             "justMyCode": true
         },
         {
-            "name": "Debug watch",
+            "name": "Debug tui",
             "type": "debugpy",
             "request": "launch",
             "program": "integator",
             "args": [
-                "w",
-                "--debug",
+                "t",
+                "-t",
+                "java"
             ],
             "console": "integratedTerminal",
             "justMyCode": true

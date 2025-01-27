@@ -27,12 +27,13 @@ class CommandRan(enum.Enum):
 
 
 def watch_impl(
-    shell: Shell, root_git: Git, status_repo: StepStatusRepo, quiet: bool
+    shell: Shell,
+    root_git: Git,
+    status_repo: StepStatusRepo,
+    quiet: bool,
+    settings: RootSettings,
 ) -> CommandRan:
     # Starting setup
-    l.debug("Getting settings")
-    settings = RootSettings()
-
     l.debug("Updating")
     latest = root_git.log.latest()
     latest_statuses = status_repo.get(latest.hash)

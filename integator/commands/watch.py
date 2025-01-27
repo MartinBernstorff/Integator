@@ -43,6 +43,7 @@ def watch(
             root_git=git,
             status_repo=StepStatusRepo(),
             quiet=quiet,
+            settings=settings,
         )
 
         logger.debug("--- Sleeping ---")

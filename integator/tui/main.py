@@ -24,9 +24,13 @@ Screen {
     overflow-y: auto;
 }"""
 
-    settings: reactive[RootSettings] = reactive(RootSettings())
+    settings: reactive[RootSettings]
     commit_list: reactive[CommitList]
     details: Details
+
+    def __init__(self, settings: RootSettings) -> None:
+        super().__init__()
+        self.settings = settings
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""

@@ -9,10 +9,10 @@ from rich.console import Console
 from rich.table import Table
 
 from integator.columns import age, duration, status
+from integator.commands.argument_parsing import get_settings, template_defaults
 from integator.commit import Commit
 from integator.emojis import Emojis
 from integator.git import Git
-from integator.settings import RootSettings
 from integator.shell import Shell
 from integator.step_status import ExecutionState, Statuses
 from integator.step_status_repo import StepStatusRepo
@@ -140,13 +140,13 @@ def _print_ready_status(ready: bool):
         print(Emojis.RED.value * line_length)
 
 
-def log_impl(debug: bool):
-    settings = RootSettings()
+def log_impl(debug: bool, template_name: str | None = template_defaults):
+    settings = get_settings(template_name)
 
     git = Git(source_dir=settings.integator.root_worktree_dir)
 
     while True:
-        settings = RootSettings()
+        settings = get_settings(template_name)
         commits = git.log.get(8)
         if not debug:
             Shell().clear()
