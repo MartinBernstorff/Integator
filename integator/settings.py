@@ -83,9 +83,6 @@ class IntegatorSettings(BaseModel):
     push_on_success: bool = Field(default=False)
     root_worktree_dir: DirectoryPath = Field(default=pathlib.Path.cwd())
 
-    # feat: infer trunk from github CLI? Or at least allow it to be so, e.g. by specifying a command (prefix with $?)
-    trunk: str = Field(default="main")
-
     # feat: add pyproject.toml support. Should be super easy, given docs here: https://docs.pydantic.dev/latest/concepts/pydantic_settings/#other-settings-source
 
     @classmethod

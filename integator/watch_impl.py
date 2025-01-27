@@ -42,7 +42,6 @@ def watch_impl(
             l.warning(f"{failure.step.name} failed. Logs: '{failure.log}'")
         return CommandRan.NO
 
-    l.debug("Diffing againt trunk")
     command_ran = CommandRan.NO
     # Run commands
     for step in settings.integator.steps:
