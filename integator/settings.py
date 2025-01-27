@@ -48,6 +48,8 @@ class StepSpec(BaseModel):
     cmd: str
     # feat: templating/placeholders of commands. Allows us to standardise all operations, e.g. `git push` if we can replace e.g. {hash} with the latest hash.
     # Probably want this to be filled in as early as possible during program execution, to validate that it works.
+    # ?: How would this handle "push on success" if "fail fast" is false? Perhaps a "continue-on-error" flag? Isn't there something similar for github actions?
+
     # feat: as an example, there is also "approving" a commit in GitHub actions.
 
     max_staleness_seconds: int = 0
@@ -104,11 +106,6 @@ class RootSettings(Settings):
     # Could remove a layer of indirection.
     integator: IntegatorSettings = IntegatorSettings()
 
-    # feat XXX: Would be _awesome_ if we can specify default settings in ~/.config/integator/templates/X.toml
-    # Make it an argument (e.g. --template) for many of the commands
-    # * This requires something like "from_toml"
-    # * Also, handling in each of the commands. They should take a config-name, and, if that is passed, we get the matching template from integator templates
-    #
     @classmethod
     def from_toml(cls, path: pathlib.Path) -> "RootSettings":
         full_path = path.absolute()

@@ -132,8 +132,6 @@ def step_match_or_all(step: str | None, settings: RootSettings) -> list[StepSpec
     return step_specs
 
 
-# feat: A `check` command, which checks the combined status of all (default) or one (--step), for latest or a given commit (--hash)
-# Does no modification of statuses.
 @app.command("c")
 @app.command()
 def check(
@@ -143,6 +141,7 @@ def check(
     debug: bool = False,
     quiet: bool = False,
 ):
+    """Checks the combined status of all (default) or one (--step) step, for latest or a given commit (--hash). Does no modification of statuses."""
     init_log(debug, quiet)
     settings = get_settings(template_name)
 
@@ -163,9 +162,6 @@ def check(
 
 #
 # feat: A `clear` command, which removes all step states for a given commit. By default, removes for the latest commit.
-
-# ?: We do not want to use an existing DAG tool as the job-engine, because that makes it very hard to get step status,
-# and therefore how to present it nicely and log it to persistence.
 
 
 @app.command("i")
