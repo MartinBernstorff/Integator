@@ -10,3 +10,4 @@ wheels/
 .venv
 .gokid
 .logs/
+.vscode/settings.json

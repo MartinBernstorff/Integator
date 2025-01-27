@@ -19,6 +19,17 @@ logger = logging.getLogger(__name__)
 format = "%(asctime)s \t%(levelname)s \t%(name)s \t%(message)s"
 date_fmt = "%H:%M:%S"
 
+template_defaults = typer.Option(
+    None,
+    "-t",
+    "--template",
+    help="Template to use, found in $HOME/.config/integator/templates/[ARG]",
+)
+
+
+hash_defaults = typer.Option(None, "--hash", help="Commit hash to check")
+step_defaults = typer.Option(None, "--step", help="Step to check")
+
 
 def init_log(debug: bool, quiet: bool):
     # feat: get colored logging working
@@ -50,14 +61,9 @@ def get_settings(template_name: str | None) -> RootSettings:
 @app.command("r")
 @app.command()
 def run(
-    hash: str | None = typer.Option(None, "-h", "--hash", help="Commit hash to check"),
-    step: str | None = typer.Option(None, "-s", "--step", help="Step to check"),
-    template_name: str | None = typer.Option(
-        None,
-        "-t",
-        "--template",
-        help="Template to use, found in $HOME/.config/integator/templates/[ARG]",
-    ),
+    hash: str | None = hash_defaults,
+    step: str | None = step_defaults,
+    template_name: str | None = template_defaults,
     debug: bool = False,
     quiet: bool = False,
 ):
@@ -131,13 +137,14 @@ def step_match_or_all(step: str | None, settings: RootSettings) -> list[StepSpec
 @app.command("c")
 @app.command()
 def check(
-    hash: str | None = typer.Option(None, "--hash", help="Commit hash to check"),
-    step: str | None = typer.Option(None, "--step", help="Step to check"),
+    hash: str | None = hash_defaults,
+    step: str | None = step_defaults,
+    template_name: str | None = template_defaults,
     debug: bool = False,
     quiet: bool = False,
 ):
     init_log(debug, quiet)
-    settings = RootSettings()  # type: ignore # noqa: F841
+    settings = get_settings(template_name)
 
     commit = commit_match_or_latest(hash, Git(settings.integator.root_worktree_dir))
 
@@ -197,17 +204,13 @@ def update_gitignore(gitignore_path: pathlib.Path):
 @app.command("w")
 @app.command()
 def watch(
-    template_name: str | None = typer.Option(
-        None,
-        "-t",
-        "--template",
-        help="Template to use, found in $HOME/.config/integator/templates/[ARG]",
-    ),
+    template_name: str | None = template_defaults,
     debug: bool = False,
     quiet: bool = False,
 ):
+    # feat: Do I want to remove the watch command completely? Or how does this work? What role does it still play?
+    # If I want to keep it, do I want it to be able to watch only a specific step?
     init_log(debug, quiet)
-
     settings = get_settings(template_name)
 
     shell = Shell()
@@ -231,18 +234,10 @@ def watch(
             time.sleep(1)
 
 
-# XXX: Add template_names to all commands
-
-
 @app.command("t")
 @app.command()
 def tui(
-    template_name: str | None = typer.Option(
-        None,
-        "-t",
-        "--template",
-        help="Template to use, found in $HOME/.config/integator/templates/[ARG]",
-    ),
+    template_name: str | None = template_defaults,
     debug: bool = False,
     quiet: bool = True,
 ):
@@ -262,6 +257,7 @@ def tui(
 @app.command("l")
 @app.command()
 def log(debug: bool = False, quiet: bool = False):
+    # feat: I want the log to be super-simple, a one-time-run thing you can call to get the current status, e.g. in CI.
     init_log(debug, quiet)
     log_impl(debug)
 
