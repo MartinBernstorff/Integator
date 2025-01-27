@@ -1,7 +1,7 @@
 import typer
 
 from integator.log import log_impl
-from integator.logging import init_log
+from integator.sys_logs import init_log
 
 log_app = typer.Typer()
 

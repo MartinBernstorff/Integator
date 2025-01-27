@@ -11,7 +11,7 @@ from integator.commands.argument_parsing import (
     template_defaults,
 )
 from integator.git import Git
-from integator.logging import init_log
+from integator.sys_logs import init_log
 from integator.shell import ExitCode
 from integator.step_status_repo import StepStatusRepo
 

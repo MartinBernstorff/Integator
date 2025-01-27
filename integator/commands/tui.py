@@ -5,7 +5,7 @@ import typer
 
 from integator.commands.argument_parsing import get_settings, template_defaults
 from integator.commands.watch import watch
-from integator.logging import init_log
+from integator.sys_logs import init_log
 
 tui_app = typer.Typer()
 

@@ -34,6 +34,7 @@ class Settings(pydantic_settings.BaseSettings):
 
 
 class StepSpec(BaseModel):
+    model_config = pydantic_settings.SettingsConfigDict(extra="forbid")
     """A specification of a step that is run during validation of a given commit."""
 
     # These steps are run in sequence by default.
@@ -98,10 +99,10 @@ class IntegatorSettings(BaseModel):
         return self.root_worktree_dir / ".logs"
 
 
-class RootSettings(Settings):
+class RootSettings(BaseModel):
     # refactor: This composition is non-essential. We can move all the keys into just one Settings object.
     # Could remove a layer of indirection.
-    integator: IntegatorSettings = IntegatorSettings()
+    integator: IntegatorSettings
 
     @classmethod
     def from_toml(cls, path: pathlib.Path) -> "RootSettings":
