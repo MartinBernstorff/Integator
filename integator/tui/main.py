@@ -48,8 +48,3 @@ Screen {
 
     def on_data_table_cell_highlighted(self, event: DataTable.CellHighlighted) -> None:
         self.details.hash = self.commit_list.selected_hash
-
-
-if __name__ == "__main__":
-    app = IntegatorTUI()
-    app.run()
