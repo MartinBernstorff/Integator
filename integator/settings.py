@@ -101,8 +101,7 @@ class IntegatorSettings(BaseModel):
 
 
 class RootSettings(Settings):
-    # refactor: is this composition essential? I think it might be based on pydantic-settings, but worth investigating.
-    # * Seems to only be important because I want to "integator" super-section
+    # refactor: This composition is non-essential. We can move all the keys into just one Settings object.
     # Could remove a layer of indirection.
     integator: IntegatorSettings = IntegatorSettings()
 
