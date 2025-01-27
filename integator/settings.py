@@ -77,7 +77,6 @@ class IntegatorSettings(BaseModel):
     # logging and complexity functionality could be removed.
 
     # feat: !!! we need to error if a settings file exists, but it is not parsed correctly
-    # XXX: We need to remove any use of RootSettings(), because it does not error, and it does not use the template parsed to the functions.
 
     steps: list[StepSpec] = Field(default_factory=default_command)
     fail_fast: bool = Field(default=True)
