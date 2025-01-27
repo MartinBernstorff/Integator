@@ -38,20 +38,32 @@ app = typer.Typer()
 # This would also remove the watch/watch_impl separation, which duplicates a lot of logic.
 
 
+def get_settings(template_name: str | None) -> RootSettings:
+    match template_name:
+        case None:
+            return RootSettings.from_toml(pathlib.Path("integator.toml"))
+        case str():
+            return RootSettings.from_template(template_name)
+
+
+# refactor: command type hints can use type aliases, instead of re-specifying
 @app.command("r")
 @app.command()
 def run(
-    hash: str | None = typer.Option(None, "--hash", help="Commit hash to check"),
-    step: str | None = typer.Option(None, "--step", help="Step to check"),
+    hash: str | None = typer.Option(None, "-h", "--hash", help="Commit hash to check"),
+    step: str | None = typer.Option(None, "-s", "--step", help="Step to check"),
+    template_name: str | None = typer.Option(
+        None,
+        "-t",
+        "--template",
+        help="Template to use, found in $HOME/.config/integator/templates/[ARG]",
+    ),
     debug: bool = False,
     quiet: bool = False,
 ):
-    # Runs all steps for the current commit (default), or for a given commit (--hash argument), or for a given step (--step).
+    """Runs all steps for the current commit (default), or for a given commit (--hash argument), or for a given step (--step)."""
     init_log(debug, quiet)
-
-    # XXX: Clean this up
-    settings = RootSettings.from_template("Python.toml")
-    # XXX: Clean this up
+    settings = get_settings(template_name)
 
     git = Git(source_dir=settings.integator.root_worktree_dir)
     commit = commit_match_or_latest(hash, git)
@@ -184,10 +196,19 @@ def update_gitignore(gitignore_path: pathlib.Path):
 
 @app.command("w")
 @app.command()
-def watch(debug: bool = False, quiet: bool = False):
+def watch(
+    template_name: str | None = typer.Option(
+        None,
+        "-t",
+        "--template",
+        help="Template to use, found in $HOME/.config/integator/templates/[ARG]",
+    ),
+    debug: bool = False,
+    quiet: bool = False,
+):
     init_log(debug, quiet)
 
-    settings = RootSettings()
+    settings = get_settings(template_name)
 
     shell = Shell()
     while True:
@@ -210,13 +231,28 @@ def watch(debug: bool = False, quiet: bool = False):
             time.sleep(1)
 
 
+# XXX: Add template_names to all commands
+
+
 @app.command("t")
 @app.command()
-def tui(debug: bool = False, quiet: bool = True):
+def tui(
+    template_name: str | None = typer.Option(
+        None,
+        "-t",
+        "--template",
+        help="Template to use, found in $HOME/.config/integator/templates/[ARG]",
+    ),
+    debug: bool = False,
+    quiet: bool = True,
+):
     init_log(debug, quiet)
     from integator.tui.main import IntegatorTUI
 
-    side_process = Process(target=partial(watch, debug, quiet=quiet), daemon=True)
+    side_process = Process(
+        target=partial(watch, template_name=template_name, debug=debug, quiet=quiet),
+        daemon=True,
+    )
     side_process.start()
 
     app = IntegatorTUI()

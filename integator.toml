@@ -13,4 +13,4 @@ max_staleness_seconds = 1
 
 [[integator.steps]]
 name = "X"
-cmd = "! rg -g '!integator.toml' XXX: || exit 1"
+cmd = "! rg -g '!integator.toml' XXX:"
