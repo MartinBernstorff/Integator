@@ -83,8 +83,6 @@ class IntegatorSettings(BaseModel):
     push_on_success: bool = Field(default=False)
     root_worktree_dir: DirectoryPath = Field(default=pathlib.Path.cwd())
 
-    # feat: add pyproject.toml support. Should be super easy, given docs here: https://docs.pydantic.dev/latest/concepts/pydantic_settings/#other-settings-source
-
     @classmethod
     @field_validator("source_dir")
     def validate_log_dir(cls, v: pathlib.Path) -> pathlib.Path:

@@ -5,9 +5,9 @@ import typer
 
 from integator.commands.argument_parsing import get_settings, template_defaults
 from integator.git import Git
-from integator.sys_logs import init_log
 from integator.shell import Shell
 from integator.step_status_repo import StepStatusRepo
+from integator.sys_logs import init_log
 from integator.watch_impl import CommandRan, watch_impl
 
 watch_app = typer.Typer()

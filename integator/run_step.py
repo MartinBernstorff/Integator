@@ -39,6 +39,10 @@ def run_step(
     step_dir = Path(tempfile.gettempdir()) / f"integator-{commit.hash}"
     worktree = root_worktree.init(step_dir, commit.hash)
 
+    # p1: make sure the cwd is the component dir in a monorepo
+    # Not sure exactly how this works. Seems initialising the root worktree gives us the same path as we use on input, which is not technically correct.
+    # Rather, it should return the dir of the root worktree, so we can append the component dir.
+
     log.info(f"Running {step.name} in {worktree}")
     result = Shell().run(
         step.cmd,
