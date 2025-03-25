@@ -8,3 +8,4 @@ and therefore how to present it nicely and log it to persistence.
 
 ## Roadmap
 * p1: In a monorepo, if you init, it uses the git root. Instead, we want it to uses the current directory.
+* p1: Remove all the Shell() calls, because they presuppose that we want to start in the calling directory
