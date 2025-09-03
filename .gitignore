@@ -11,3 +11,4 @@ wheels/
 .gokid
 .logs/
 .vscode/settings.json
+.gokid.*
