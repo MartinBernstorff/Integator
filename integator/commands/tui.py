@@ -1,5 +1,7 @@
+from dataclasses import dataclass
 from functools import partial
 from multiprocessing import Process
+from typing import NoReturn
 
 import typer
 
@@ -8,6 +10,23 @@ from integator.commands.watch import watch
 from integator.sys_logs import init_log
 
 tui_app = typer.Typer()
+
+
+@dataclass
+class WatchDaemon:
+    callable: partial[NoReturn]
+    process: Process
+
+    def __post_init__(self):
+        self.process.start()
+
+    def restart(self):
+        if self.process.is_alive():
+            self.process.terminate()
+            self.process.join()
+
+        self.process = Process(target=self.callable, daemon=True)
+        self.process.start()
 
 
 @tui_app.command("t")
@@ -20,11 +39,13 @@ def tui(
     init_log(debug, quiet)
     from integator.tui.main import IntegatorTUI
 
-    side_process = Process(
-        target=partial(watch, template_name=template_name, debug=debug, quiet=quiet),
-        daemon=True,
-    )
+    watch_target = partial(watch, template_name=template_name, debug=debug, quiet=quiet)
+    side_process = Process(target=watch_target, daemon=True)
     side_process.start()
 
-    app = IntegatorTUI(settings=get_settings(template_name))
+    app = IntegatorTUI(
+        settings=get_settings(template_name),
+        watch_process=side_process,
+        watch_target=watch_target,
+    )
     app.run()

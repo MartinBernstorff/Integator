@@ -23,6 +23,9 @@ class StepStatusRepo:
         for step in steps:
             statuses.remove(step.name)
 
+        # Persist the cleared statuses back to git notes
+        StepStatusRepo.update(commit.hash, statuses)
+
     # refactor: instead of a hash, should we take a commit, to be even more type-safe?
     # OTOH, it is less flexible, and sets an artificially high requirement set.
     @staticmethod

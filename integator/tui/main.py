@@ -2,7 +2,9 @@ from textual.app import App, ComposeResult
 from textual.reactive import reactive
 from textual.widgets import DataTable
 
+from integator.commands.tui import WatchDaemon
 from integator.settings import RootSettings
+from integator.step_status_repo import StepStatusRepo
 from integator.tui.commit_list import CommitList
 from integator.tui.details import Details
 
@@ -27,10 +29,20 @@ Screen {
     settings: reactive[RootSettings]
     commit_list: reactive[CommitList]
     details: Details
+    watch_daemon: WatchDaemon
 
-    def __init__(self, settings: RootSettings) -> None:
+    BINDINGS = [
+        ("r", "reset_selected", "Reset statuses and restart watch"),
+    ]
+
+    def __init__(
+        self,
+        settings: RootSettings,
+        watch_daemon: WatchDaemon,
+    ) -> None:
         super().__init__()
         self.settings = settings
+        self.watch_daemon = watch_daemon
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
@@ -48,3 +60,22 @@ Screen {
 
     def on_data_table_cell_highlighted(self, event: DataTable.CellHighlighted) -> None:
         self.details.hash = self.commit_list.selected_hash
+
+    def action_reset_selected(self) -> None:
+        # Clear statuses for the currently selected commit and restart the watch daemon
+        selected = self.commit_list.selected_hash
+        if not selected:
+            return
+
+        # Build a Commit from the selected hash
+        commit = self.commit_list.git.log.get_by_hash(selected)
+        StepStatusRepo.clear(commit, self.settings.integator.steps)
+
+        # Optionally trigger an immediate UI refresh
+        try:
+            self.commit_list._update()  # type: ignore[attr-defined]
+        except Exception:
+            pass
+
+        # Restart the daemon
+        self.watch_daemon.restart()
