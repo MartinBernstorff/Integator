@@ -48,7 +48,7 @@ class Span(BaseModel):
     end: dt.datetime | None
 
     def duration(self) -> dt.timedelta:
-        if self.start is None or self.end is None:
+        if self.end is None:
             return dt.timedelta()
 
         return self.end - self.start
@@ -94,7 +94,7 @@ class StepStatus(BaseModel):
 
 
 class Statuses(BaseModel):
-    values: list[StepStatus] = Field(default_factory=list)
+    values: list[StepStatus] = Field(default_factory=list)  # type: ignore
 
     def __str__(self):
         return f"[{''.join(str(status.state) for status in self.values)}]"

@@ -39,7 +39,7 @@ class CommitList(Widget):
         yield table
 
     def on_mount(self) -> None:
-        table: DataTable[ExecutionState] = self.query_one(DataTable)
+        table: DataTable[ExecutionState] = self.query_one(DataTable)  # pyright: ignore[reportUnknownVariableType]
         for column in self.columns:
             table.add_column(column, key=column)
 
@@ -63,7 +63,7 @@ class CommitList(Widget):
         commits = self.git.log.get(8)
         self.rows = [(entry, StepStatusRepo().get(entry.hash)) for entry in commits]
 
-        table: DataTable[ExecutionState] = self.query_one(DataTable)
+        table: DataTable[ExecutionState] = self.query_one(DataTable)  # pyright: ignore[reportUnknownVariableType]
         row_keys = {v.key.value for v in table.rows.values()}
 
         for row in self.rows:
@@ -78,7 +78,7 @@ class CommitList(Widget):
         return commit.hash
 
     def _add_row(self, pair: tuple[Commit, Statuses]) -> None:
-        table: DataTable[AgedTimestamp | ExecutionState] = self.query_one(DataTable)
+        table: DataTable[AgedTimestamp | ExecutionState] = self.query_one(DataTable)  # pyright: ignore[reportUnknownVariableType]
 
         statuses = pair[1]
         values = [
@@ -107,7 +107,7 @@ class CommitList(Widget):
         )
 
     def _update_row(self, row: tuple[Commit, Statuses]) -> None:
-        table: DataTable[AgedTimestamp | ExecutionState] = self.query_one(DataTable)
+        table: DataTable[AgedTimestamp | ExecutionState] = self.query_one(DataTable)  # pyright: ignore[reportUnknownVariableType]
         for column_name in Arr(self.columns):
             if column_name == "Age":
                 value = AgedTimestamp(row[0].timestamp)
