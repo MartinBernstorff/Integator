@@ -40,12 +40,11 @@ def tui(
     from integator.tui.main import IntegatorTUI
 
     watch_target = partial(watch, template_name=template_name, debug=debug, quiet=quiet)
-    side_process = Process(target=watch_target, daemon=True)
-    side_process.start()
 
     app = IntegatorTUI(
         settings=get_settings(template_name),
-        watch_process=side_process,
-        watch_target=watch_target,
+        watch_daemon=WatchDaemon(
+            callable=watch_target, process=Process(target=watch_target, daemon=True)
+        ),
     )
     app.run()
